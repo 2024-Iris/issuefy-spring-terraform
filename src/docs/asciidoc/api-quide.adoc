@@ -9,3 +9,20 @@ endif::[]
 :sectlinks:
 :operation-http-request-title: Example Request
 :operation-http-response-title: Example Response
+
+= Issuefy
+
+== asciidoc test
+
+=== Hello
+
+==== Request
+
+include::{snippets}/issuefy/hello/http-request.adoc[]
+
+==== Response
+
+include::{snippets}/issuefy/hello/http-response.adoc[]
+include::{snippets}/issuefy/hello/response-body.adoc[]
+
+
