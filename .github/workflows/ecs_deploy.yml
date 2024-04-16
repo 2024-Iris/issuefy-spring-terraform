@@ -43,8 +43,8 @@ jobs:
             echo "SEMANTIC_VERSION=$VERSION" >> $GITHUB_ENV
             echo "Version $VERSION identified and set as SEMANTIC_VERSION"
           else
-            echo "Error: Version number not found"
-            exit 1
+            echo "No new version published. Proceeding without update."
+            echo "Continuing with the workflow."
           fi
         env:
           GH_TOKEN: ${{ secrets.GH_ISSUEFY_ROY_TOKEN }}
