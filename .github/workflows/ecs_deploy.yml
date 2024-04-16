@@ -24,7 +24,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           submodules: 'recursive'
           token: ${{ secrets.GH_ISSUEFY_ROY_TOKEN }}
@@ -36,15 +36,13 @@ jobs:
 
       - name: Semantic Release
         run: |
-          OUTPUT=$(npx semantic-release --debug)
-          echo "Semantic Release Output: $OUTPUT"
-          VERSION=$(echo "$OUTPUT" | grep -oP 'Published \K[0-9]+\.[0-9]+\.[0-9]+')
-          if [[ ! -z "$VERSION" ]]; then
+          OUTPUT=$(npx semantic-release --no-ci)
+          echo "$OUTPUT"
+          VERSION=$(echo "$OUTPUT" | grep -oP 'Published release \K[0-9.]+')
+          if [ ! -z "$VERSION" ]; then
             echo "SEMANTIC_VERSION=$VERSION" >> $GITHUB_ENV
-            echo "Version $VERSION identified and set as SEMANTIC_VERSION"
           else
-            echo "No new version published. Proceeding without update."
-            echo "Continuing with the workflow."
+            echo "Error: SEMANTIC_VERSION not extracted" && exit 1
           fi
         env:
           GH_TOKEN: ${{ secrets.GH_ISSUEFY_ROY_TOKEN }}
