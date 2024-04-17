@@ -5,11 +5,11 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 @Controller
-public class HelloController {
+public class StatusController {
 
-	@GetMapping("/hello")
+	@GetMapping("status")
 	@ResponseBody
-	public String hello(){
-		return "hello";
+	public String status() {
+		return "service is running!";
 	}
 }
