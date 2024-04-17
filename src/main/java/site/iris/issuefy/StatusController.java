@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 @Controller
 public class StatusController {
 
-	@GetMapping("status")
+	@GetMapping("/status")
 	@ResponseBody
 	public String status() {
 		return "service is running!";
