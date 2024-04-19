@@ -10,6 +10,6 @@ public class StatusController {
 	@GetMapping("/status")
 	@ResponseBody
 	public String status() {
-		return "service is running!!";
+		return "service is running!";
 	}
 }
