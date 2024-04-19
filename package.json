@@ -6,7 +6,7 @@
     "url": "git+https://github.com/2024-Iris/issuefy-spring.git"
   },
   "release": {
-    "branches": ["testing-with-jacoco"],
+    "branches": ["main"],
     "plugins": [
       "@semantic-release/commit-analyzer",
       "@semantic-release/release-notes-generator",
