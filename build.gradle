@@ -42,7 +42,7 @@ sonar {
 	properties {
 		property 'sonar.host.url', 'https://sonarcloud.io'
 		property 'sonar.organization', '2024-iris'
-		property 'sonar.projectKey', 'issuefy-spring'
+		property 'sonar.projectKey', '2024-Iris_issuefy-spring'
 		property 'sonar.coverage.jacoco.xmlReportPaths', 'build/reports/jacoco/test/jacocoTestReport.xml'
 	}
 }
