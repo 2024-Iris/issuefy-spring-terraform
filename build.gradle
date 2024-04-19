@@ -41,8 +41,8 @@ dependencies {
 sonar {
 	properties {
 		property 'sonar.host.url', 'https://sonarcloud.io'
-		property 'sonar.organization', 'organizationKey'
-		property 'sonar.projectKey', 'projectKey'
+		property 'sonar.organization', '2024-iris'
+		property 'sonar.projectKey', 'issuefy-spring'
 		property 'sonar.coverage.jacoco.xmlReportPaths', 'build/reports/jacoco/test/jacocoTestReport.xml'
 	}
 }
@@ -51,15 +51,17 @@ jacoco {
     toolVersion '0.8.7'
 }
 
+def jacocoDir = layout.buildDirectory.dir("reports/")
+
 jacocoTestReport {
     reports {
         xml.required.set(true)
         csv.required.set(true)
         html.required.set(true)
 
-        xml.destination file("${buildDir}/jacoco/index.xml")
-        csv.destination file("${buildDir}/jacoco/index.csv")
-        html.destination file("${buildDir}/jacoco/index.html")
+        html.destination jacocoDir.get().file("jacoco/index.html").asFile
+        xml.destination jacocoDir.get().file("jacoco/index.xml").asFile
+        csv.destination jacocoDir.get().file("jacoco/index.csv").asFile
     }
 
     afterEvaluate {
