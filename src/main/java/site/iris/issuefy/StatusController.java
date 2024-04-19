@@ -12,4 +12,8 @@ public class StatusController {
 	public String status() {
 		return "service is running!";
 	}
+
+	public String sonar() {
+		return "sonar is ok";
+	}
 }
