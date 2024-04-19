@@ -2,7 +2,7 @@ name: Deploy to Amazon ECS
 
 on:
   push:
-    branches: [ "main", testing-with-jacoco ]
+    branches: [ "main", "testing-with-jacoco" ]
 
 env:
   AWS_REGION: ${{ secrets.AWS_REGION }}
