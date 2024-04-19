@@ -31,6 +31,8 @@ configurations {
 
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation group: 'org.springframework.boot', name: 'spring-boot-starter-actuator', version: '3.2.0'
+    implementation group: 'io.micrometer', name: 'micrometer-registry-prometheus', version: '1.12.4'
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
     asciidoctorExt 'org.springframework.restdocs:spring-restdocs-asciidoctor'
@@ -41,15 +43,15 @@ dependencies {
 def jacocoDir = layout.buildDirectory.dir("reports/")
 
 sonar {
-	properties {
-		property 'sonar.host.url', 'https://sonarcloud.io'
-		property 'sonar.organization', '2024-iris'
-		property 'sonar.projectKey', '2024-Iris_issuefy-spring'
+    properties {
+        property 'sonar.host.url', 'https://sonarcloud.io'
+        property 'sonar.organization', '2024-iris'
+        property 'sonar.projectKey', '2024-Iris_issuefy-spring'
         property 'sonar.sourceEncoding', 'UTF-8'
         property 'sonar.language', 'java'
         property 'sonar.java.coveragePlugin', 'jacoco'
-		property 'sonar.coverage.jacoco.xmlReportPaths', jacocoDir.get().file("jacoco/index.xml").asFile
-	}
+        property 'sonar.coverage.jacoco.xmlReportPaths', jacocoDir.get().file("jacoco/index.xml").asFile
+    }
 }
 
 jacoco {
