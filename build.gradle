@@ -83,7 +83,6 @@ jacocoTestReport {
 
 test {
     outputs.dir snippetsDir
-    finalizedBy 'jacocoTestReport'
 }
 
 
@@ -102,4 +101,5 @@ bootJar {
 
 tasks.named('test') {
     useJUnitPlatform()
+    finalizedBy 'jacocoTestReport'
 }
