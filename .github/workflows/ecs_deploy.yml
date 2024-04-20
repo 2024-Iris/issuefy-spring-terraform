@@ -48,6 +48,7 @@ jobs:
 
       - name: Overwrite application.yml with submodule version
         run: |
+          mkdir -p src/main/resources
           cp submodules/application.yml src/main/resources/application.yml
 
       - name: Set up JDK 17
