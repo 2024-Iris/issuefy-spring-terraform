@@ -11,7 +11,10 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.restdocs.AutoConfigureRestDocs;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.servlet.MockMvc;
+
+import site.iris.issuefy.service.IssueService;
 
 @WebMvcTest(IssueController.class)
 @AutoConfigureRestDocs
@@ -19,6 +22,9 @@ class IssueControllerTest {
 
 	@Autowired
 	private MockMvc mockMvc;
+
+	@MockBean
+	private IssueService issueService;
 
 	@DisplayName("해당 저장소에 오픈되어 있는 이슈를 조회한다.")
 	@Test

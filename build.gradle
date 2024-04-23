@@ -53,6 +53,16 @@ bootJar {
     }
 }
 
+tasks.register('copyDocument', Copy) {
+    dependsOn asciidoctor
+    from file("${asciidoctor.outputDir}")
+    into file("src/main/resources/static/docs")
+}
+
+build {
+    dependsOn tasks.named('copyDocument')
+}
+
 tasks.named('test') {
     useJUnitPlatform()
 }

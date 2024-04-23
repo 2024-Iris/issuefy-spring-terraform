@@ -45,3 +45,13 @@ include::{snippets}/issuefy/subscriptions/get/http-request.adoc[]
 ==== Response
 
 include::{snippets}/issuefy/subscriptions/get/http-response.adoc[]
+
+=== Get Issues by Subscribed Repository
+
+==== Request
+
+include::{snippets}/issuefy/issues/get/http-request.adoc[]
+
+==== Response
+
+include::{snippets}/issuefy/issues/get/http-response.adoc[]
