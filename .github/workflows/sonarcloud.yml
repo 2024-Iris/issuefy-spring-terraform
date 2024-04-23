@@ -2,7 +2,8 @@ on:
   pull_request:
     branches:
       - main
-      - testing-with-jacoco
+      - restdocs
+      - auth
 jobs:
   test:
     runs-on: ubuntu-latest
