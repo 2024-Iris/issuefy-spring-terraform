@@ -12,7 +12,7 @@ endif::[]
 
 = Issuefy
 
-== asciidoc test
+== API Guide
 
 === Hello
 
@@ -23,6 +23,25 @@ include::{snippets}/issuefy/hello/http-request.adoc[]
 ==== Response
 
 include::{snippets}/issuefy/hello/http-response.adoc[]
-include::{snippets}/issuefy/hello/response-body.adoc[]
 
+=== Subscribe Repository
 
+==== Request
+
+include::{snippets}/issuefy/subscriptions/post/http-request.adoc[]
+include::{snippets}/issuefy/subscriptions/post/request-fields.adoc[]
+
+==== Response
+
+include::{snippets}/issuefy/subscriptions/post/http-response.adoc[]
+include::{snippets}/issuefy/subscriptions/post/response-fields.adoc[]
+
+=== Get Subscribed Repositories
+
+==== Request
+
+include::{snippets}/issuefy/subscriptions/get/http-request.adoc[]
+
+==== Response
+
+include::{snippets}/issuefy/subscriptions/get/http-response.adoc[]
