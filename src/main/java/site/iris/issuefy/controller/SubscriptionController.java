@@ -33,6 +33,9 @@ public class SubscriptionController {
 	@PostMapping
 	public ResponseEntity<SubscribedResponse> create(@RequestBody RepoVO repoVO) {
 		SubscribedResponse subscribedResponse = new SubscribedResponse();
+		subscribedResponse.setId(1L);
+		subscribedResponse.setName("issuefy");
+		subscribedResponse.setOrg("iris");
 
 		return ResponseEntity.created(URI.create("/subscriptions/" + subscribedResponse.getId())).body(
 			subscribedResponse);
