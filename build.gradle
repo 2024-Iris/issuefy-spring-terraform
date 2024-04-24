@@ -50,12 +50,14 @@ sonar {
         property 'sonar.sourceEncoding', 'UTF-8'
         property 'sonar.language', 'java'
         property 'sonar.java.coveragePlugin', 'jacoco'
+        property 'sonar.exclusions', '**/test/**, **/Q*.java, **/*Doc*.java, **/resources/** ,**/*Application*.java , **/*Config*.java,' +
+                '**/*Dto*.java,**/*DTO*.java, **/*Request*.java, **/*Response*.java ,**/*Exception*.java ,**/*ErrorCode*.java'
         property 'sonar.coverage.jacoco.xmlReportPaths', jacocoDir.get().file("jacoco/index.xml").asFile
     }
 }
 
 jacoco {
-    toolVersion '0.8.7'
+    toolVersion '0.8.8'
 }
 
 jacocoTestReport {
@@ -99,6 +101,16 @@ bootJar {
     from("${asciidoctor.outputDir}/html5") {
         into 'static/docs'
     }
+}
+
+tasks.register('copyDocument', Copy) {
+    dependsOn asciidoctor
+    from file("${asciidoctor.outputDir}")
+    into file("src/main/resources/static/docs")
+}
+
+build {
+    dependsOn tasks.named('copyDocument')
 }
 
 tasks.named('test') {
