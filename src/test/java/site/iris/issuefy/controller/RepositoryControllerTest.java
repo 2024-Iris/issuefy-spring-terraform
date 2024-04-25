@@ -15,6 +15,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.restdocs.payload.JsonFieldType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultActions;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -65,11 +66,13 @@ class RepositoryControllerTest {
 		subscribedResponse.setName(repoVO.name());
 		subscribedResponse.setOrg(repoVO.org());
 
-		// when & then
-		mockMvc.perform(post("/repo")
-				.contentType(MediaType.APPLICATION_JSON)
-				.content(objectMapper.writeValueAsString(repoVO)))
-			.andExpect(status().isCreated())
+		// when
+		ResultActions result = mockMvc.perform(post("/repo")
+			.contentType(MediaType.APPLICATION_JSON)
+			.content(objectMapper.writeValueAsString(repoVO)));
+
+		// then
+		result.andExpect(status().isCreated())
 			.andDo(document("issuefy/repo/post",
 				getDocumentRequest(),
 				getDocumentResponse(),
