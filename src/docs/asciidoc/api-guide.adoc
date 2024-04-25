@@ -10,21 +10,11 @@ endif::[]
 :operation-http-request-title: Example Request
 :operation-http-response-title: Example Response
 
-= Issuefy
+= Issuefy API Guide
 
-== API Guide
+== 1. Repositories
 
-=== Hello
-
-==== Request
-
-include::{snippets}/issuefy/hello/http-request.adoc[]
-
-==== Response
-
-include::{snippets}/issuefy/hello/http-response.adoc[]
-
-=== Subscribe Repository
+=== 1.1 Subscribe Repository
 
 ==== Request
 
@@ -36,7 +26,7 @@ include::{snippets}/issuefy/subscriptions/post/request-fields.adoc[]
 include::{snippets}/issuefy/subscriptions/post/http-response.adoc[]
 include::{snippets}/issuefy/subscriptions/post/response-fields.adoc[]
 
-=== Get Subscribed Repositories
+=== 1.2 Get Subscribed Repositories
 
 ==== Request
 
@@ -46,7 +36,9 @@ include::{snippets}/issuefy/subscriptions/get/http-request.adoc[]
 
 include::{snippets}/issuefy/subscriptions/get/http-response.adoc[]
 
-=== Get Issues by Subscribed Repository
+== 2. Issues
+
+=== 2.1 Get Issues by Subscribed Repository
 
 ==== Request
 
