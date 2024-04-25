@@ -23,7 +23,7 @@ import site.iris.issuefy.service.SubscriptionService;
 import site.iris.issuefy.vo.RepoVO;
 
 @WebMvcTest(SubscriptionController.class)
-@AutoConfigureRestDocs(uriScheme = "https", uriHost = "docs.api.com")
+@AutoConfigureRestDocs
 class SubscriptionControllerTest {
 
 	@Autowired
