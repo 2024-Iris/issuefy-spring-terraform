@@ -13,6 +13,7 @@ import org.springframework.boot.test.autoconfigure.restdocs.AutoConfigureRestDoc
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultActions;
 
 import site.iris.issuefy.service.IssueService;
 
@@ -32,15 +33,16 @@ class IssueControllerTest {
 		// given
 		String repoName = "terminal";
 
-		// when & then
-		mockMvc.perform(get("/{repo}/issues", repoName))
-			.andExpect(status().isOk())
+		// when
+		ResultActions result = mockMvc.perform(get("/{repo}/issues", repoName));
+
+		// then
+		result.andExpect(status().isOk())
 			.andDo(document("issuefy/issues/get",
 				getDocumentRequest(),
 				getDocumentResponse(),
 				pathParameters(
 					parameterWithName("repo").description("리포지토리 이름")
-				)
-			));
+				)));
 	}
 }
