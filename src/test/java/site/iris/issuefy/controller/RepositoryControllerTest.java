@@ -19,8 +19,8 @@ import org.springframework.test.web.servlet.ResultActions;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import site.iris.issuefy.dto.SubscribedResponse;
-import site.iris.issuefy.service.SubscriptionService;
+import site.iris.issuefy.dto.RepositoryResponse;
+import site.iris.issuefy.service.RepositoryService;
 import site.iris.issuefy.vo.RepoVO;
 
 @WebMvcTest(RepositoryController.class)
@@ -34,7 +34,7 @@ class RepositoryControllerTest {
 	private ObjectMapper objectMapper;
 
 	@MockBean
-	private SubscriptionService subscriptionService;
+	private RepositoryService repositoryService;
 
 	@DisplayName("구독 중인 repository 목록을 조회한다.")
 	@Test
@@ -44,7 +44,7 @@ class RepositoryControllerTest {
 		RepoVO repoVO = new RepoVO("issuefy", "iris");
 
 		// when
-		subscriptionService.getSubscribedRepositories();
+		repositoryService.getSubscribedRepositories();
 
 		// then
 		mockMvc.perform(get("/repo"))
@@ -61,10 +61,7 @@ class RepositoryControllerTest {
 
 		// given
 		RepoVO repoVO = new RepoVO("issuefy", "org");
-		SubscribedResponse subscribedResponse = new SubscribedResponse();
-		subscribedResponse.setId(1L);
-		subscribedResponse.setName(repoVO.name());
-		subscribedResponse.setOrg(repoVO.org());
+		RepositoryResponse repositoryResponse = RepositoryResponse.from(repoVO);
 
 		// when
 		ResultActions result = mockMvc.perform(post("/repo")

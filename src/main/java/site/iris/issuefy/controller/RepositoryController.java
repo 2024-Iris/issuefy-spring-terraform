@@ -10,34 +10,31 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import site.iris.issuefy.dto.SubscribedResponse;
-import site.iris.issuefy.service.SubscriptionService;
+import site.iris.issuefy.dto.RepositoryResponse;
+import site.iris.issuefy.service.RepositoryService;
 import site.iris.issuefy.vo.RepoVO;
 
 @RestController
 @RequestMapping("/repo")
 public class RepositoryController {
-	private final SubscriptionService subscriptionService;
+	private final RepositoryService repositoryService;
 
-	public RepositoryController(SubscriptionService subscriptionService) {
-		this.subscriptionService = subscriptionService;
+	public RepositoryController(RepositoryService repositoryService) {
+		this.repositoryService = repositoryService;
 	}
 
 	@GetMapping
-	public ResponseEntity<List<SubscribedResponse>> getSubscribedRepositories() {
-		List<SubscribedResponse> subscribedResponses = subscriptionService.getSubscribedRepositories();
+	public ResponseEntity<List<RepositoryResponse>> getSubscribedRepositories() {
+		List<RepositoryResponse> repositoryRespons = repositoryService.getSubscribedRepositories();
 
-		return ResponseEntity.ok(subscribedResponses);
+		return ResponseEntity.ok(repositoryRespons);
 	}
 
 	@PostMapping
-	public ResponseEntity<SubscribedResponse> create(@RequestBody RepoVO repoVO) {
-		SubscribedResponse subscribedResponse = new SubscribedResponse();
-		subscribedResponse.setId(1L);
-		subscribedResponse.setName("issuefy");
-		subscribedResponse.setOrg("iris");
+	public ResponseEntity<RepositoryResponse> create(@RequestBody RepoVO repoVO) {
+		RepositoryResponse repositoryResponse = RepositoryResponse.from(repoVO);
 
-		return ResponseEntity.created(URI.create("/repo/" + subscribedResponse.getId())).body(
-			subscribedResponse);
+		return ResponseEntity.created(URI.create("/repo/" + repositoryResponse.getId())).body(
+			repositoryResponse);
 	}
 }
