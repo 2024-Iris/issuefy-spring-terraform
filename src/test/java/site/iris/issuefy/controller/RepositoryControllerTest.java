@@ -22,9 +22,9 @@ import site.iris.issuefy.dto.SubscribedResponse;
 import site.iris.issuefy.service.SubscriptionService;
 import site.iris.issuefy.vo.RepoVO;
 
-@WebMvcTest(SubscriptionController.class)
+@WebMvcTest(RepositoryController.class)
 @AutoConfigureRestDocs
-class SubscriptionControllerTest {
+class RepositoryControllerTest {
 
 	@Autowired
 	private MockMvc mockMvc;
@@ -46,9 +46,9 @@ class SubscriptionControllerTest {
 		subscriptionService.getSubscribedRepositories();
 
 		// then
-		mockMvc.perform(get("/subscriptions"))
+		mockMvc.perform(get("/repo"))
 			.andExpect(status().isOk())
-			.andDo(document("issuefy/subscriptions/get",
+			.andDo(document("issuefy/repo/get",
 				getDocumentRequest(),
 				getDocumentResponse()
 			));
@@ -66,11 +66,11 @@ class SubscriptionControllerTest {
 		subscribedResponse.setOrg(repoVO.org());
 
 		// when & then
-		mockMvc.perform(post("/subscriptions")
+		mockMvc.perform(post("/repo")
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(repoVO)))
 			.andExpect(status().isCreated())
-			.andDo(document("issuefy/subscriptions/post",
+			.andDo(document("issuefy/repo/post",
 				getDocumentRequest(),
 				getDocumentResponse(),
 				requestFields(

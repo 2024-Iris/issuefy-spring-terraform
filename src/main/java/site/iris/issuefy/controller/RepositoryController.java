@@ -15,11 +15,11 @@ import site.iris.issuefy.service.SubscriptionService;
 import site.iris.issuefy.vo.RepoVO;
 
 @RestController
-@RequestMapping("/subscriptions")
-public class SubscriptionController {
+@RequestMapping("/repo")
+public class RepositoryController {
 	private final SubscriptionService subscriptionService;
 
-	public SubscriptionController(SubscriptionService subscriptionService) {
+	public RepositoryController(SubscriptionService subscriptionService) {
 		this.subscriptionService = subscriptionService;
 	}
 
@@ -37,7 +37,7 @@ public class SubscriptionController {
 		subscribedResponse.setName("issuefy");
 		subscribedResponse.setOrg("iris");
 
-		return ResponseEntity.created(URI.create("/subscriptions/" + subscribedResponse.getId())).body(
+		return ResponseEntity.created(URI.create("/repo/" + subscribedResponse.getId())).body(
 			subscribedResponse);
 	}
 }
