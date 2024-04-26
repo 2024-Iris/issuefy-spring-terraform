@@ -468,7 +468,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <div class="sect2">
 <h3 id="_1_1_subscribe_repository"><a class="link" href="#_1_1_subscribe_repository">1.1 Subscribe Repository</a></h3>
 <div class="sect3">
-<h4 id="_request"><a class="link" href="#_request">Request</a></h4>
+<h4 id="_http_request"><a class="link" href="#_http_request">HTTP Request</a></h4>
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight nowrap"><code class="language-http hljs" data-lang="http">POST /repo HTTP/1.1
@@ -510,7 +510,7 @@ Host: issuefy.site
 </table>
 </div>
 <div class="sect3">
-<h4 id="_response"><a class="link" href="#_response">Response</a></h4>
+<h4 id="_http_response"><a class="link" href="#_http_response">HTTP Response</a></h4>
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight nowrap"><code class="language-http hljs" data-lang="http">HTTP/1.1 201 Created
@@ -561,7 +561,7 @@ Content-Length: 54
 <div class="sect2">
 <h3 id="_1_2_get_subscribed_repositories"><a class="link" href="#_1_2_get_subscribed_repositories">1.2 Get Subscribed Repositories</a></h3>
 <div class="sect3">
-<h4 id="_request_2"><a class="link" href="#_request_2">Request</a></h4>
+<h4 id="_http_request_2"><a class="link" href="#_http_request_2">HTTP Request</a></h4>
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight nowrap"><code class="language-http hljs" data-lang="http">GET /repo HTTP/1.1
@@ -570,7 +570,7 @@ Host: issuefy.site</code></pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_response_2"><a class="link" href="#_response_2">Response</a></h4>
+<h4 id="_http_response_2"><a class="link" href="#_http_response_2">HTTP Response</a></h4>
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight nowrap"><code class="language-http hljs" data-lang="http">HTTP/1.1 200 OK
@@ -590,16 +590,38 @@ Content-Length: 3
 <div class="sect2">
 <h3 id="_2_1_get_issues_by_subscribed_repository"><a class="link" href="#_2_1_get_issues_by_subscribed_repository">2.1 Get Issues by Subscribed Repository</a></h3>
 <div class="sect3">
-<h4 id="_request_3"><a class="link" href="#_request_3">Request</a></h4>
+<h4 id="_http_request_3"><a class="link" href="#_http_request_3">HTTP Request</a></h4>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight nowrap"><code class="language-http hljs" data-lang="http">GET /terminal/issues HTTP/1.1
+<pre class="highlightjs highlight nowrap"><code class="language-http hljs" data-lang="http">GET /iris/issues HTTP/1.1
 Host: issuefy.site</code></pre>
 </div>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_response_3"><a class="link" href="#_response_3">Response</a></h4>
+<h4 id="_path_parameters"><a class="link" href="#_path_parameters">Path Parameters</a></h4>
+<table class="tableblock frame-all grid-all stretch">
+<caption class="title">Table 1. /{repoName}/issues</caption>
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Parameter</th>
+<th class="tableblock halign-left valign-top">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>repoName</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">리포지토리 이름</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect3">
+<h4 id="_http_response_3"><a class="link" href="#_http_response_3">HTTP Response</a></h4>
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight nowrap"><code class="language-http hljs" data-lang="http">HTTP/1.1 200 OK
@@ -617,7 +639,7 @@ Content-Length: 3
 <div id="footer">
 <div id="footer-text">
 Version 0.0.1-SNAPSHOT<br>
-Last updated 2024-04-25 20:47:17 +0900
+Last updated 2024-04-26 19:50:19 +0900
 </div>
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.3/highlight.min.js"></script>
