@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="generator" content="Asciidoctor 2.0.18">
-<title>Issuefy</title>
+<title>Issuefy API Guide</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300,300italic,400,400italic,600,600italic%7CNoto+Serif:400,400italic,700,700italic%7CDroid+Sans+Mono:400,700">
 <style>
 /*! Asciidoctor default stylesheet | MIT License | https://asciidoctor.org */
@@ -440,19 +440,22 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </head>
 <body class="book toc2 toc-left">
 <div id="header">
-<h1>Issuefy</h1>
+<h1>Issuefy API Guide</h1>
 <div class="details">
 <span id="revnumber">version 0.0.1-SNAPSHOT</span>
 </div>
 <div id="toc" class="toc2">
 <div id="toctitle">Table of Contents</div>
 <ul class="sectlevel1">
-<li><a href="#_api_guide">API Guide</a>
+<li><a href="#_1_repositories">1. Repositories</a>
 <ul class="sectlevel2">
-<li><a href="#_hello">Hello</a></li>
-<li><a href="#_subscribe_repository">Subscribe Repository</a></li>
-<li><a href="#_get_subscribed_repositories">Get Subscribed Repositories</a></li>
-<li><a href="#_get_issues_by_subscribed_repository">Get Issues by Subscribed Repository</a></li>
+<li><a href="#_1_1_subscribe_repository">1.1 Subscribe Repository</a></li>
+<li><a href="#_1_2_get_subscribed_repositories">1.2 Get Subscribed Repositories</a></li>
+</ul>
+</li>
+<li><a href="#_2_issues">2. Issues</a>
+<ul class="sectlevel2">
+<li><a href="#_2_1_get_issues_by_subscribed_repository">2.1 Get Issues by Subscribed Repository</a></li>
 </ul>
 </li>
 </ul>
@@ -460,42 +463,18 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </div>
 <div id="content">
 <div class="sect1">
-<h2 id="_api_guide"><a class="link" href="#_api_guide">API Guide</a></h2>
+<h2 id="_1_repositories"><a class="link" href="#_1_repositories">1. Repositories</a></h2>
 <div class="sectionbody">
 <div class="sect2">
-<h3 id="_hello"><a class="link" href="#_hello">Hello</a></h3>
+<h3 id="_1_1_subscribe_repository"><a class="link" href="#_1_1_subscribe_repository">1.1 Subscribe Repository</a></h3>
 <div class="sect3">
 <h4 id="_request"><a class="link" href="#_request">Request</a></h4>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight nowrap"><code class="language-http hljs" data-lang="http">GET /hello HTTP/1.1
-Host: localhost:8080</code></pre>
-</div>
-</div>
-</div>
-<div class="sect3">
-<h4 id="_response"><a class="link" href="#_response">Response</a></h4>
-<div class="listingblock">
-<div class="content">
-<pre class="highlightjs highlight nowrap"><code class="language-http hljs" data-lang="http">HTTP/1.1 200 OK
-Content-Type: text/plain;charset=UTF-8
-Content-Length: 5
-
-hello</code></pre>
-</div>
-</div>
-</div>
-</div>
-<div class="sect2">
-<h3 id="_subscribe_repository"><a class="link" href="#_subscribe_repository">Subscribe Repository</a></h3>
-<div class="sect3">
-<h4 id="_request_2"><a class="link" href="#_request_2">Request</a></h4>
-<div class="listingblock">
-<div class="content">
-<pre class="highlightjs highlight nowrap"><code class="language-http hljs" data-lang="http">POST /subscriptions HTTP/1.1
+<pre class="highlightjs highlight nowrap"><code class="language-http hljs" data-lang="http">POST /repo HTTP/1.1
 Content-Type: application/json;charset=UTF-8
 Content-Length: 41
-Host: docs.api.com
+Host: issuefy.site
 
 {
   "name" : "issuefy",
@@ -531,18 +510,18 @@ Host: docs.api.com
 </table>
 </div>
 <div class="sect3">
-<h4 id="_response_2"><a class="link" href="#_response_2">Response</a></h4>
+<h4 id="_response"><a class="link" href="#_response">Response</a></h4>
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight nowrap"><code class="language-http hljs" data-lang="http">HTTP/1.1 201 Created
-Location: /subscriptions/1
+Location: /repo/1
 Content-Type: application/json
-Content-Length: 54
+Content-Length: 53
 
 {
   "id" : 1,
   "name" : "issuefy",
-  "org" : "iris"
+  "org" : "org"
 }</code></pre>
 </div>
 </div>
@@ -580,18 +559,18 @@ Content-Length: 54
 </div>
 </div>
 <div class="sect2">
-<h3 id="_get_subscribed_repositories"><a class="link" href="#_get_subscribed_repositories">Get Subscribed Repositories</a></h3>
+<h3 id="_1_2_get_subscribed_repositories"><a class="link" href="#_1_2_get_subscribed_repositories">1.2 Get Subscribed Repositories</a></h3>
 <div class="sect3">
-<h4 id="_request_3"><a class="link" href="#_request_3">Request</a></h4>
+<h4 id="_request_2"><a class="link" href="#_request_2">Request</a></h4>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight nowrap"><code class="language-http hljs" data-lang="http">GET /subscriptions HTTP/1.1
-Host: docs.api.com</code></pre>
+<pre class="highlightjs highlight nowrap"><code class="language-http hljs" data-lang="http">GET /repo HTTP/1.1
+Host: issuefy.site</code></pre>
 </div>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_response_3"><a class="link" href="#_response_3">Response</a></h4>
+<h4 id="_response_2"><a class="link" href="#_response_2">Response</a></h4>
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight nowrap"><code class="language-http hljs" data-lang="http">HTTP/1.1 200 OK
@@ -603,19 +582,24 @@ Content-Length: 3
 </div>
 </div>
 </div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_2_issues"><a class="link" href="#_2_issues">2. Issues</a></h2>
+<div class="sectionbody">
 <div class="sect2">
-<h3 id="_get_issues_by_subscribed_repository"><a class="link" href="#_get_issues_by_subscribed_repository">Get Issues by Subscribed Repository</a></h3>
+<h3 id="_2_1_get_issues_by_subscribed_repository"><a class="link" href="#_2_1_get_issues_by_subscribed_repository">2.1 Get Issues by Subscribed Repository</a></h3>
 <div class="sect3">
-<h4 id="_request_4"><a class="link" href="#_request_4">Request</a></h4>
+<h4 id="_request_3"><a class="link" href="#_request_3">Request</a></h4>
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight nowrap"><code class="language-http hljs" data-lang="http">GET /terminal/issues HTTP/1.1
-Host: docs.api.com</code></pre>
+Host: issuefy.site</code></pre>
 </div>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_response_4"><a class="link" href="#_response_4">Response</a></h4>
+<h4 id="_response_3"><a class="link" href="#_response_3">Response</a></h4>
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight nowrap"><code class="language-http hljs" data-lang="http">HTTP/1.1 200 OK
@@ -633,7 +617,7 @@ Content-Length: 3
 <div id="footer">
 <div id="footer-text">
 Version 0.0.1-SNAPSHOT<br>
-Last updated 2024-04-23 23:12:23 +0900
+Last updated 2024-04-25 20:47:17 +0900
 </div>
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.3/highlight.min.js"></script>
