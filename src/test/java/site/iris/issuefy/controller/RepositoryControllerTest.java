@@ -60,7 +60,7 @@ class RepositoryControllerTest {
 	void create() throws Exception {
 
 		// given
-		RepoVO repoVO = new RepoVO("issuefy", "org");
+		RepoVO repoVO = new RepoVO("issuefy", "iris");
 		RepositoryResponse repositoryResponse = RepositoryResponse.from(repoVO);
 
 		// when
