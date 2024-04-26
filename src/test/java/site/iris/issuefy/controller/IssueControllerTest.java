@@ -1,10 +1,14 @@
 package site.iris.issuefy.controller;
 
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.*;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.*;
 import static org.springframework.restdocs.request.RequestDocumentation.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 import static site.iris.issuefy.ApiDocumentUtils.*;
+
+import java.util.ArrayList;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -31,10 +35,11 @@ class IssueControllerTest {
 	@Test
 	void getIssuesByRepoName() throws Exception {
 		// given
-		String repoName = "terminal";
+		String repoName = "iris";
 
 		// when
-		ResultActions result = mockMvc.perform(get("/{repo}/issues", repoName));
+		when(issueService.getIssuesByRepoName(anyString())).thenReturn(new ArrayList<>());
+		ResultActions result = mockMvc.perform(get("/{repoName}/issues", repoName));
 
 		// then
 		result.andExpect(status().isOk())
@@ -42,7 +47,7 @@ class IssueControllerTest {
 				getDocumentRequest(),
 				getDocumentResponse(),
 				pathParameters(
-					parameterWithName("repo").description("리포지토리 이름")
-				)));
+					parameterWithName("repoName").description("리포지토리 이름"))
+			));
 	}
 }
