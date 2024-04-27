@@ -31,7 +31,7 @@ class IssueControllerTest {
 	@MockBean
 	private IssueService issueService;
 
-	@DisplayName("해당 저장소에 오픈되어 있는 이슈를 조회한다.")
+	@DisplayName("해당 리포지토리에 오픈되어 있는 이슈를 조회한다.")
 	@Test
 	void getIssuesByRepoName() throws Exception {
 		// given

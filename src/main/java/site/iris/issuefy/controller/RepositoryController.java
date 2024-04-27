@@ -15,7 +15,7 @@ import site.iris.issuefy.service.RepositoryService;
 import site.iris.issuefy.vo.RepoVO;
 
 @RestController
-@RequestMapping("/repo")
+@RequestMapping("/repositories")
 public class RepositoryController {
 	private final RepositoryService repositoryService;
 
@@ -25,9 +25,9 @@ public class RepositoryController {
 
 	@GetMapping
 	public ResponseEntity<List<RepositoryResponse>> getSubscribedRepositories() {
-		List<RepositoryResponse> repositoryRespons = repositoryService.getSubscribedRepositories();
+		List<RepositoryResponse> repositoryResponses = repositoryService.getSubscribedRepositories();
 
-		return ResponseEntity.ok(repositoryRespons);
+		return ResponseEntity.ok(repositoryResponses);
 	}
 
 	@PostMapping
