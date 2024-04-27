@@ -34,7 +34,7 @@ public class RepositoryController {
 	public ResponseEntity<RepositoryResponse> create(@RequestBody RepoVO repoVO) {
 		RepositoryResponse repositoryResponse = RepositoryResponse.from(repoVO);
 
-		return ResponseEntity.created(URI.create("/repo/" + repositoryResponse.getId())).body(
+		return ResponseEntity.created(URI.create("/repositories/" + repositoryResponse.getId())).body(
 			repositoryResponse);
 	}
 }
