@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 import lombok.RequiredArgsConstructor;
 import site.iris.issuefy.dto.RepositoryResponse;
 import site.iris.issuefy.service.RepositoryService;
-import site.iris.issuefy.vo.RepoVO;
+import site.iris.issuefy.vo.RepositoryVO;
 
 @RestController
 @RequestMapping("/repositories")
@@ -29,8 +29,8 @@ public class RepositoryController {
 	}
 
 	@PostMapping
-	public ResponseEntity<RepositoryResponse> create(@RequestBody RepoVO repoVO) {
-		RepositoryResponse repositoryResponse = RepositoryResponse.from(repoVO);
+	public ResponseEntity<RepositoryResponse> create(@RequestBody RepositoryVO repositoryVO) {
+		RepositoryResponse repositoryResponse = RepositoryResponse.from(repositoryVO);
 
 		return ResponseEntity.created(URI.create("/repositories/" + repositoryResponse.getId())).body(
 			repositoryResponse);

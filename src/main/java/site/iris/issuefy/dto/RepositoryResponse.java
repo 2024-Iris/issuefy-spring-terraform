@@ -1,7 +1,7 @@
 package site.iris.issuefy.dto;
 
 import lombok.Data;
-import site.iris.issuefy.vo.RepoVO;
+import site.iris.issuefy.vo.RepositoryVO;
 
 @Data
 public class RepositoryResponse {
@@ -15,7 +15,7 @@ public class RepositoryResponse {
 		this.org = org;
 	}
 
-	public static RepositoryResponse from(RepoVO repoVO) {
-		return new RepositoryResponse(1L, repoVO.name(), repoVO.org());
+	public static RepositoryResponse from(RepositoryVO repositoryVO) {
+		return new RepositoryResponse(1L, repositoryVO.name(), repositoryVO.org());
 	}
 }
