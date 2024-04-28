@@ -7,13 +7,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 
+import lombok.RequiredArgsConstructor;
+
 @Controller
+@RequiredArgsConstructor
 public class DocsController {
 	private final ResourceLoader resourceLoader;
-
-	public DocsController(ResourceLoader resourceLoader) {
-		this.resourceLoader = resourceLoader;
-	}
 
 	@GetMapping("/api/docs")
 	public ResponseEntity<Resource> getDocs() {

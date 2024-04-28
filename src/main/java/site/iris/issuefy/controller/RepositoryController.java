@@ -10,18 +10,16 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import lombok.RequiredArgsConstructor;
 import site.iris.issuefy.dto.RepositoryResponse;
 import site.iris.issuefy.service.RepositoryService;
 import site.iris.issuefy.vo.RepoVO;
 
 @RestController
 @RequestMapping("/repositories")
+@RequiredArgsConstructor
 public class RepositoryController {
 	private final RepositoryService repositoryService;
-
-	public RepositoryController(RepositoryService repositoryService) {
-		this.repositoryService = repositoryService;
-	}
 
 	@GetMapping
 	public ResponseEntity<List<RepositoryResponse>> getSubscribedRepositories() {
