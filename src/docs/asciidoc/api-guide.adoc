@@ -18,29 +18,29 @@ endif::[]
 
 ==== HTTP Request
 
-include::{snippets}/issuefy/repo/post/http-request.adoc[]
+include::{snippets}/issuefy/repositories/post/http-request.adoc[]
 
 ==== Request Fields
 
-include::{snippets}/issuefy/repo/post/request-fields.adoc[]
+include::{snippets}/issuefy/repositories/post/request-fields.adoc[]
 
 ==== HTTP Response
 
-include::{snippets}/issuefy/repo/post/http-response.adoc[]
+include::{snippets}/issuefy/repositories/post/http-response.adoc[]
 
 ==== Response Fields
 
-include::{snippets}/issuefy/repo/post/response-fields.adoc[]
+include::{snippets}/issuefy/repositories/post/response-fields.adoc[]
 
 === 1.2 Get Subscribed Repositories
 
 ==== HTTP Request
 
-include::{snippets}/issuefy/repo/get/http-request.adoc[]
+include::{snippets}/issuefy/repositories/get/http-request.adoc[]
 
 ==== HTTP Response
 
-include::{snippets}/issuefy/repo/get/http-response.adoc[]
+include::{snippets}/issuefy/repositories/get/http-response.adoc[]
 
 == 2. Issues
 
