@@ -21,7 +21,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import site.iris.issuefy.dto.RepositoryResponse;
 import site.iris.issuefy.service.RepositoryService;
-import site.iris.issuefy.vo.RepoVO;
+import site.iris.issuefy.vo.RepositoryVO;
 
 @WebMvcTest(RepositoryController.class)
 @AutoConfigureRestDocs
@@ -41,7 +41,7 @@ class RepositoryControllerTest {
 	void getSubscribedRepositories() throws Exception {
 
 		// given
-		RepoVO repoVO = new RepoVO("issuefy", "iris");
+		RepositoryVO repositoryVO = new RepositoryVO("issuefy", "iris");
 
 		// when
 		repositoryService.getSubscribedRepositories();
@@ -49,7 +49,7 @@ class RepositoryControllerTest {
 		// then
 		mockMvc.perform(get("/repositories"))
 			.andExpect(status().isOk())
-			.andDo(document("issuefy/repo/get",
+			.andDo(document("issuefy/repositories/get",
 				getDocumentRequest(),
 				getDocumentResponse()
 			));
@@ -60,17 +60,17 @@ class RepositoryControllerTest {
 	void create() throws Exception {
 
 		// given
-		RepoVO repoVO = new RepoVO("issuefy", "iris");
-		RepositoryResponse repositoryResponse = RepositoryResponse.from(repoVO);
+		RepositoryVO repositoryVO = new RepositoryVO("issuefy", "iris");
+		RepositoryResponse repositoryResponse = RepositoryResponse.from(repositoryVO);
 
 		// when
 		ResultActions result = mockMvc.perform(post("/repositories")
 			.contentType(MediaType.APPLICATION_JSON)
-			.content(objectMapper.writeValueAsString(repoVO)));
+			.content(objectMapper.writeValueAsString(repositoryVO)));
 
 		// then
 		result.andExpect(status().isCreated())
-			.andDo(document("issuefy/repo/post",
+			.andDo(document("issuefy/repositories/post",
 				getDocumentRequest(),
 				getDocumentResponse(),
 				requestFields(
