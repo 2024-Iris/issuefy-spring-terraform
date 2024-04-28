@@ -11,7 +11,7 @@ import site.iris.issuefy.dto.IssueResponse;
 public class IssueService {
 
 	public List<IssueResponse> getIssuesByRepoName(String repoName) {
-		IssueResponse issueResponse = new IssueResponse(1L, 1, "CI/CD", "deploy");
+		IssueResponse issueResponse = IssueResponse.of(1L, 1, "CI/CD", "deploy");
 		List<IssueResponse> issueResponses = new ArrayList<>();
 		issueResponses.add(issueResponse);
 
