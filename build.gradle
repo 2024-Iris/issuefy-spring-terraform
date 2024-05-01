@@ -33,6 +33,9 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation group: 'org.springframework.boot', name: 'spring-boot-starter-actuator', version: '3.2.0'
     implementation group: 'io.micrometer', name: 'micrometer-registry-prometheus', version: '1.12.4'
+    implementation group: 'org.springframework.boot', name: 'spring-boot-starter-webflux', version: '3.2.5'
+    runtimeOnly 'io.netty:netty-resolver-dns-native-macos:4.1.100.Final:osx-aarch_64'
+
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
     asciidoctorExt 'org.springframework.restdocs:spring-restdocs-asciidoctor'
