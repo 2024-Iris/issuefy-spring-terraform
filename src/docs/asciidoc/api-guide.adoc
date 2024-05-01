@@ -10,48 +10,50 @@ endif::[]
 :operation-http-request-title: Example Request
 :operation-http-response-title: Example Response
 
-= Issuefy
+= Issuefy API Guide
 
-== API Guide
+== 1. Repositories
 
-=== Hello
+=== 1.1 Subscribe Repository
 
-==== Request
+==== HTTP Request
 
-include::{snippets}/issuefy/hello/http-request.adoc[]
+include::{snippets}/issuefy/repositories/post/http-request.adoc[]
 
-==== Response
+==== Request Fields
 
-include::{snippets}/issuefy/hello/http-response.adoc[]
+include::{snippets}/issuefy/repositories/post/request-fields.adoc[]
 
-=== Subscribe Repository
+==== HTTP Response
 
-==== Request
+include::{snippets}/issuefy/repositories/post/http-response.adoc[]
 
-include::{snippets}/issuefy/subscriptions/post/http-request.adoc[]
-include::{snippets}/issuefy/subscriptions/post/request-fields.adoc[]
+==== Response Fields
 
-==== Response
+include::{snippets}/issuefy/repositories/post/response-fields.adoc[]
 
-include::{snippets}/issuefy/subscriptions/post/http-response.adoc[]
-include::{snippets}/issuefy/subscriptions/post/response-fields.adoc[]
+=== 1.2 Get Subscribed Repositories
 
-=== Get Subscribed Repositories
+==== HTTP Request
 
-==== Request
+include::{snippets}/issuefy/repositories/get/http-request.adoc[]
 
-include::{snippets}/issuefy/subscriptions/get/http-request.adoc[]
+==== HTTP Response
 
-==== Response
+include::{snippets}/issuefy/repositories/get/http-response.adoc[]
 
-include::{snippets}/issuefy/subscriptions/get/http-response.adoc[]
+== 2. Issues
 
-=== Get Issues by Subscribed Repository
+=== 2.1 Get Issues by Subscribed Repository
 
-==== Request
+==== HTTP Request
 
 include::{snippets}/issuefy/issues/get/http-request.adoc[]
 
-==== Response
+==== Path Parameters
+
+include::{snippets}/issuefy/issues/get/path-parameters.adoc[]
+
+==== HTTP Response
 
 include::{snippets}/issuefy/issues/get/http-response.adoc[]

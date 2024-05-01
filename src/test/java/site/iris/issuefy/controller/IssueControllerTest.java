@@ -1,10 +1,14 @@
 package site.iris.issuefy.controller;
 
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.*;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.*;
 import static org.springframework.restdocs.request.RequestDocumentation.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 import static site.iris.issuefy.ApiDocumentUtils.*;
+
+import java.util.ArrayList;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -13,6 +17,7 @@ import org.springframework.boot.test.autoconfigure.restdocs.AutoConfigureRestDoc
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultActions;
 
 import site.iris.issuefy.service.IssueService;
 
@@ -26,21 +31,23 @@ class IssueControllerTest {
 	@MockBean
 	private IssueService issueService;
 
-	@DisplayName("해당 저장소에 오픈되어 있는 이슈를 조회한다.")
+	@DisplayName("해당 리포지토리에 오픈되어 있는 이슈를 조회한다.")
 	@Test
 	void getIssuesByRepoName() throws Exception {
 		// given
-		String repoName = "terminal";
+		String repoName = "iris";
 
-		// when & then
-		mockMvc.perform(get("/{repo}/issues", repoName))
-			.andExpect(status().isOk())
+		// when
+		when(issueService.getIssuesByRepoName(anyString())).thenReturn(new ArrayList<>());
+		ResultActions result = mockMvc.perform(get("/{repoName}/issues", repoName));
+
+		// then
+		result.andExpect(status().isOk())
 			.andDo(document("issuefy/issues/get",
 				getDocumentRequest(),
 				getDocumentResponse(),
 				pathParameters(
-					parameterWithName("repo").description("리포지토리 이름")
-				)
+					parameterWithName("repoName").description("리포지토리 이름"))
 			));
 	}
 }

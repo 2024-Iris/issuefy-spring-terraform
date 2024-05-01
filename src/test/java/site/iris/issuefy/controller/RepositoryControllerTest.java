@@ -15,16 +15,17 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.restdocs.payload.JsonFieldType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultActions;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import site.iris.issuefy.dto.SubscribedResponse;
-import site.iris.issuefy.service.SubscriptionService;
-import site.iris.issuefy.vo.RepoVO;
+import site.iris.issuefy.dto.RepositoryResponse;
+import site.iris.issuefy.service.RepositoryService;
+import site.iris.issuefy.vo.RepositoryVO;
 
-@WebMvcTest(SubscriptionController.class)
-@AutoConfigureRestDocs(uriScheme = "https", uriHost = "docs.api.com")
-class SubscriptionControllerTest {
+@WebMvcTest(RepositoryController.class)
+@AutoConfigureRestDocs
+class RepositoryControllerTest {
 
 	@Autowired
 	private MockMvc mockMvc;
@@ -33,22 +34,22 @@ class SubscriptionControllerTest {
 	private ObjectMapper objectMapper;
 
 	@MockBean
-	private SubscriptionService subscriptionService;
+	private RepositoryService repositoryService;
 
 	@DisplayName("구독 중인 repository 목록을 조회한다.")
 	@Test
 	void getSubscribedRepositories() throws Exception {
 
 		// given
-		RepoVO repoVO = new RepoVO("issuefy", "iris");
+		RepositoryVO repositoryVO = new RepositoryVO("issuefy", "iris");
 
 		// when
-		subscriptionService.getSubscribedRepositories();
+		repositoryService.getSubscribedRepositories();
 
 		// then
-		mockMvc.perform(get("/subscriptions"))
+		mockMvc.perform(get("/repositories"))
 			.andExpect(status().isOk())
-			.andDo(document("issuefy/subscriptions/get",
+			.andDo(document("issuefy/repositories/get",
 				getDocumentRequest(),
 				getDocumentResponse()
 			));
@@ -59,18 +60,17 @@ class SubscriptionControllerTest {
 	void create() throws Exception {
 
 		// given
-		RepoVO repoVO = new RepoVO("issuefy", "org");
-		SubscribedResponse subscribedResponse = new SubscribedResponse();
-		subscribedResponse.setId(1L);
-		subscribedResponse.setName(repoVO.name());
-		subscribedResponse.setOrg(repoVO.org());
+		RepositoryVO repositoryVO = new RepositoryVO("issuefy", "iris");
+		RepositoryResponse repositoryResponse = RepositoryResponse.from(repositoryVO);
 
-		// when & then
-		mockMvc.perform(post("/subscriptions")
-				.contentType(MediaType.APPLICATION_JSON)
-				.content(objectMapper.writeValueAsString(repoVO)))
-			.andExpect(status().isCreated())
-			.andDo(document("issuefy/subscriptions/post",
+		// when
+		ResultActions result = mockMvc.perform(post("/repositories")
+			.contentType(MediaType.APPLICATION_JSON)
+			.content(objectMapper.writeValueAsString(repositoryVO)));
+
+		// then
+		result.andExpect(status().isCreated())
+			.andDo(document("issuefy/repositories/post",
 				getDocumentRequest(),
 				getDocumentResponse(),
 				requestFields(
