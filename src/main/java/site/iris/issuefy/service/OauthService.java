@@ -40,7 +40,7 @@ public class OauthService {
 		return getUserInfo(oauthDto);
 	}
 
-	public String getToken(String code) {
+	private String getToken(String code) {
 		return webClient.post()
 			.uri("/login/oauth/access_token")
 			.contentType(MediaType.APPLICATION_FORM_URLENCODED)
