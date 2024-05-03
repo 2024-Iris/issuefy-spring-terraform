@@ -22,7 +22,7 @@ public class OauthController {
 	@GetMapping("/api/login")
 	public ResponseEntity<OauthResponse> login(@RequestParam String code) {
 		UserDto userDto = oauthService.githubLogin(code);
-		String tempJWT = "SAD124i2SDF39AAS28349CIDOZPLKTMBIJGR";
+		String tempJWT = "RETURNTESTJWT";
 		return ResponseEntity.ok()
 			.body(OauthResponse.of(userDto.getLogin(), userDto.getAvatar_url(), tempJWT));
 	}
