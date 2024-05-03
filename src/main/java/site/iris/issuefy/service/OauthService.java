@@ -11,6 +11,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 
 import lombok.extern.slf4j.Slf4j;
 import site.iris.issuefy.vo.OauthDto;
+import site.iris.issuefy.vo.UserDto;
 
 @Slf4j
 @Service
@@ -31,33 +32,15 @@ public class OauthService {
 		this.webClient = webClientBuilder.baseUrl("https://github.com").build();
 	}
 
-	public void githubLogin(String code) {
-		String response = sendRequest(code);
+	public UserDto githubLogin(String code) {
+		String response = getToken(code);
 		log.info("response : {}", response);
 		OauthDto oauthDto = parseOauthDto(response);
 		log.info(oauthDto.toString());
-
-		// 아직 DB 작업이 완료되지 않아 엑세스 토큰으로 테스트 요청을 만들었습니다.
-		WebClient test = WebClient.create("https://api.github.com");
-		String responseBody = test.get()
-			.uri(uriBuilder -> uriBuilder
-				.path("repos/elastic/elasticsearch/issues")
-				.queryParam("state", "open")
-				.queryParam("sort", "created")
-				.queryParam("direction", "desc")
-				.queryParam("labels", "good first issue")
-				.build("ownerValue", "repoValue")
-			)
-			.header("accept", "application/vnd.github+json")
-			.header("auth", oauthDto.getAccess_token())
-			.retrieve()
-			.bodyToMono(String.class)
-			.block();
-
-		log.info(responseBody);
+		return getUserInfo(oauthDto);
 	}
 
-	public String sendRequest(String code) {
+	public String getToken(String code) {
 		return webClient.post()
 			.uri("/login/oauth/access_token")
 			.contentType(MediaType.APPLICATION_FORM_URLENCODED)
@@ -89,5 +72,19 @@ public class OauthService {
 		}
 
 		return OauthDto.fromMap(responseMap);
+	}
+
+	private UserDto getUserInfo(OauthDto oauthDto) {
+		WebClient userInfo = WebClient.create("https://api.github.com");
+		return userInfo.get()
+			.uri(uriBuilder -> uriBuilder
+				.path("user")
+				.build()
+			)
+			.header("accept", "application/vnd.github+json")
+			.header("Authorization", "Bearer " + oauthDto.getAccess_token())
+			.retrieve()
+			.bodyToMono(UserDto.class)
+			.block();
 	}
 }

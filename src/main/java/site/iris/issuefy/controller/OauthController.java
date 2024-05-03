@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import site.iris.issuefy.dto.OauthResponse;
 import site.iris.issuefy.service.OauthService;
+import site.iris.issuefy.vo.UserDto;
 
 @Slf4j
 @RestController
@@ -20,10 +21,9 @@ public class OauthController {
 
 	@GetMapping("/api/login")
 	public ResponseEntity<OauthResponse> login(@RequestParam String code) {
-		oauthService.githubLogin(code);
-		String tempUserName = "roy";
+		UserDto userDto = oauthService.githubLogin(code);
 		String tempJWT = "SAD124i2SDF39AAS28349CIDOZPLKTMBIJGR";
 		return ResponseEntity.ok()
-			.body(OauthResponse.of(tempUserName, tempJWT));
+			.body(OauthResponse.of(userDto.getLogin(), userDto.getAvatar_url(), tempJWT));
 	}
 }
