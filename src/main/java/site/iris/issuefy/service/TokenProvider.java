@@ -12,20 +12,17 @@ import io.jsonwebtoken.security.Keys;
 
 @Component
 public class TokenProvider {
+	private Key key;
 
-	@Value("${jwt.secretKey}")
-	private String secretKey;
-	private final Key key;
-
-	public TokenProvider() {
+	public TokenProvider(@Value("${jwt.secretKey}") String secretKey) {
 		this.key = Keys.hmacShaKeyFor(secretKey.getBytes());
 	}
 
-	public String createToken(Map<String, Object> claims, Date expireDate) {
+	public String createToken(Map<String, Object> claims) {
 
 		return Jwts.builder()
 			.claims(claims)
-			.expiration(expireDate)
+			.expiration(getExpireDateAccessToken())
 			.signWith(key)
 			.compact();
 	}
