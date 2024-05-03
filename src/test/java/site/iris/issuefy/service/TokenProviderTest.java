@@ -18,17 +18,17 @@ class TokenProviderTest {
 		tokenProvider = new TokenProvider(secretKey);
 	}
 
-	@DisplayName("토큰를 성공적으로 생성한다.")
+	@DisplayName("토큰를 성공적으로 생성한 후 payloads를 추출한다")
 	@Test
 	void createToken() {
 		// given
 		Map<String, Object> claims = new HashMap<>();
-		claims.put("testUserId", "testUser");
+		claims.put("testUserId", "dokkisan");
 
 		// when
-		String token = tokenProvider.createToken(claims);
+		String token = tokenProvider.createToken(claims, tokenProvider.getExpireDateAccessToken());
 
 		// then
-		assertThat(token).isNotNull().isNotEmpty().isNotBlank();
+		assertThat(tokenProvider.getClaims(token).get("testUserId")).isEqualTo("dokkisan");
 	}
 }
