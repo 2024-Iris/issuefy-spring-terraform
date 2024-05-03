@@ -26,7 +26,7 @@ class TokenProviderTest {
 		claims.put("testUserId", "dokkisan");
 
 		// when
-		String token = tokenProvider.createToken(claims);
+		String token = tokenProvider.createToken(claims, tokenProvider.getExpireDateAccessToken());
 
 		// then
 		assertThat(tokenProvider.getClaims(token).get("testUserId")).isEqualTo("dokkisan");
