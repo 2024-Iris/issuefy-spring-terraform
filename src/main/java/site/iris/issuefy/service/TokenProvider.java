@@ -4,9 +4,12 @@ import java.security.Key;
 import java.util.Date;
 import java.util.Map;
 
+import javax.crypto.SecretKey;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 
@@ -25,6 +28,15 @@ public class TokenProvider {
 			.expiration(getExpireDateAccessToken())
 			.signWith(key)
 			.compact();
+	}
+
+	public Claims getClaims(String token) {
+
+		return Jwts.parser()
+			.verifyWith((SecretKey)key)
+			.build()
+			.parseSignedClaims(token)
+			.getPayload();
 	}
 
 	private Date getExpireDateAccessToken() {
