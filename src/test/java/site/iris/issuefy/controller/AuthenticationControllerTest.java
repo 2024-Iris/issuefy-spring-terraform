@@ -17,20 +17,20 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 
-import site.iris.issuefy.service.OauthService;
+import site.iris.issuefy.service.AuthenticationService;
 import site.iris.issuefy.vo.UserDto;
 
-@WebMvcTest(OauthController.class)
+@WebMvcTest(AuthenticationController.class)
 @AutoConfigureRestDocs
-class OauthControllerTest {
+class AuthenticationControllerTest {
 
 	@Autowired
 	private MockMvc mockMvc;
 
 	@MockBean
-	private OauthService oauthService;
+	private AuthenticationService authenticationService;
 
-	@DisplayName("GitHub 로그인 후 사용자 정보와 JWT 반환한다.")
+	@DisplayName("GitHub 엑세스 토큰을 가져오고 사용자 정보와 JWT를 반환한다.")
 	@Test
 	void login_after_return_userInfoAndJWT() throws Exception {
 
@@ -41,7 +41,7 @@ class OauthControllerTest {
 		String JWT = "RETURNTESTJWT";
 
 		UserDto userDto = UserDto.of(userName, avatarURL);
-		when(oauthService.githubLogin(code)).thenReturn(userDto);
+		when(authenticationService.githubLogin(code)).thenReturn(userDto);
 
 		// when
 		ResultActions result = mockMvc.perform(get("/api/login/{authorizationCode}", code)
