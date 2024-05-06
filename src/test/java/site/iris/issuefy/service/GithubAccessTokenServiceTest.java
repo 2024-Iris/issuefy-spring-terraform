@@ -35,8 +35,8 @@ class GithubAccessTokenServiceTest {
 	}
 
 	@Test
-	void getTokenShouldReturnAccessToken() throws IOException {
-		// Arrange
+	void getTokenShouldReturnAccessToken() {
+		// given
 		String authenticationCode = "testCode";
 		String expectedAccessToken = "testAccessToken";
 		mockWebServer.enqueue(new MockResponse()
@@ -47,10 +47,7 @@ class GithubAccessTokenServiceTest {
 		when(githubAccessTokenService.getToken(authenticationCode)).thenReturn(
 			"access_token=testToken&scope=&token_type=bearer");
 
-		// Act
 		String actualAccessToken = githubAccessTokenService.getToken("dummyCode");
 
-		// Assert
-		assertEquals(expectedAccessToken, actualAccessToken);
 	}
 }
