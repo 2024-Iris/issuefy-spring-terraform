@@ -9,19 +9,19 @@ import org.springframework.web.bind.annotation.RestController;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import site.iris.issuefy.dto.OauthResponse;
-import site.iris.issuefy.service.OauthService;
+import site.iris.issuefy.service.AuthenticationService;
 import site.iris.issuefy.vo.UserDto;
 
 @Slf4j
 @RestController
 @RequiredArgsConstructor
 @CrossOrigin(origins = "http://localhost:3000")
-public class OauthController {
-	private final OauthService oauthService;
+public class AuthenticationController {
+	private final AuthenticationService authenticationService;
 
 	@GetMapping("/api/login")
 	public ResponseEntity<OauthResponse> login(@RequestParam String code) {
-		UserDto userDto = oauthService.githubLogin(code);
+		UserDto userDto = authenticationService.githubLogin(code);
 		String tempJWT = "RETURNTESTJWT";
 		return ResponseEntity.ok()
 			.body(OauthResponse.of(userDto.getLogin(), userDto.getAvatar_url(), tempJWT));
