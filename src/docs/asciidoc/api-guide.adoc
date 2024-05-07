@@ -32,29 +32,29 @@ include::{snippets}/issuefy/repositories/post/http-response.adoc[]
 
 include::{snippets}/issuefy/repositories/post/response-fields.adoc[]
 
-=== 1.2 Get Subscribed Repositories
+=== 1.2 등록한 리포지토리 목록
 
-==== HTTP Request
+==== HTTP 요청
 
 include::{snippets}/issuefy/repositories/get/http-request.adoc[]
 
-==== HTTP Response
+==== HTTP 응답
 
 include::{snippets}/issuefy/repositories/get/http-response.adoc[]
 
 == 2. Issues
 
-=== 2.1 Get Issues by Subscribed Repository
+=== 2.1 등록한 리포지토리의 이슈 목록
 
-==== HTTP Request
+==== HTTP 요청
 
 include::{snippets}/issuefy/issues/get/http-request.adoc[]
 
-==== Path Parameters
+==== Path 파라미터
 
 include::{snippets}/issuefy/issues/get/path-parameters.adoc[]
 
-==== HTTP Response
+==== HTTP 응답
 
 include::{snippets}/issuefy/issues/get/http-response.adoc[]
 
