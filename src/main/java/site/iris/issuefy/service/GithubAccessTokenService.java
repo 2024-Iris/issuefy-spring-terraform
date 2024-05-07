@@ -11,16 +11,14 @@ import org.springframework.web.reactive.function.client.WebClient;
 public class GithubAccessTokenService {
 
 	private final WebClient webClient;
+	@Value("${github.client-secret}")
+	private String clientSecret;
+	@Value("${github.client-id}")
+	private String clientId;
 
 	public GithubAccessTokenService(@Qualifier("accessTokenWebClient") WebClient webClient) {
 		this.webClient = webClient;
 	}
-
-	@Value("${github.client-secret}")
-	private String clientSecret;
-
-	@Value("${github.client-id}")
-	private String clientId;
 
 	public String getToken(String code) {
 		return webClient.post()

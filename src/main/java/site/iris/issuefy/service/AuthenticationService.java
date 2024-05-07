@@ -10,7 +10,6 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import site.iris.issuefy.vo.OauthDto;
 import site.iris.issuefy.vo.UserDto;
@@ -19,11 +18,11 @@ import site.iris.issuefy.vo.UserDto;
 @Service
 public class AuthenticationService {
 
-	private final GithubAccessTokenService githubAccessTokenService;
-	private final WebClient webClient;
 	private static final int KEY_INDEX = 0;
 	private static final int VALUE_INDEX = 1;
 	private static final int REQUIRE_SIZE = 2;
+	private final GithubAccessTokenService githubAccessTokenService;
+	private final WebClient webClient;
 
 	// 2개의 WebClient Bean중에서 apiWebClient Bean을 사용하기 위해 생성자를 만들었습니다.
 	@Autowired
