@@ -44,7 +44,7 @@ class AuthenticationControllerTest {
 		when(authenticationService.githubLogin(code)).thenReturn(userDto);
 
 		// when
-		ResultActions result = mockMvc.perform(get("/api/login/{authorizationCode}", code)
+		ResultActions result = mockMvc.perform(get("/api/login", code)
 			.param("code", code)
 			.accept(MediaType.APPLICATION_JSON));
 
