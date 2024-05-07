@@ -17,7 +17,7 @@ public class WebClientConfig {
 	@Bean(name = "accessTokenWebClient")
 	public WebClient accessTokenWebClient() {
 		return WebClient.builder()
-			.baseUrl("https://oauth.access-token.url/")
+			.baseUrl("https://github.com/")
 			.build();
 	}
 }
