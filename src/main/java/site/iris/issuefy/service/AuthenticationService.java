@@ -4,6 +4,8 @@ import java.util.Collections;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -15,7 +17,6 @@ import site.iris.issuefy.vo.UserDto;
 
 @Slf4j
 @Service
-@RequiredArgsConstructor
 public class AuthenticationService {
 
 	private final GithubAccessTokenService githubAccessTokenService;
@@ -23,6 +24,14 @@ public class AuthenticationService {
 	private static final int KEY_INDEX = 0;
 	private static final int VALUE_INDEX = 1;
 	private static final int REQUIRE_SIZE = 2;
+
+	// 2개의 WebClient Bean중에서 apiWebClient Bean을 사용하기 위해 생성자를 만들었습니다.
+	@Autowired
+	public AuthenticationService(GithubAccessTokenService githubAccessTokenService,
+		@Qualifier("apiWebClient") WebClient webClient) {
+		this.githubAccessTokenService = githubAccessTokenService;
+		this.webClient = webClient;
+	}
 
 	public UserDto githubLogin(String code) {
 		String accessToken = githubAccessTokenService.getToken(code);
