@@ -1,5 +1,6 @@
 package site.iris.issuefy.service;
 
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
@@ -9,6 +10,12 @@ import org.springframework.web.reactive.function.client.WebClient;
 @Service
 public class GithubAccessTokenService {
 
+	private final WebClient webClient;
+
+	public GithubAccessTokenService(@Qualifier("accessTokenWebClient") WebClient webClient) {
+		this.webClient = webClient;
+	}
+
 	@Value("${github.client-secret}")
 	private String clientSecret;
 
@@ -16,8 +23,7 @@ public class GithubAccessTokenService {
 	private String clientId;
 
 	public String getToken(String code) {
-		WebClient tokenClient = WebClient.builder().baseUrl("https://github.com").build();
-		return tokenClient.post()
+		return webClient.post()
 			.uri("/login/oauth/access_token")
 			.contentType(MediaType.APPLICATION_FORM_URLENCODED)
 			.body(BodyInserters.fromFormData("client_id", clientId)
