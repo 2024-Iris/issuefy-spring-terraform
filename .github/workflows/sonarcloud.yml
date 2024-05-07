@@ -30,6 +30,7 @@ jobs:
           path: ~/.sonar/cache
           key: ${{ runner.os }}-sonar
           restore-keys: ${{ runner.os }}-sonar
+          cache-control: 'no-store'
 
       - name: Setup Gradle
         uses: gradle/gradle-build-action@v2
