@@ -38,12 +38,11 @@ class GithubAccessTokenServiceTest {
 	@Test
 	@DisplayName("AuthenticationCode를 전송하면 AccessToken을 반환한다.")
 	void getToken() {
-		// given
-		WebClient webClient = WebClient.builder().baseUrl(mockWebServer.url("/").toString()).build();
-
-		// GithubAccessTokenService 생성시 Value값이 null로 들어오는 문제로 인해 mocking 하여 진행하였습니다.
+		// given (GithubAccessTokenService 생성시 Value값이 null로 들어오는 문제로 인해 mocking 하여 진행하였습니다.)
+		// WebClient webClient = WebClient.builder().baseUrl(mockWebServer.url("/").toString()).build();
 		// GithubAccessTokenService githubAccessTokenService = new GithubAccessTokenService(webClient);
 
+		// given
 		String authenticationCode = "testCode";
 		GithubAccessTokenService githubAccessTokenService = mock(GithubAccessTokenService.class);
 		when(githubAccessTokenService.getToken(authenticationCode)).thenReturn(
