@@ -19,6 +19,7 @@ import site.iris.issuefy.vo.UserDto;
 public class AuthenticationService {
 
 	private final GithubAccessTokenService githubAccessTokenService;
+	private final WebClient webClient;
 	private static final int KEY_INDEX = 0;
 	private static final int VALUE_INDEX = 1;
 	private static final int REQUIRE_SIZE = 2;
@@ -56,8 +57,7 @@ public class AuthenticationService {
 	}
 
 	private UserDto getUserInfo(OauthDto oauthDto) {
-		WebClient userInfoClient = WebClient.builder().baseUrl("https://api.github.com").build();
-		return userInfoClient.get()
+		return webClient.get()
 			.uri("/user")
 			.headers(headers -> {
 				headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
