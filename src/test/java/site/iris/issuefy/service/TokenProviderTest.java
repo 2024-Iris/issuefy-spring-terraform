@@ -9,6 +9,8 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import site.iris.issuefy.entity.Jwt;
+
 class TokenProviderTest {
 	private static TokenProvider tokenProvider;
 
@@ -30,5 +32,20 @@ class TokenProviderTest {
 
 		// then
 		assertThat(tokenProvider.getClaims(token).get("testUserId")).isEqualTo("dokkisan");
+	}
+
+	@DisplayName("JWT가 성공적으로 생성된다")
+	@Test
+	void createJwt() {
+		// given
+		Map<String, Object> claims = new HashMap<>();
+		claims.put("testUserId", "dokkisan");
+
+		// when
+		Jwt jwt = tokenProvider.createJwt(claims);
+
+		// then
+		System.out.println(jwt.getAccessToken());
+		System.out.println(jwt.getRefreshToken());
 	}
 }
