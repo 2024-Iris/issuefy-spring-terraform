@@ -10,7 +10,7 @@ endif::[]
 :operation-http-request-title: Example Request
 :operation-http-response-title: Example Response
 
-= Issuefy API 문서
+= Issuefy API 명세서
 
 == 1. 리포지토리
 
