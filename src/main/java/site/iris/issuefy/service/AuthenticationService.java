@@ -1,12 +1,13 @@
 package site.iris.issuefy.service;
 
+import java.util.Collections;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
-import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import lombok.extern.slf4j.Slf4j;
@@ -15,46 +16,35 @@ import site.iris.issuefy.vo.UserDto;
 
 @Slf4j
 @Service
-public class OauthService {
+public class AuthenticationService {
 
-	@Value("${github.client-secret}")
-	private String clientSecret;
-
-	@Value("${github.client-id}")
-	private String clientId;
-
-	private final WebClient webClient;
 	private static final int KEY_INDEX = 0;
 	private static final int VALUE_INDEX = 1;
 	private static final int REQUIRE_SIZE = 2;
+	private final GithubAccessTokenService githubAccessTokenService;
+	private final WebClient webClient;
 
-	public OauthService(WebClient.Builder webClientBuilder) {
-		this.webClient = webClientBuilder.baseUrl("https://github.com").build();
+	// 2개의 WebClient Bean중에서 apiWebClient Bean을 사용하기 위해 생성자를 만들었습니다.
+	@Autowired
+	public AuthenticationService(GithubAccessTokenService githubAccessTokenService,
+		@Qualifier("apiWebClient") WebClient webClient) {
+		this.githubAccessTokenService = githubAccessTokenService;
+		this.webClient = webClient;
 	}
 
 	public UserDto githubLogin(String code) {
-		String response = getToken(code);
-		log.info("response : {}", response);
-		OauthDto oauthDto = parseOauthDto(response);
+		String accessToken = githubAccessTokenService.getToken(code);
+		log.info("accessToken : {}", accessToken);
+
+		OauthDto oauthDto = parseOauthDto(accessToken);
 		log.info(oauthDto.toString());
+
 		return getUserInfo(oauthDto);
 	}
 
-	private String getToken(String code) {
-		return webClient.post()
-			.uri("/login/oauth/access_token")
-			.contentType(MediaType.APPLICATION_FORM_URLENCODED)
-			.body(BodyInserters.fromFormData("client_id", clientId)
-				.with("client_secret", clientSecret)
-				.with("code", code))
-			.retrieve()
-			.bodyToMono(String.class)
-			.block();
-	}
-
-	private OauthDto parseOauthDto(String response) {
+	private OauthDto parseOauthDto(String accessToken) {
 		ConcurrentMap<String, String> responseMap = new ConcurrentHashMap<>();
-		String[] pair = response.split("&");
+		String[] pair = accessToken.split("&");
 
 		for (String pairStr : pair) {
 			String[] keyValue = pairStr.split("=");
@@ -75,14 +65,12 @@ public class OauthService {
 	}
 
 	private UserDto getUserInfo(OauthDto oauthDto) {
-		WebClient userInfo = WebClient.create("https://api.github.com");
-		return userInfo.get()
-			.uri(uriBuilder -> uriBuilder
-				.path("user")
-				.build()
-			)
-			.header("accept", "application/vnd.github+json")
-			.header("Authorization", "Bearer " + oauthDto.getAccess_token())
+		return webClient.get()
+			.uri("/user")
+			.headers(headers -> {
+				headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+				headers.setBearerAuth(oauthDto.getAccess_token());
+			})
 			.retrieve()
 			.bodyToMono(UserDto.class)
 			.block();

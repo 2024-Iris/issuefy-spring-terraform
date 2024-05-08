@@ -450,18 +450,18 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <li><a href="#_1_리포지토리">1. 리포지토리</a>
 <ul class="sectlevel2">
 <li><a href="#_1_1_리포지토리_추가">1.1 리포지토리 추가</a></li>
-<li><a href="#_1_2_get_subscribed_repositories">1.2 Get Subscribed Repositories</a></li>
+<li><a href="#_1_2_등록한_리포지토리_목록">1.2 등록한 리포지토리 목록</a></li>
 </ul>
 </li>
 <li><a href="#_2_issues">2. Issues</a>
 <ul class="sectlevel2">
-<li><a href="#_2_1_get_issues_by_subscribed_repository">2.1 Get Issues by Subscribed Repository</a></li>
+<li><a href="#_2_1_등록한_리포지토리의_이슈_목록">2.1 등록한 리포지토리의 이슈 목록</a></li>
 </ul>
 </li>
 <li><a href="#_2_로그인">2. 로그인</a>
 <ul class="sectlevel3">
-<li><a href="#_http_요청_2">HTTP 요청</a></li>
-<li><a href="#_http_응답_2">HTTP 응답</a></li>
+<li><a href="#_http_요청_4">HTTP 요청</a></li>
+<li><a href="#_http_응답_3">HTTP 응답</a></li>
 </ul>
 </li>
 </ul>
@@ -490,7 +490,7 @@ Host: issuefy.site
 </div>
 </div>
 <div class="sect3">
-<h4 id="_응답_필드"><a class="link" href="#_응답_필드">응답 필드</a></h4>
+<h4 id="_요청_필드"><a class="link" href="#_요청_필드">요청 필드</a></h4>
 <table class="tableblock frame-all grid-all stretch">
 <colgroup>
 <col style="width: 33.3333%;">
@@ -519,10 +519,13 @@ Host: issuefy.site
 </table>
 </div>
 <div class="sect3">
-<h4 id="_http_응답"><a class="link" href="#_http_응답">HTTP 응답</a></h4>
+<h4 id="_http_응답_예시"><a class="link" href="#_http_응답_예시">HTTP 응답 예시</a></h4>
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight nowrap"><code class="language-http hljs" data-lang="http">HTTP/1.1 201 Created
+Vary: Origin
+Vary: Access-Control-Request-Method
+Vary: Access-Control-Request-Headers
 Location: /repositories/1
 Content-Type: application/json
 Content-Length: 58
@@ -536,7 +539,7 @@ Content-Length: 58
 </div>
 </div>
 <div class="sect3">
-<h4 id="_response_fields"><a class="link" href="#_response_fields">Response Fields</a></h4>
+<h4 id="_응답_필드"><a class="link" href="#_응답_필드">응답 필드</a></h4>
 <table class="tableblock frame-all grid-all stretch">
 <colgroup>
 <col style="width: 33.3333%;">
@@ -571,9 +574,9 @@ Content-Length: 58
 </div>
 </div>
 <div class="sect2">
-<h3 id="_1_2_get_subscribed_repositories"><a class="link" href="#_1_2_get_subscribed_repositories">1.2 Get Subscribed Repositories</a></h3>
+<h3 id="_1_2_등록한_리포지토리_목록"><a class="link" href="#_1_2_등록한_리포지토리_목록">1.2 등록한 리포지토리 목록</a></h3>
 <div class="sect3">
-<h4 id="_http_request"><a class="link" href="#_http_request">HTTP Request</a></h4>
+<h4 id="_http_요청_2"><a class="link" href="#_http_요청_2">HTTP 요청</a></h4>
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight nowrap"><code class="language-http hljs" data-lang="http">GET /repositories HTTP/1.1
@@ -582,10 +585,13 @@ Host: issuefy.site</code></pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_http_response"><a class="link" href="#_http_response">HTTP Response</a></h4>
+<h4 id="_http_응답"><a class="link" href="#_http_응답">HTTP 응답</a></h4>
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight nowrap"><code class="language-http hljs" data-lang="http">HTTP/1.1 200 OK
+Vary: Origin
+Vary: Access-Control-Request-Method
+Vary: Access-Control-Request-Headers
 Content-Type: application/json
 Content-Length: 3
 
@@ -600,9 +606,9 @@ Content-Length: 3
 <h2 id="_2_issues"><a class="link" href="#_2_issues">2. Issues</a></h2>
 <div class="sectionbody">
 <div class="sect2">
-<h3 id="_2_1_get_issues_by_subscribed_repository"><a class="link" href="#_2_1_get_issues_by_subscribed_repository">2.1 Get Issues by Subscribed Repository</a></h3>
+<h3 id="_2_1_등록한_리포지토리의_이슈_목록"><a class="link" href="#_2_1_등록한_리포지토리의_이슈_목록">2.1 등록한 리포지토리의 이슈 목록</a></h3>
 <div class="sect3">
-<h4 id="_http_request_2"><a class="link" href="#_http_request_2">HTTP Request</a></h4>
+<h4 id="_http_요청_3"><a class="link" href="#_http_요청_3">HTTP 요청</a></h4>
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight nowrap"><code class="language-http hljs" data-lang="http">GET /iris/issues HTTP/1.1
@@ -611,7 +617,7 @@ Host: issuefy.site</code></pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_path_parameters"><a class="link" href="#_path_parameters">Path Parameters</a></h4>
+<h4 id="_path_파라미터"><a class="link" href="#_path_파라미터">Path 파라미터</a></h4>
 <table class="tableblock frame-all grid-all stretch">
 <caption class="title">Table 1. /{repoName}/issues</caption>
 <colgroup>
@@ -633,10 +639,13 @@ Host: issuefy.site</code></pre>
 </table>
 </div>
 <div class="sect3">
-<h4 id="_http_response_2"><a class="link" href="#_http_response_2">HTTP Response</a></h4>
+<h4 id="_http_응답_2"><a class="link" href="#_http_응답_2">HTTP 응답</a></h4>
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight nowrap"><code class="language-http hljs" data-lang="http">HTTP/1.1 200 OK
+Vary: Origin
+Vary: Access-Control-Request-Method
+Vary: Access-Control-Request-Headers
 Content-Type: application/json
 Content-Length: 3
 
@@ -651,7 +660,7 @@ Content-Length: 3
 <h2 id="_2_로그인"><a class="link" href="#_2_로그인">2. 로그인</a></h2>
 <div class="sectionbody">
 <div class="sect3">
-<h4 id="_http_요청_2"><a class="link" href="#_http_요청_2">HTTP 요청</a></h4>
+<h4 id="_http_요청_4"><a class="link" href="#_http_요청_4">HTTP 요청</a></h4>
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight nowrap"><code class="language-http hljs" data-lang="http">GET /api/login?code=test-auth-code HTTP/1.1
@@ -661,7 +670,7 @@ Host: localhost:8080</code></pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_http_응답_2"><a class="link" href="#_http_응답_2">HTTP 응답</a></h4>
+<h4 id="_http_응답_3"><a class="link" href="#_http_응답_3">HTTP 응답</a></h4>
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight nowrap"><code class="language-http hljs" data-lang="http">HTTP/1.1 200 OK
@@ -681,7 +690,7 @@ Content-Length: 103
 <div id="footer">
 <div id="footer-text">
 Version 0.0.1-SNAPSHOT<br>
-Last updated 2024-05-04 00:56:56 +0900
+Last updated 2024-05-07 18:27:13 +0900
 </div>
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.3/highlight.min.js"></script>

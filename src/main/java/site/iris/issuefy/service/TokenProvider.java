@@ -49,7 +49,7 @@ public class TokenProvider {
 	}
 
 	public Date getExpireDateAccessToken() {
-		long expireTimeMils = 1000 * 60 * 60 * 8;
+		long expireTimeMils = 1000L * 60 * 60 * 8;
 
 		return new Date(System.currentTimeMillis() + expireTimeMils);
 	}
