@@ -21,7 +21,7 @@ public class OauthDto {
 		return new OauthDto(
 			map.getOrDefault("access_token", ""),
 			map.getOrDefault("scope", ""),
-			map.getOrDefault("token_type", "bearer")  // Default token type to 'bearer' if not provided
+			map.getOrDefault("token_type", "bearer")
 		);
 	}
 
