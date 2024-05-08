@@ -15,7 +15,6 @@ import site.iris.issuefy.vo.UserDto;
 @Slf4j
 @RestController
 @RequiredArgsConstructor
-@CrossOrigin(origins = "http://localhost:3000")
 public class AuthenticationController {
 	private final AuthenticationService authenticationService;
 
