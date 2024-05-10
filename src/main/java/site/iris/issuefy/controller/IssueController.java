@@ -16,7 +16,7 @@ import site.iris.issuefy.service.IssueService;
 public class IssueController {
 	private final IssueService issueService;
 
-	@GetMapping("/{repoName}/issues")
+	@GetMapping("/api/{repoName}/issues")
 	public ResponseEntity<List<IssueResponse>> getIssuesByRepoName(@PathVariable("repoName") String repoName) {
 		List<IssueResponse> issues = issueService.getIssuesByRepoName(repoName);
 
