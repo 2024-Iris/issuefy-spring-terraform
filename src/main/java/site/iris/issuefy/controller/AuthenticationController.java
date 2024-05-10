@@ -22,6 +22,6 @@ public class AuthenticationController {
 		UserDto userDto = authenticationService.githubLogin(code);
 		String tempJWT = "RETURNTESTJWT";
 		return ResponseEntity.ok()
-			.body(OauthResponse.of(userDto.getLogin(), userDto.getAvatar_url(), tempJWT));
+			.body(OauthResponse.of(userDto.getGithubId(), userDto.getGithubProfileImage(), tempJWT));
 	}
 }

@@ -53,7 +53,7 @@ class AuthenticationServiceTest {
 
 		// then
 		assertNotNull(result);
-		assertEquals(userDto.getLogin(), result.getLogin());
-		assertEquals(userDto.getAvatar_url(), result.getAvatar_url());
+		assertEquals(userDto.getGithubId(), result.getGithubId());
+		assertEquals(userDto.getGithubProfileImage(), result.getGithubProfileImage());
 	}
 }
