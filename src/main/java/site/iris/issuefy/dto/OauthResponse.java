@@ -2,15 +2,16 @@ package site.iris.issuefy.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import site.iris.issuefy.entity.Jwt;
 
 @Data
 @AllArgsConstructor
 public class OauthResponse {
 	private String userName;
 	private String avatarURL;
-	private String JWT;
+	private Jwt jwt;
 
-	public static OauthResponse of(String userName, String avatarURL, String JWT) {
-		return new OauthResponse(userName, avatarURL, JWT);
+	public static OauthResponse of(String userName, String avatarURL, Jwt jwt) {
+		return new OauthResponse(userName, avatarURL, jwt);
 	}
 }
