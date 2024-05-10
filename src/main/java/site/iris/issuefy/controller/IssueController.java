@@ -8,18 +8,20 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import site.iris.issuefy.dto.IssueResponse;
 import site.iris.issuefy.service.IssueService;
 
 @RestController
 @RequiredArgsConstructor
+@Slf4j
 public class IssueController {
 	private final IssueService issueService;
 
 	@GetMapping("/api/{repoName}/issues")
-	public ResponseEntity<List<IssueResponse>> getIssuesByRepoName(@PathVariable("repoName") String repoName) {
-		List<IssueResponse> issues = issueService.getIssuesByRepoName(repoName);
-
-		return ResponseEntity.ok(issues);
+	public ResponseEntity<String> getIssuesByRepoName(@PathVariable("repoName") String repoName) {
+		log.info("getIssuesByRepoName: {}", repoName);
+		String answer = issueService.getIssuesByRepoName(repoName);
+		return ResponseEntity.ok(answer);
 	}
 }
