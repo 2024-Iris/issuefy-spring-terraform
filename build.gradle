@@ -38,6 +38,9 @@ dependencies {
     annotationProcessor 'org.projectlombok:lombok'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
 
+    // DB
+    implementation group: 'org.springframework.boot', name: 'spring-boot-starter-data-redis', version: '3.2.5'
+
     // Monitoring
     implementation group: 'io.micrometer', name: 'micrometer-registry-prometheus', version: '1.12.4'
     runtimeOnly 'io.netty:netty-resolver-dns-native-macos:4.1.100.Final:osx-aarch_64'
