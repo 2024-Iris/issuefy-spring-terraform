@@ -13,6 +13,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
+import site.iris.issuefy.repository.GithubTokenRepository;
 import site.iris.issuefy.vo.UserDto;
 
 class AuthenticationServiceTest {
@@ -46,7 +47,8 @@ class AuthenticationServiceTest {
 			"access_token=testToken&scope=&token_type=bearer");
 
 		WebClient webClient = WebClient.builder().baseUrl(mockWebServer.url("/").toString()).build();
-		AuthenticationService authenticationService = new AuthenticationService(githubAccessTokenService, webClient);
+		GithubTokenRepository githubTokenRepository = mock(GithubTokenRepository.class);
+		AuthenticationService authenticationService = new AuthenticationService(githubAccessTokenService, webClient, githubTokenRepository);
 
 		// when
 		UserDto result = authenticationService.githubLogin(authenticationCode);
