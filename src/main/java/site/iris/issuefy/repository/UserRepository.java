@@ -7,7 +7,7 @@ import site.iris.issuefy.entity.User;
 @Repository
 public class UserRepository {
 
-	public User findByNickname(String nickname) {
+	public User findByGithubId(String githubId) {
 		return new User();
 	}
 }
