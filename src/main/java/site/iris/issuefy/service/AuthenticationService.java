@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import lombok.extern.slf4j.Slf4j;
+import site.iris.issuefy.repository.GithubTokenRepository;
 import site.iris.issuefy.vo.OauthDto;
 import site.iris.issuefy.vo.UserDto;
 
@@ -23,23 +24,27 @@ public class AuthenticationService {
 	private static final int REQUIRE_SIZE = 2;
 	private final GithubAccessTokenService githubAccessTokenService;
 	private final WebClient webClient;
+	private final GithubTokenRepository githubTokenRepository;
 
 	// 2개의 WebClient Bean중에서 apiWebClient Bean을 사용하기 위해 생성자를 만들었습니다.
 	@Autowired
 	public AuthenticationService(GithubAccessTokenService githubAccessTokenService,
-		@Qualifier("apiWebClient") WebClient webClient) {
+		@Qualifier("apiWebClient") WebClient webClient, GithubTokenRepository githubTokenRepository) {
 		this.githubAccessTokenService = githubAccessTokenService;
 		this.webClient = webClient;
+		this.githubTokenRepository = githubTokenRepository;
 	}
 
 	public UserDto githubLogin(String code) {
 		String accessToken = githubAccessTokenService.getToken(code);
 		log.info("accessToken : {}", accessToken);
-
 		OauthDto oauthDto = parseOauthDto(accessToken);
 		log.info(oauthDto.toString());
 
-		return getUserInfo(oauthDto);
+		UserDto loginUserDto = getUserInfo(oauthDto);
+		githubTokenRepository.storeAccessToken(loginUserDto.getGithubId(), oauthDto.getAccess_token());
+
+		return loginUserDto;
 	}
 
 	private OauthDto parseOauthDto(String accessToken) {
