@@ -1,12 +1,8 @@
 package site.iris.issuefy.service;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
-import site.iris.issuefy.entity.Jwt;
 import site.iris.issuefy.entity.User;
 import site.iris.issuefy.repository.UserRepository;
 import site.iris.issuefy.vo.UserDto;
