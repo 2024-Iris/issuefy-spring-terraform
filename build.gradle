@@ -30,14 +30,29 @@ configurations {
 }
 
 dependencies {
+    // Spring Boot
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation group: 'org.springframework.boot', name: 'spring-boot-starter-actuator', version: '3.2.0'
-    implementation group: 'io.micrometer', name: 'micrometer-registry-prometheus', version: '1.12.4'
+    implementation group: 'org.springframework.boot', name: 'spring-boot-starter-webflux', version: '3.2.5'
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
-    asciidoctorExt 'org.springframework.restdocs:spring-restdocs-asciidoctor'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
+
+    // Monitoring
+    implementation group: 'io.micrometer', name: 'micrometer-registry-prometheus', version: '1.12.4'
+    runtimeOnly 'io.netty:netty-resolver-dns-native-macos:4.1.100.Final:osx-aarch_64'
+
+    // JWT
+    implementation 'io.jsonwebtoken:jjwt-api:0.12.5'
+    runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.5'
+    runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.5'
+
+    // REST Docs
+    asciidoctorExt 'org.springframework.restdocs:spring-restdocs-asciidoctor'
     testImplementation 'org.springframework.restdocs:spring-restdocs-mockmvc'
+
+    // Test
+    testImplementation group: 'com.squareup.okhttp3', name: 'mockwebserver', version: '4.12.0'
 }
 
 def jacocoDir = layout.buildDirectory.dir("reports/")
