@@ -27,8 +27,8 @@ public class AuthenticationController {
 	public ResponseEntity<OauthResponse> login(@RequestParam String code) {
 		UserDto userDto = authenticationService.githubLogin(code);
 		Map<String, Object> claims = new HashMap<>();
-		Jwt jwt = tokenProvider.createJwt(claims);
 		claims.put("githubId", userDto.getGithubId());
+		Jwt jwt = tokenProvider.createJwt(claims);
 
 		return ResponseEntity.ok()
 			.body(OauthResponse.of(userDto.getGithubId(), userDto.getGithubProfileImage(), jwt));
