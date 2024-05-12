@@ -1,5 +1,7 @@
 package site.iris.issuefy.service;
 
+import static site.iris.issuefy.vo.OauthDto.*;
+
 import java.util.Collections;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -42,7 +44,7 @@ public class AuthenticationService {
 		log.info(oauthDto.toString());
 
 		UserDto loginUserDto = getUserInfo(oauthDto);
-		githubTokenRepository.storeAccessToken(loginUserDto.getGithubId(), oauthDto.getAccess_token());
+		githubTokenRepository.storeAccessToken(loginUserDto.getGithubId(), oauthDto.getAccessToken());
 
 		return loginUserDto;
 	}
@@ -62,7 +64,7 @@ public class AuthenticationService {
 		}
 
 		// 필수 키가 없으면 예외 발생
-		if (!responseMap.containsKey("access_token") || !responseMap.containsKey("token_type")) {
+		if (!responseMap.containsKey(KEY_ACCESS_TOKEN) || !responseMap.containsKey(KEY_TOKEN_TYPE)) {
 			throw new IllegalArgumentException("Response does not contain all required keys");
 		}
 
@@ -74,7 +76,7 @@ public class AuthenticationService {
 			.uri("/user")
 			.headers(headers -> {
 				headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
-				headers.setBearerAuth(oauthDto.getAccess_token());
+				headers.setBearerAuth(oauthDto.getAccessToken());
 			})
 			.retrieve()
 			.bodyToMono(UserDto.class)

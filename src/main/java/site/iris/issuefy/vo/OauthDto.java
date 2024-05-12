@@ -2,6 +2,8 @@ package site.iris.issuefy.vo;
 
 import java.util.Map;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
@@ -9,28 +11,38 @@ import lombok.RequiredArgsConstructor;
 @Getter
 public class OauthDto {
 
-	private final String access_token;
-	private final String scope;
-	private final String token_type;
+	public static final String KEY_TOKEN_TYPE = "token_type";
+	public static final String KEY_ACCESS_TOKEN = "access_token";
 
-	public static OauthDto of(String access_token, String scope, String token_type) {
-		return new OauthDto(access_token, scope, token_type);
+	@JsonProperty("token_type")
+	private final String tokenType;
+
+	@JsonProperty("access_token")
+	private final String accessToken;
+
+	private final String scope;
+
+	public static OauthDto of(String accessToken, String tokenType, String scope) {
+		return new OauthDto(accessToken, tokenType, scope);
 	}
 
 	public static OauthDto fromMap(Map<String, String> map) {
+		final String KEY_SCOPE = "scope";
+		final String DEFAULT_TOKEN_TYPE = "bearer";
+
 		return new OauthDto(
-			map.getOrDefault("access_token", ""),
-			map.getOrDefault("scope", ""),
-			map.getOrDefault("token_type", "bearer")
+			map.getOrDefault(KEY_TOKEN_TYPE, DEFAULT_TOKEN_TYPE),
+			map.getOrDefault(KEY_ACCESS_TOKEN, ""),
+			map.getOrDefault(KEY_SCOPE, "")
 		);
 	}
 
 	@Override
 	public String toString() {
-		return "GithubOauthDto{" +
-			"access_token='" + access_token + '\'' +
+		return "OauthDto{" +
+			"tokenType='" + tokenType + '\'' +
+			", accessToken='" + accessToken + '\'' +
 			", scope='" + scope + '\'' +
-			", token_type='" + token_type + '\'' +
 			'}';
 	}
 }
