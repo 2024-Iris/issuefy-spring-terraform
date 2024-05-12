@@ -1,5 +1,8 @@
 package site.iris.issuefy.vo;
 
+import lombok.Getter;
+
+@Getter
 public class UserVerifyDto {
 	private boolean isValid;
 
