@@ -11,7 +11,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class GithubTokenRepository {
 	private final RedisTemplate<String, String> redisTemplate;
-	private static final long EXPIRE_TIME = 60 * 60 * 8;
+	private static final long EXPIRE_TIME = 60L * 60 * 8;
 
 	public void storeAccessToken(String key, String accessToken) {
 		redisTemplate.opsForValue().set(key, accessToken, Duration.ofSeconds(EXPIRE_TIME));
