@@ -16,7 +16,15 @@ public class UserService {
 
 	private final UserRepository userRepository;
 
-	public UserVerifyDto verifyUser(UserDto userDto) {
+	public void registerUserIfNotExist(UserDto loginUserDto) {
+		UserVerifyDto userVerifyDto = verifyUser(loginUserDto);
+		if (!userVerifyDto.isValid()) {
+			User user = new User(loginUserDto.getGithubId());
+			userRepository.save(user);
+		}
+	}
+
+	private UserVerifyDto verifyUser(UserDto userDto) {
 		Optional<User> user = userRepository.findByGithubId(userDto.getGithubId());
 		if (user.isEmpty()) {
 			return UserVerifyDto.from(false);

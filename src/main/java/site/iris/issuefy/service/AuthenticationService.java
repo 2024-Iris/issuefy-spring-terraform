@@ -13,12 +13,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import lombok.extern.slf4j.Slf4j;
-import site.iris.issuefy.entity.User;
 import site.iris.issuefy.repository.GithubTokenRepository;
-import site.iris.issuefy.repository.UserRepository;
 import site.iris.issuefy.vo.OauthDto;
 import site.iris.issuefy.vo.UserDto;
-import site.iris.issuefy.vo.UserVerifyDto;
 
 @Slf4j
 @Service
@@ -31,18 +28,16 @@ public class AuthenticationService {
 	private final GithubAccessTokenService githubAccessTokenService;
 	private final UserService userService;
 	private final GithubTokenRepository githubTokenRepository;
-	private final UserRepository userRepository;
 
 	// 2개의 WebClient Bean중에서 apiWebClient Bean을 사용하기 위해 생성자를 만들었습니다.
 	@Autowired
 	public AuthenticationService(GithubAccessTokenService githubAccessTokenService,
 		@Qualifier("apiWebClient") WebClient webClient,
-		UserService userService, GithubTokenRepository githubTokenRepository, UserRepository userRepository) {
+		UserService userService, GithubTokenRepository githubTokenRepository) {
 		this.githubAccessTokenService = githubAccessTokenService;
 		this.webClient = webClient;
 		this.userService = userService;
 		this.githubTokenRepository = githubTokenRepository;
-		this.userRepository = userRepository;
 	}
 
 	public UserDto githubLogin(String code) {
@@ -54,11 +49,7 @@ public class AuthenticationService {
 		UserDto loginUserDto = getUserInfo(oauthDto);
 		githubTokenRepository.storeAccessToken(loginUserDto.getGithubId(), oauthDto.getAccessToken());
 
-		UserVerifyDto userVerifyDto = userService.verifyUser(loginUserDto);
-		if(!userVerifyDto.isValid()) {
-			User user = new User(loginUserDto.getGithubId());
-			userRepository.save(user);
-		}
+		userService.registerUserIfNotExist(loginUserDto);
 
 		return loginUserDto;
 	}

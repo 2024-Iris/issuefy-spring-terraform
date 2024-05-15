@@ -48,7 +48,8 @@ class AuthenticationServiceTest {
 
 		WebClient webClient = WebClient.builder().baseUrl(mockWebServer.url("/").toString()).build();
 		GithubTokenRepository githubTokenRepository = mock(GithubTokenRepository.class);
-		AuthenticationService authenticationService = new AuthenticationService(githubAccessTokenService, webClient, githubTokenRepository);
+		UserService userService = mock(UserService.class);
+		AuthenticationService authenticationService = new AuthenticationService(githubAccessTokenService, webClient, userService, githubTokenRepository);
 
 		// when
 		UserDto result = authenticationService.githubLogin(authenticationCode);

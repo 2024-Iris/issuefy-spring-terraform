@@ -19,8 +19,6 @@ public class User {
 	@Column
 	private String githubId;
 
-	private String githubProfileImage;
-
 	public User(String githubId) {
 		this.githubId = githubId;
 	}
