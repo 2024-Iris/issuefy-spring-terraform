@@ -7,6 +7,9 @@ import static org.springframework.restdocs.payload.PayloadDocumentation.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,7 +20,9 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 
+import site.iris.issuefy.entity.Jwt;
 import site.iris.issuefy.service.AuthenticationService;
+import site.iris.issuefy.service.TokenProvider;
 import site.iris.issuefy.vo.UserDto;
 
 @WebMvcTest(AuthenticationController.class)
@@ -30,6 +35,9 @@ class AuthenticationControllerTest {
 	@MockBean
 	private AuthenticationService authenticationService;
 
+	@MockBean
+	private TokenProvider tokenProvider;
+
 	@DisplayName("GitHub 엑세스 토큰을 가져오고 사용자 정보와 JWT를 반환한다.")
 	@Test
 	void login_after_return_userInfoAndJWT() throws Exception {
@@ -38,10 +46,13 @@ class AuthenticationControllerTest {
 		String code = "test-auth-code";
 		String userName = "testUser";
 		String avatarURL = "https://avatars.githubusercontent.com/12345";
-		String JWT = "RETURNTESTJWT";
 
 		UserDto userDto = UserDto.of(userName, avatarURL);
 		when(authenticationService.githubLogin(code)).thenReturn(userDto);
+
+		Map<String, Object> claims = new HashMap<>();
+		claims.put("githubId", userDto.getGithubId());
+		Jwt jwt = tokenProvider.createJwt(claims);
 
 		// when
 		ResultActions result = mockMvc.perform(get("/api/login", code)
@@ -52,7 +63,7 @@ class AuthenticationControllerTest {
 		result.andExpect(status().isOk())
 			.andExpect(jsonPath("$.userName", is(userName)))
 			.andExpect(jsonPath("$.avatarURL", is(avatarURL)))
-			.andExpect(jsonPath("$.jwt", is(JWT)))
+			.andExpect(jsonPath("$.jwt", is(jwt)))
 			.andDo(document("issuefy/oauth/login",
 				responseFields(
 					fieldWithPath("userName").description("사용자 로그인 이름"),
