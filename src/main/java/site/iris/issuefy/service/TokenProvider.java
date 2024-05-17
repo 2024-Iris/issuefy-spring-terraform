@@ -11,6 +11,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jws;
+import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import site.iris.issuefy.entity.Jwt;
@@ -54,9 +56,21 @@ public class TokenProvider {
 		return new Date(System.currentTimeMillis() + expireTimeMils);
 	}
 
-	public Date getExpireDateRefreshToken() {
+	private Date getExpireDateRefreshToken() {
 		long expireTimeMils = 1000L * 60 * 60 * 24 * 60;
 
 		return new Date(System.currentTimeMillis() + expireTimeMils);
+	}
+
+	public boolean isValidJwt(Jwt jwt) {
+		try {
+			Jws<Claims> claims = Jwts.parser()
+				.verifyWith((SecretKey)key)
+				.build()
+				.parseSignedClaims(jwt.getAccessToken());
+			return claims.getPayload().getExpiration().after(new Date());
+		} catch (JwtException | IllegalArgumentException e) {
+			return false;
+		}
 	}
 }
