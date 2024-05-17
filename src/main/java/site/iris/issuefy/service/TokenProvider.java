@@ -62,12 +62,12 @@ public class TokenProvider {
 		return new Date(System.currentTimeMillis() + expireTimeMils);
 	}
 
-	public boolean isValidJwt(Jwt jwt) {
+	public boolean isValidJwt(String token) {
 		try {
 			Jws<Claims> claims = Jwts.parser()
 				.verifyWith((SecretKey)key)
 				.build()
-				.parseSignedClaims(jwt.getAccessToken());
+				.parseSignedClaims(token);
 			return claims.getPayload().getExpiration().after(new Date());
 		} catch (JwtException | IllegalArgumentException e) {
 			return false;
