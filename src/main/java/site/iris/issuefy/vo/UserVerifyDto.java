@@ -4,7 +4,7 @@ import lombok.Getter;
 
 @Getter
 public class UserVerifyDto {
-	private boolean isValid;
+	private final boolean isValid;
 
 	private UserVerifyDto(boolean isValid) {
 		this.isValid = isValid;
