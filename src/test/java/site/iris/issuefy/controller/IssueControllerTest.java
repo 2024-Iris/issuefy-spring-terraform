@@ -38,8 +38,8 @@ class IssueControllerTest {
 		String repoName = "iris";
 
 		// when
-		when(issueService.getIssuesByRepoName(anyString())).thenReturn(new ArrayList<>());
-		ResultActions result = mockMvc.perform(get("/{repoName}/issues", repoName));
+		when(issueService.getIssuesByRepoName(anyString())).thenReturn("done");
+		ResultActions result = mockMvc.perform(get("/api/{repoName}/issues", repoName));
 
 		// then
 		result.andExpect(status().isOk())

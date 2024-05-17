@@ -16,7 +16,7 @@ import site.iris.issuefy.service.RepositoryService;
 import site.iris.issuefy.vo.RepositoryVO;
 
 @RestController
-@RequestMapping("/repositories")
+@RequestMapping("/api/repositories")
 @RequiredArgsConstructor
 public class RepositoryController {
 	private final RepositoryService repositoryService;

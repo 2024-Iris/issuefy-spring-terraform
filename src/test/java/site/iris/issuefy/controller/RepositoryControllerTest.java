@@ -47,7 +47,7 @@ class RepositoryControllerTest {
 		repositoryService.getSubscribedRepositories();
 
 		// then
-		mockMvc.perform(get("/repositories"))
+		mockMvc.perform(get("/api/repositories"))
 			.andExpect(status().isOk())
 			.andDo(document("issuefy/repositories/get",
 				getDocumentRequest(),
@@ -64,7 +64,7 @@ class RepositoryControllerTest {
 		RepositoryResponse repositoryResponse = RepositoryResponse.from(repositoryVO);
 
 		// when
-		ResultActions result = mockMvc.perform(post("/repositories")
+		ResultActions result = mockMvc.perform(post("/api/repositories")
 			.contentType(MediaType.APPLICATION_JSON)
 			.content(objectMapper.writeValueAsString(repositoryVO)));
 

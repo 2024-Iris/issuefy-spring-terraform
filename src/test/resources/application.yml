@@ -4,3 +4,10 @@ github:
 
 jwt:
   secretKey: testSecretKeytestSecretKeytestSecretKey
+
+spring:
+  datasource:
+    url: jdbc:tc:mysql://localhost:3306/test
+    username: test
+    password: test
+    driver-class-name: org.testcontainers.jdbc.ContainerDatabaseDriver
