@@ -5,25 +5,25 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Table(name = "repository")
 @Getter
-@Table(name = "user")
-public class User {
-
+@NoArgsConstructor
+public class Repository {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
-	@Column
-	private String githubId;
+	@ManyToOne
+	@JoinColumn(name = "org_id", nullable = false)
+	private Org org;
 
-	public User(String githubId) {
-		this.githubId = githubId;
-	}
+	@Column(name = "name")
+	private String name;
 }
