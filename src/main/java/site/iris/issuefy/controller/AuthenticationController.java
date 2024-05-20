@@ -30,7 +30,9 @@ public class AuthenticationController {
 		claims.put("githubId", userDto.getGithubId());
 		Jwt jwt = tokenProvider.createJwt(claims);
 
+		log.info("user login : {}", userDto.getGithubId());
 		return ResponseEntity.ok()
-			.body(OauthResponse.of(userDto.getGithubId(), userDto.getGithubProfileImage(), jwt));
+			.body(OauthResponse.of(userDto.getGithubId(), userDto.getGithubProfileImage(), jwt
+			));
 	}
 }
