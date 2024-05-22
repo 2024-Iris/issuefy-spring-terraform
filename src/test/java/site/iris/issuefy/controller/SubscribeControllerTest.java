@@ -1,10 +1,13 @@
 package site.iris.issuefy.controller;
 
+import static org.mockito.Mockito.*;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.*;
 import static org.springframework.restdocs.payload.PayloadDocumentation.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 import static site.iris.issuefy.ApiDocumentUtils.*;
+
+import java.util.ArrayList;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -19,13 +22,14 @@ import org.springframework.test.web.servlet.ResultActions;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import site.iris.issuefy.dto.RepositoryResponse;
+import site.iris.issuefy.dto.SubscribeResponse;
 import site.iris.issuefy.service.RepositoryService;
+import site.iris.issuefy.vo.OrgRecord;
 import site.iris.issuefy.vo.RepositoryVO;
 
-@WebMvcTest(RepositoryController.class)
+@WebMvcTest(SubscribeController.class)
 @AutoConfigureRestDocs
-class RepositoryControllerTest {
+class SubscribeControllerTest {
 
 	@Autowired
 	private MockMvc mockMvc;
@@ -39,17 +43,15 @@ class RepositoryControllerTest {
 	@DisplayName("구독 중인 repository 목록을 조회한다.")
 	@Test
 	void getSubscribedRepositories() throws Exception {
-
 		// given
-		RepositoryVO repositoryVO = new RepositoryVO("issuefy", "iris");
-
+		String token = "Bearer testToken";
 		// when
-		repositoryService.getSubscribedRepositories();
+		ResultActions result = mockMvc.perform(get("/api/subscribe")
+			.header("Authorization", token));
 
 		// then
-		mockMvc.perform(get("/api/repositories"))
-			.andExpect(status().isOk())
-			.andDo(document("issuefy/repositories/get",
+		result.andExpect(status().isOk())
+			.andDo(document("issuefy/subscribe/get",
 				getDocumentRequest(),
 				getDocumentResponse()
 			));
@@ -58,19 +60,19 @@ class RepositoryControllerTest {
 	@DisplayName("구독할 repository를 등록한다.")
 	@Test
 	void create() throws Exception {
-
 		// given
 		RepositoryVO repositoryVO = new RepositoryVO("issuefy", "iris");
-		RepositoryResponse repositoryResponse = RepositoryResponse.from(repositoryVO);
+		SubscribeResponse request = SubscribeResponse.from(OrgRecord.from(1L, "test", new ArrayList<>()));
+		when(repositoryService.getSubscribedRepositories("asd")).thenReturn(new ArrayList<>());
 
 		// when
-		ResultActions result = mockMvc.perform(post("/api/repositories")
+		ResultActions result = mockMvc.perform(post("/api/subscribe")
 			.contentType(MediaType.APPLICATION_JSON)
-			.content(objectMapper.writeValueAsString(repositoryVO)));
+			.content(objectMapper.writeValueAsString(request)));
 
 		// then
 		result.andExpect(status().isCreated())
-			.andDo(document("issuefy/repositories/post",
+			.andDo(document("issuefy/subscribe/post",
 				getDocumentRequest(),
 				getDocumentResponse(),
 				requestFields(
@@ -78,9 +80,9 @@ class RepositoryControllerTest {
 					fieldWithPath("org").type(JsonFieldType.STRING).description("조직 이름")
 				),
 				responseFields(
-					fieldWithPath("id").type(JsonFieldType.NUMBER).description("아이디"),
-					fieldWithPath("name").type(JsonFieldType.STRING).description("리포지토리 이름"),
-					fieldWithPath("org").type(JsonFieldType.STRING).description("조직 이름")
+					fieldWithPath("org.id").type(JsonFieldType.NUMBER).description("조직 ID"),
+					fieldWithPath("org.name").type(JsonFieldType.STRING).description("조직 이름"),
+					fieldWithPath("org.repositories").type(JsonFieldType.ARRAY).description("조직의 리포지토리 목록")
 				)
 			));
 	}
