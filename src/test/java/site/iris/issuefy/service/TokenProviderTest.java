@@ -1,6 +1,6 @@
 package site.iris.issuefy.service;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -9,6 +9,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import io.jsonwebtoken.Claims;
 import site.iris.issuefy.entity.Jwt;
 
 class TokenProviderTest {
@@ -20,32 +21,35 @@ class TokenProviderTest {
 		tokenProvider = new TokenProvider(secretKey);
 	}
 
-	@DisplayName("토큰를 성공적으로 생성한 후 payloads를 추출한다")
-	@Test
-	void createToken() {
-		// given
-		Map<String, Object> claims = new HashMap<>();
-		claims.put("testUserId", "dokkisan");
-
-		// when
-		String token = tokenProvider.createToken(claims, tokenProvider.getExpireDateAccessToken());
-
-		// then
-		assertThat(tokenProvider.getClaims(token).get("testUserId")).isEqualTo("dokkisan");
-	}
-
 	@DisplayName("JWT가 성공적으로 생성된다")
 	@Test
 	void createJwt() {
 		// given
 		Map<String, Object> claims = new HashMap<>();
-		claims.put("testUserId", "dokkisan");
+		claims.put("githubId", "dokkisan");
 
 		// when
 		Jwt jwt = tokenProvider.createJwt(claims);
 
 		// then
-		System.out.println(jwt.getAccessToken());
-		System.out.println(jwt.getRefreshToken());
+		assertNotNull(jwt);
+		assertNotNull(jwt.getAccessToken());
+
+		Claims accessTokenClaims = tokenProvider.getClaims(jwt.getAccessToken());
+		assertEquals("dokkisan", accessTokenClaims.get("githubId"));
+		assertTrue(tokenProvider.isValidToken(jwt.getAccessToken()));
+	}
+
+	@DisplayName("유효하지 않은 토큰은 false를 반환한다")
+	@Test
+	void isValidJwt() {
+		// given
+		String invalidToken = "invalid.token.string";
+
+		// when
+		boolean isValid = tokenProvider.isValidToken(invalidToken);
+
+		// then
+		assertFalse(isValid);
 	}
 }
