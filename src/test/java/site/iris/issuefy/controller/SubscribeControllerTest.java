@@ -59,7 +59,7 @@ class SubscribeControllerTest {
 
 	@DisplayName("구독할 repository를 등록한다.")
 	@Test
-	void create() throws Exception {
+	void addRepository() throws Exception {
 		// given
 		RepositoryVO repositoryVO = new RepositoryVO("issuefy", "iris");
 		SubscribeResponse request = SubscribeResponse.from(OrgRecord.from(1L, "test", new ArrayList<>()));
