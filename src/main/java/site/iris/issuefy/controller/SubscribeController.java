@@ -1,8 +1,9 @@
 package site.iris.issuefy.controller;
 
-import java.net.URI;
+import java.util.Collections;
 import java.util.List;
 
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -10,12 +11,15 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientException;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import site.iris.issuefy.dto.SubscribeResponse;
+import site.iris.issuefy.repository.GithubTokenRepository;
 import site.iris.issuefy.service.RepositoryService;
-import site.iris.issuefy.vo.OrgRecord;
+import site.iris.issuefy.vo.RepositoryUrlVo;
 
 @RestController
 @RequestMapping("/api/subscribe")
@@ -24,6 +28,8 @@ import site.iris.issuefy.vo.OrgRecord;
 public class SubscribeController {
 	private static final int TOKEN_INDEX = 1;
 	private final RepositoryService repositoryService;
+	private final GithubTokenRepository githubTokenRepository;
+	private static final String NOT_EXIST_MESSAGE = "Not Exist Repository";
 
 	@GetMapping
 	public ResponseEntity<List<SubscribeResponse>> getSubscribedRepositories(
@@ -33,13 +39,30 @@ public class SubscribeController {
 	}
 
 	@PostMapping
-	public ResponseEntity<String> create(@RequestBody String url) {
+	public ResponseEntity<String> addRepository(@RequestBody RepositoryUrlVo repositoryUrlVo) {
+		try {
+			validateUrl(repositoryUrlVo);
+		} catch (WebClientException webClientException) {
+			log.warn(NOT_EXIST_MESSAGE + ": {}", webClientException.getMessage());
+			return ResponseEntity.badRequest().body(NOT_EXIST_MESSAGE);
+		}
+		return ResponseEntity.ok("good");
+	}
 
-		long id = 10L;
-		String org = "testOrg";
-		String repository = "testRepository";
-
-		return ResponseEntity.created(URI.create("/subscribe/" + id)).body(
-			repository);
+	public void validateUrl(RepositoryUrlVo repositoryUrlVo) {
+		// TODO 스프링 필터에서 유저의 id값을 넘겨주고 받아오기
+		// TODO 로깅 전략 적용
+		// TODO DB 저장 및 반환
+		String accessToken = githubTokenRepository.findAccessToken("lvalentine6");
+		ResponseEntity<Void> response = WebClient.create()
+			.get()
+			.uri(repositoryUrlVo.repositoryUrl())
+			.headers(headers -> {
+				headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+				headers.setBearerAuth(accessToken);
+			})
+			.retrieve()
+			.toBodilessEntity()
+			.block();
 	}
 }
