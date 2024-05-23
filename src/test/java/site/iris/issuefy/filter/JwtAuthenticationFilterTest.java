@@ -31,14 +31,18 @@ class JwtAuthenticationFilterTest {
 	@Test
 	void testValidToken() throws ServletException, IOException {
 		MockHttpServletRequest request = new MockHttpServletRequest();
-		request.addHeader("Authorization", "Bearer validToken");
 		MockHttpServletResponse response = new MockHttpServletResponse();
 		MockFilterChain filterChain = new MockFilterChain();
 
+		// given
+		request.addHeader("Authorization", "Bearer validToken");
+
 		when(tokenProvider.isValidToken("validToken")).thenReturn(true);
 
+		// when
 		jwtAuthenticationFilter.doFilterInternal(request, response, filterChain);
 
+		// then
 		assertEquals(200, response.getStatus());
 	}
 
@@ -46,30 +50,37 @@ class JwtAuthenticationFilterTest {
 	@Test
 	void testInvalidToken() {
 		MockHttpServletRequest request = new MockHttpServletRequest();
-		request.addHeader("Authorization", "Bearer invalidToken");
 		MockHttpServletResponse response = new MockHttpServletResponse();
 		MockFilterChain filterChain = new MockFilterChain();
 
+		// given
+		request.addHeader("Authorization", "Bearer invalidToken");
+
 		when(tokenProvider.isValidToken("invalidToken")).thenReturn(false);
 
+		// when
 		assertThrows(UnauthenticatedException.class, () -> {
 			jwtAuthenticationFilter.doFilterInternal(request, response, filterChain);
 		});
 
+		// then
 		assertEquals(HttpStatus.UNAUTHORIZED.value(), response.getStatus());
 	}
 
 	@DisplayName("Authorization 헤더가 없을 경우 UnauthorizedException을 발생시킨다.")
 	@Test
 	void testMissingAuthorizationHeader() {
+		// given
 		MockHttpServletRequest request = new MockHttpServletRequest();
 		MockHttpServletResponse response = new MockHttpServletResponse();
 		MockFilterChain filterChain = new MockFilterChain();
 
+		// when
 		assertThrows(UnauthenticatedException.class, () -> {
 			jwtAuthenticationFilter.doFilterInternal(request, response, filterChain);
 		});
 
+		// then
 		assertEquals(HttpStatus.UNAUTHORIZED.value(), response.getStatus());
 	}
 
@@ -77,14 +88,51 @@ class JwtAuthenticationFilterTest {
 	@Test
 	void testInvalidTokenType() {
 		MockHttpServletRequest request = new MockHttpServletRequest();
-		request.addHeader("Authorization", "invalidTokenType");
 		MockHttpServletResponse response = new MockHttpServletResponse();
 		MockFilterChain filterChain = new MockFilterChain();
 
+		// given
+		request.addHeader("Authorization", "invalidTokenType");
+
+		// when
 		assertThrows(UnauthenticatedException.class, () -> {
 			jwtAuthenticationFilter.doFilterInternal(request, response, filterChain);
 		});
 
+		// then
 		assertEquals(HttpStatus.UNAUTHORIZED.value(), response.getStatus());
+	}
+
+	@DisplayName("API 명세서 url 접속시 필터링을 하지 않는다")
+	@Test
+	void doFilter_shouldPassThroughForDocsPath() throws ServletException, IOException {
+		MockHttpServletRequest request = new MockHttpServletRequest();
+		MockHttpServletResponse response = new MockHttpServletResponse();
+		MockFilterChain filterChain = new MockFilterChain();
+
+		// given
+		request.setRequestURI("/api/docs");
+
+		// when
+		jwtAuthenticationFilter.doFilterInternal(request, response, filterChain);
+
+		// then
+		assertEquals(200, response.getStatus());
+	}
+
+	@Test
+	void doFilter_shouldPassThroughForLoginPath() throws ServletException, IOException {
+		MockHttpServletRequest request = new MockHttpServletRequest();
+		MockHttpServletResponse response = new MockHttpServletResponse();
+		MockFilterChain filterChain = new MockFilterChain();
+
+		// given
+		request.setRequestURI("/api/login");
+
+		// when
+		jwtAuthenticationFilter.doFilterInternal(request, response, filterChain);
+
+		// then
+		assertEquals(200, response.getStatus());
 	}
 }
