@@ -35,7 +35,7 @@ class JwtAuthenticationFilterTest {
 		MockHttpServletResponse response = new MockHttpServletResponse();
 		MockFilterChain filterChain = new MockFilterChain();
 
-		when(tokenProvider.isValidJwt("validToken")).thenReturn(true);
+		when(tokenProvider.isValidToken("validToken")).thenReturn(true);
 
 		jwtAuthenticationFilter.doFilterInternal(request, response, filterChain);
 
@@ -50,7 +50,7 @@ class JwtAuthenticationFilterTest {
 		MockHttpServletResponse response = new MockHttpServletResponse();
 		MockFilterChain filterChain = new MockFilterChain();
 
-		when(tokenProvider.isValidJwt("invalidToken")).thenReturn(false);
+		when(tokenProvider.isValidToken("invalidToken")).thenReturn(false);
 
 		assertThrows(UnauthenticatedException.class, () -> {
 			jwtAuthenticationFilter.doFilterInternal(request, response, filterChain);

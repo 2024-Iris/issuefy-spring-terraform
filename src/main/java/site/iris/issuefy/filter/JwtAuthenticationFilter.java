@@ -33,7 +33,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 		try {
 			String token = getJwtFromRequest(request);
 
-			if (!tokenProvider.isValidJwt(token)) {
+			if (!tokenProvider.isValidToken(token)) {
 				throw new UnauthenticatedException();
 			}
 
