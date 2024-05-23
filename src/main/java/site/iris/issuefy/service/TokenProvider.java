@@ -32,7 +32,7 @@ public class TokenProvider {
 		return Jwt.of(accessToken, refreshToken);
 	}
 
-	public String createToken(Map<String, Object> claims, Date expireDate) {
+	private String createToken(Map<String, Object> claims, Date expireDate) {
 
 		return Jwts.builder()
 			.claims(claims)
@@ -50,19 +50,7 @@ public class TokenProvider {
 			.getPayload();
 	}
 
-	public Date getExpireDateAccessToken() {
-		long expireTimeMils = 1000L * 60 * 60 * 8;
-
-		return new Date(System.currentTimeMillis() + expireTimeMils);
-	}
-
-	private Date getExpireDateRefreshToken() {
-		long expireTimeMils = 1000L * 60 * 60 * 24 * 60;
-
-		return new Date(System.currentTimeMillis() + expireTimeMils);
-	}
-
-	public boolean isValidJwt(String token) {
+	public boolean isValidToken(String token) {
 		try {
 			Jws<Claims> claims = Jwts.parser()
 				.verifyWith((SecretKey)key)
@@ -72,5 +60,17 @@ public class TokenProvider {
 		} catch (JwtException | IllegalArgumentException e) {
 			return false;
 		}
+	}
+
+	private Date getExpireDateAccessToken() {
+		long expireTimeMils = 1000L * 60 * 60 * 8;
+
+		return new Date(System.currentTimeMillis() + expireTimeMils);
+	}
+
+	private Date getExpireDateRefreshToken() {
+		long expireTimeMils = 1000L * 60 * 60 * 24 * 60;
+
+		return new Date(System.currentTimeMillis() + expireTimeMils);
 	}
 }
