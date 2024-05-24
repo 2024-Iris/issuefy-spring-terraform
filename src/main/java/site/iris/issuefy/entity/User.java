@@ -26,4 +26,12 @@ public class User {
 	public User(String githubId) {
 		this.githubId = githubId;
 	}
+
+	@Override
+	public String toString() {
+		return "User{" +
+			"id=" + id +
+			", githubId='" + githubId + '\'' +
+			'}';
+	}
 }
