@@ -23,7 +23,7 @@ import org.springframework.test.web.servlet.ResultActions;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import site.iris.issuefy.dto.SubscribeResponse;
-import site.iris.issuefy.service.RepositoryService;
+import site.iris.issuefy.service.SubscribeService;
 import site.iris.issuefy.vo.OrgRecord;
 import site.iris.issuefy.vo.RepositoryVO;
 
@@ -38,7 +38,7 @@ class SubscribeControllerTest {
 	private ObjectMapper objectMapper;
 
 	@MockBean
-	private RepositoryService repositoryService;
+	private SubscribeService subscribeService;
 
 	@DisplayName("구독 중인 repository 목록을 조회한다.")
 	@Test
@@ -63,7 +63,7 @@ class SubscribeControllerTest {
 		// given
 		RepositoryVO repositoryVO = new RepositoryVO("issuefy", "iris");
 		SubscribeResponse request = SubscribeResponse.from(OrgRecord.from(1L, "test", new ArrayList<>()));
-		when(repositoryService.getSubscribedRepositories("asd")).thenReturn(new ArrayList<>());
+		when(subscribeService.getSubscribedRepositories("asd")).thenReturn(new ArrayList<>());
 
 		// when
 		ResultActions result = mockMvc.perform(post("/api/subscribe")
