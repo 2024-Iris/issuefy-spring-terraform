@@ -18,7 +18,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import site.iris.issuefy.dto.SubscribeResponse;
 import site.iris.issuefy.repository.GithubTokenRepository;
-import site.iris.issuefy.service.RepositoryService;
+import site.iris.issuefy.service.SubscribeService;
+import site.iris.issuefy.vo.RepositoryUrlDto;
 import site.iris.issuefy.vo.RepositoryUrlVo;
 
 @RestController
@@ -27,7 +28,7 @@ import site.iris.issuefy.vo.RepositoryUrlVo;
 @Slf4j
 public class SubscribeController {
 	private static final int TOKEN_INDEX = 1;
-	private final RepositoryService repositoryService;
+	private final SubscribeService subscribeService;
 	private final GithubTokenRepository githubTokenRepository;
 	private static final String NOT_EXIST_MESSAGE = "Not Exist Repository";
 
@@ -35,18 +36,21 @@ public class SubscribeController {
 	public ResponseEntity<List<SubscribeResponse>> getSubscribedRepositories(
 		@RequestHeader("Authorization") String token) {
 		String[] tokens = token.split(" ");
-		return ResponseEntity.ok(repositoryService.getSubscribedRepositories(tokens[TOKEN_INDEX]));
+		return ResponseEntity.ok(subscribeService.getSubscribedRepositories(tokens[TOKEN_INDEX]));
 	}
 
 	@PostMapping
 	public ResponseEntity<String> addRepository(@RequestBody RepositoryUrlVo repositoryUrlVo) {
 		try {
 			validateUrl(repositoryUrlVo);
+			// TODO 필터에서 넘어온 유저이름 적용하기
+			RepositoryUrlDto repositoryUrlDto = RepositoryUrlDto.of(repositoryUrlVo.repositoryUrl(), "lvalentine6");
+			subscribeService.addSubscribeRepository(repositoryUrlDto);
 		} catch (WebClientException webClientException) {
 			log.warn(NOT_EXIST_MESSAGE + ": {}", webClientException.getMessage());
-			return ResponseEntity.badRequest().body(NOT_EXIST_MESSAGE);
+			return ResponseEntity.notFound().build();
 		}
-		return ResponseEntity.ok("good");
+		return ResponseEntity.ok().build();
 	}
 
 	public void validateUrl(RepositoryUrlVo repositoryUrlVo) {
