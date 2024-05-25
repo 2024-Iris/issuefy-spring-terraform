@@ -10,27 +10,27 @@ VALUES ('lvalentine6', 'user3@example.com');
 
 -- Inserting organizations
 INSERT INTO `org` (name)
-VALUES ('Organization A');
+VALUES ('organization1');
 INSERT INTO `org` (name)
-VALUES ('Organization B');
+VALUES ('organization2');
 
 -- Inserting repositories
 INSERT INTO `repository` (org_id, name)
-VALUES (1, 'Repo A1');
+VALUES (1, 'repo-a1');
 INSERT INTO `repository` (org_id, name)
-VALUES (1, 'Repo A2');
+VALUES (1, 'repo-a2');
 INSERT INTO `repository` (org_id, name)
-VALUES (2, 'Repo B1');
+VALUES (2, 'repob-1');
 
 -- Inserting issues
 INSERT INTO `issue` (repository_id, name)
-VALUES (1, 'Issue A1-1');
+VALUES (1, 'issue-a1-1');
 INSERT INTO `issue` (repository_id, name)
-VALUES (1, 'Issue A1-2');
+VALUES (1, 'issue-a1-2');
 INSERT INTO `issue` (repository_id, name)
-VALUES (2, 'Issue A2-1');
+VALUES (2, 'issue-a2-1');
 INSERT INTO `issue` (repository_id, name)
-VALUES (3, 'Issue B1-1');
+VALUES (3, 'issue-b1-1');
 
 -- Inserting labels
 INSERT INTO `label` (name)
