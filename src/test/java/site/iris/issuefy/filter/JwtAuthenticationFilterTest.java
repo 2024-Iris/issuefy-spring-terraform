@@ -120,6 +120,7 @@ class JwtAuthenticationFilterTest {
 		assertEquals(200, response.getStatus());
 	}
 
+	@DisplayName("로그인 url 접속시 필터링을 하지 않는다")
 	@Test
 	void doFilter_shouldPassThroughForLoginPath() throws ServletException, IOException {
 		MockHttpServletRequest request = new MockHttpServletRequest();
