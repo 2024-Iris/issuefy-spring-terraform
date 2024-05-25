@@ -4,6 +4,7 @@ import static org.springframework.http.HttpHeaders.*;
 
 import java.io.IOException;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import jakarta.servlet.FilterChain;
@@ -23,7 +24,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
 	@Override
 	protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response,
-									@NonNull FilterChain filterChain)
+		@NonNull FilterChain filterChain)
 		throws ServletException, IOException {
 
 		String path = request.getRequestURI();
@@ -35,23 +36,33 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 		try {
 			String token = getJwtFromRequest(request);
 
+			// 토큰이 만료된 경우 403 반환
 			if (!tokenProvider.isValidToken(token)) {
-				throw new UnauthenticatedException();
+				throw new UnauthenticatedException(UnauthenticatedException.ACCESS_TOKEN_EXPIRED,
+					HttpStatus.FORBIDDEN.value());
 			}
 
-			request.setAttribute("githubId", tokenProvider.getClaims(token).getId());
+			request.setAttribute("claims", tokenProvider.getClaims(token));
 			filterChain.doFilter(request, response);
 		} catch (UnauthenticatedException e) {
-			response.sendError(HttpServletResponse.SC_UNAUTHORIZED, e.getMessage());
+			logger.warn(e.getMessage());
+			response.sendError(e.getStatusCode(), e.getMessage());
 			throw e;
 		}
 	}
 
 	private String getJwtFromRequest(HttpServletRequest request) {
-		String bearerToken = request.getHeader(AUTHORIZATION);
+		String bearerToken;
 
-		if (bearerToken == null || !bearerToken.startsWith(BEARER_DELIMITER)) {
-			throw new UnauthenticatedException();
+		try {
+			bearerToken = request.getHeader(AUTHORIZATION);
+			if (bearerToken == null || !bearerToken.startsWith(BEARER_DELIMITER)) {
+				throw new UnauthenticatedException(UnauthenticatedException.INVALID_TOKEN_TYPE,
+					HttpStatus.UNAUTHORIZED.value());
+			}
+		} catch (UnauthenticatedException e) {
+			throw new UnauthenticatedException(UnauthenticatedException.INVALID_HEADER,
+				HttpStatus.UNAUTHORIZED.value());
 		}
 
 		return bearerToken.substring(BEARER_DELIMITER.length());
