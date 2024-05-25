@@ -14,8 +14,10 @@ public class UserDto {
 	@JsonProperty("avatar_url")
 	private String githubProfileImage;
 
-	public static UserDto of(String login, String avatar_url) {
-		return new UserDto(login, avatar_url);
+	private String email;
+
+	public static UserDto of(String login, String avatar_url, String email) {
+		return new UserDto(login, avatar_url, email);
 	}
 
 	@Override
@@ -23,6 +25,7 @@ public class UserDto {
 		return "UserDto{" +
 			"githubId='" + githubId + '\'' +
 			", githubProfileImage='" + githubProfileImage + '\'' +
+			", email='" + email + '\'' +
 			'}';
 	}
 }
