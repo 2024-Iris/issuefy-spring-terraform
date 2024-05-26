@@ -46,7 +46,7 @@ class JwtAuthenticationFilterTest {
 		assertEquals(200, response.getStatus());
 	}
 
-	@DisplayName("유효하지 않은 토큰은 UnauthorizedException을 발생시킨다")
+	@DisplayName("만료기간이 지난 토큰은 UnauthorizedException을 발생시킨다")
 	@Test
 	void testInvalidToken() {
 		MockHttpServletRequest request = new MockHttpServletRequest();
@@ -64,7 +64,7 @@ class JwtAuthenticationFilterTest {
 		});
 
 		// then
-		assertEquals(HttpStatus.UNAUTHORIZED.value(), response.getStatus());
+		assertEquals(HttpStatus.FORBIDDEN.value(), response.getStatus());
 	}
 
 	@DisplayName("Authorization 헤더가 없을 경우 UnauthorizedException을 발생시킨다.")
