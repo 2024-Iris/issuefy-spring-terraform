@@ -18,7 +18,7 @@ import org.springframework.web.reactive.function.client.WebClientException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import site.iris.issuefy.dto.SubscribeResponse;
-import site.iris.issuefy.repository.GithubTokenRepository;
+import site.iris.issuefy.service.GithubTokenService;
 import site.iris.issuefy.service.SubscribeService;
 import site.iris.issuefy.vo.RepositoryUrlDto;
 import site.iris.issuefy.vo.RepositoryUrlVo;
@@ -30,8 +30,8 @@ import site.iris.issuefy.vo.RepositoryUrlVo;
 public class SubscribeController {
 	private static final int TOKEN_INDEX = 1;
 	private final SubscribeService subscribeService;
-	private final GithubTokenRepository githubTokenRepository;
 	private static final String NOT_EXIST_MESSAGE = "Not Exist Repository";
+	private final GithubTokenService githubTokenService;
 
 	@GetMapping
 	public ResponseEntity<List<SubscribeResponse>> getSubscribedRepositories(
@@ -46,7 +46,7 @@ public class SubscribeController {
 		try {
 			validateUrl(githubId, repositoryUrlVo);
 			RepositoryUrlDto repositoryUrlDto = RepositoryUrlDto.of(repositoryUrlVo.repositoryUrl(), githubId);
-			subscribeService.addSubscribeRepository(repositoryUrlDto);
+			subscribeService.addSubscribeRepository(repositoryUrlDto, githubId);
 		} catch (WebClientException webClientException) {
 			log.warn(NOT_EXIST_MESSAGE + ": {}", webClientException.getMessage());
 			return ResponseEntity.notFound().build();
@@ -56,7 +56,8 @@ public class SubscribeController {
 
 	public void validateUrl(String githubId, RepositoryUrlVo repositoryUrlVo) {
 		// TODO 로깅 전략 적용
-		String accessToken = githubTokenRepository.findAccessToken(githubId);
+		String accessToken = githubTokenService.findAccessToken(githubId);
+		log.info("토큰 확인: {}", accessToken);
 		WebClient.create()
 			.get()
 			.uri(repositoryUrlVo.repositoryUrl())

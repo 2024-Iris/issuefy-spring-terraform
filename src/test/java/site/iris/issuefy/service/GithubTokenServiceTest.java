@@ -14,7 +14,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 
-class GithubAccessTokenServiceTest {
+class GithubTokenServiceTest {
 	private MockWebServer mockWebServer;
 
 	@DisplayName("mockWebServer로 Github API의 응답을 mocking 합니다.")
