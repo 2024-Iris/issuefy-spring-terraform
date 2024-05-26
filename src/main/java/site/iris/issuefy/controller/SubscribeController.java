@@ -7,6 +7,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -40,11 +41,11 @@ public class SubscribeController {
 	}
 
 	@PostMapping
-	public ResponseEntity<String> addRepository(@RequestBody RepositoryUrlVo repositoryUrlVo) {
+	public ResponseEntity<String> addRepository(@RequestAttribute String githubId,
+		@RequestBody RepositoryUrlVo repositoryUrlVo) {
 		try {
-			validateUrl(repositoryUrlVo);
-			// TODO 필터에서 넘어온 유저이름 적용하기
-			RepositoryUrlDto repositoryUrlDto = RepositoryUrlDto.of(repositoryUrlVo.repositoryUrl(), "lvalentine6");
+			validateUrl(githubId, repositoryUrlVo);
+			RepositoryUrlDto repositoryUrlDto = RepositoryUrlDto.of(repositoryUrlVo.repositoryUrl(), githubId);
 			subscribeService.addSubscribeRepository(repositoryUrlDto);
 		} catch (WebClientException webClientException) {
 			log.warn(NOT_EXIST_MESSAGE + ": {}", webClientException.getMessage());
@@ -53,12 +54,10 @@ public class SubscribeController {
 		return ResponseEntity.ok().build();
 	}
 
-	public void validateUrl(RepositoryUrlVo repositoryUrlVo) {
-		// TODO 스프링 필터에서 유저의 id값을 넘겨주고 받아오기
+	public void validateUrl(String githubId, RepositoryUrlVo repositoryUrlVo) {
 		// TODO 로깅 전략 적용
-		// TODO DB 저장 및 반환
-		String accessToken = githubTokenRepository.findAccessToken("lvalentine6");
-		ResponseEntity<Void> response = WebClient.create()
+		String accessToken = githubTokenRepository.findAccessToken(githubId);
+		WebClient.create()
 			.get()
 			.uri(repositoryUrlVo.repositoryUrl())
 			.headers(headers -> {
