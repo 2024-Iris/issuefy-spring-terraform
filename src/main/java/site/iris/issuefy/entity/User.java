@@ -23,8 +23,12 @@ public class User {
 	@Column
 	private String githubId;
 
-	public User(String githubId) {
+	@Column
+	private String email;
+
+	public User(String githubId, String email) {
 		this.githubId = githubId;
+		this.email = email;
 	}
 
 	@Override
@@ -32,6 +36,7 @@ public class User {
 		return "User{" +
 			"id=" + id +
 			", githubId='" + githubId + '\'' +
+			", email='" + email + '\'' +
 			'}';
 	}
 }
