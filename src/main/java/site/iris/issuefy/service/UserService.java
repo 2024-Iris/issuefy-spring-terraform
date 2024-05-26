@@ -1,7 +1,5 @@
 package site.iris.issuefy.service;
 
-import java.util.Optional;
-
 import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
@@ -25,10 +23,7 @@ public class UserService {
 	}
 
 	private UserVerifyDto verifyUser(UserDto userDto) {
-		Optional<User> user = userRepository.findByGithubId(userDto.getGithubId());
-		if (user.isEmpty()) {
-			return UserVerifyDto.from(false);
-		}
-		return UserVerifyDto.from(true);
+		boolean exists = userRepository.existsByGithubId(userDto.getGithubId());
+		return UserVerifyDto.from(exists);
 	}
 }

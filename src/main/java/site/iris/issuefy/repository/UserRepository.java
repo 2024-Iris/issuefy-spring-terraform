@@ -11,4 +11,6 @@ import site.iris.issuefy.entity.User;
 public interface UserRepository extends CrudRepository<User, Long> {
 
 	Optional<User> findByGithubId(String githubId);
+
+	boolean existsByGithubId(String githubId);
 }
