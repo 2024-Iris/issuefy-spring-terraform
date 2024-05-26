@@ -4,6 +4,8 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -12,6 +14,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.mock.web.MockFilterChain;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
+
+import io.jsonwebtoken.Claims;
+import site.iris.issuefy.entity.Jwt;
 
 import jakarta.servlet.ServletException;
 import site.iris.issuefy.exception.UnauthenticatedException;
@@ -37,13 +42,24 @@ class JwtAuthenticationFilterTest {
 		// given
 		request.addHeader("Authorization", "Bearer validToken");
 
+		Map<String, Object> claimsMap = new HashMap<>();
+		claimsMap.put("githubId", "dokkisan");
+
+		Claims claims = mock(Claims.class);
+		when(claims.get("githubId")).thenReturn("dokkisan");
+
+		Jwt jwt = mock(Jwt.class);
+		when(jwt.getAccessToken()).thenReturn("validToken");
+
 		when(tokenProvider.isValidToken("validToken")).thenReturn(true);
+		when(tokenProvider.getClaims("validToken")).thenReturn(claims);
 
 		// when
 		jwtAuthenticationFilter.doFilterInternal(request, response, filterChain);
 
 		// then
 		assertEquals(200, response.getStatus());
+		assertEquals("dokkisan", request.getAttribute("githubId"));
 	}
 
 	@DisplayName("만료기간이 지난 토큰은 UnauthorizedException을 발생시킨다")
