@@ -42,7 +42,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 					HttpStatus.FORBIDDEN.value());
 			}
 
-			request.setAttribute("claims", tokenProvider.getClaims(token));
+			request.setAttribute("githubId", tokenProvider.getClaims(token).get("githubId"));
+
 			filterChain.doFilter(request, response);
 		} catch (UnauthenticatedException e) {
 			logger.warn(e.getMessage());
