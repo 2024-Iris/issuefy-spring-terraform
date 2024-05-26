@@ -65,7 +65,7 @@ public class SubscribeService {
 	}
 
 	@Transactional
-	public void addSubscribeRepository(RepositoryUrlDto repositoryUrlDto) {
+	public void addSubscribeRepository(RepositoryUrlDto repositoryUrlDto, String githubId) {
 		try {
 			Org org = orgRepository.findByName(repositoryUrlDto.getOrgName())
 				.orElseGet(() -> {
@@ -80,7 +80,7 @@ public class SubscribeService {
 				});
 			User user = userRepository.findByGithubId(repositoryUrlDto.getGithubId())
 				.orElseGet(() -> {
-					User newUser = new User(repositoryUrlDto.getGithubId());
+					User newUser = new User(repositoryUrlDto.getGithubId(), githubId);
 					return userRepository.save(newUser);
 				});
 			Subscribe subscribe = subscribeRepository.findByUserIdAndRepositoryId(user.getId(), repository.getId())
