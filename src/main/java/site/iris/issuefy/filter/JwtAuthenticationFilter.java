@@ -67,6 +67,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
 	private void handleUnauthorizedException(HttpServletResponse response, UnauthenticatedException e)
 		throws IOException {
+		response.setHeader("Access-Control-Allow-Origin", "http://localhost:3000");
+		response.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
+		response.setHeader("Access-Control-Allow-Headers", "*");
 		response.setStatus(e.getStatusCode());
 		response.setContentType("application/json");
 		response.setCharacterEncoding("UTF-8");
