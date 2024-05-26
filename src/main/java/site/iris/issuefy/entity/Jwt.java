@@ -12,4 +12,12 @@ public class Jwt {
 	public static Jwt of(String accessToken, String refreshToken) {
 		return new Jwt(accessToken, refreshToken);
 	}
+
+	@Override
+	public String toString() {
+		return "Jwt{" +
+			"accessToken='" + accessToken + '\'' +
+			", refreshToken='" + refreshToken + '\'' +
+			'}';
+	}
 }

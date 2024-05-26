@@ -41,14 +41,11 @@ public class AuthenticationService {
 
 	public UserDto githubLogin(String code) {
 		String accessToken = githubAccessTokenService.getToken(code);
-		log.info("accessToken : {}", accessToken);
+		log.info("Successfully retrieve GitHub access token");
 		OauthDto oauthDto = parseOauthDto(accessToken);
-		log.info(oauthDto.toString());
-
 		UserDto loginUserDto = getUserInfo(oauthDto);
 		githubTokenService.storeAccessToken(loginUserDto.getGithubId(), oauthDto.getAccessToken());
 		userService.registerUserIfNotExist(loginUserDto);
-
 		return loginUserDto;
 	}
 

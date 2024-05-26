@@ -25,12 +25,14 @@ public class AuthenticationController {
 
 	@GetMapping("/api/login")
 	public ResponseEntity<OauthResponse> login(@RequestParam String code) {
+		log.info("Login request occurs");
 		UserDto userDto = authenticationService.githubLogin(code);
 		Map<String, Object> claims = new HashMap<>();
 		claims.put("githubId", userDto.getGithubId());
 		Jwt jwt = tokenProvider.createJwt(claims);
 
-		log.info("user login : {}", userDto.getGithubId());
+		log.info("user login : {}, authorization code : {}", userDto.getGithubId(), code);
+		log.info("response : {}", jwt.toString());
 		return ResponseEntity.ok()
 			.body(OauthResponse.of(userDto.getGithubId(), userDto.getGithubProfileImage(), jwt
 			));
