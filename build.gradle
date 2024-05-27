@@ -61,7 +61,6 @@ dependencies {
     testImplementation 'org.testcontainers:testcontainers:1.19.7'
     testImplementation 'org.testcontainers:junit-jupiter:1.19.7'
     testImplementation "org.testcontainers:mysql:1.19.8"
-
 }
 
 def jacocoDir = layout.buildDirectory.dir("reports/")
@@ -74,8 +73,10 @@ sonar {
         property 'sonar.sourceEncoding', 'UTF-8'
         property 'sonar.language', 'java'
         property 'sonar.java.coveragePlugin', 'jacoco'
-        property 'sonar.exclusions', '**/test/**, **/Q*.java, **/*Doc*.java, **/resources/** ,**/*Application*.java , **/*Config*.java,' +
-                '**/*Dto*.java,**/*DTO*.java, **/*Request*.java, **/*Response*.java ,**/*Exception*.java ,**/*ErrorCode*.java'
+        property 'sonar.exclusions', '**/test/**, **/Q*.java, **/*Doc*.java, **/resources/**, **/*Application*.java, **/*Config*.java, ' +
+                '**/*Vo.java, **/*Dto.java, **/*DTO*.java, **/*Request*.java, **/*Response*.java, **/*Exception*.java, **/*ErrorCode*.java, ' +
+                '**/entity/**, **/*Record*.java'
+
         property 'sonar.coverage.jacoco.xmlReportPaths', jacocoDir.get().file("jacoco/index.xml").asFile
     }
 }
@@ -102,7 +103,10 @@ jacocoTestReport {
                             '**/*Application.*',
                             '**/*Status*',
                             '**/*Exception*',
+                            '**/vo/**',
                             '**/dto/**',
+                            '**/entity/**',
+                            '**/response/**'
                     ])
                 })
         )
@@ -112,7 +116,6 @@ jacocoTestReport {
 test {
     outputs.dir snippetsDir
 }
-
 
 asciidoctor {
     inputs.dir snippetsDir
