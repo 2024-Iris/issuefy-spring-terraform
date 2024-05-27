@@ -12,4 +12,12 @@ public class RepositoryDto {
 	public static RepositoryDto of(Long id, String name) {
 		return new RepositoryDto(id, name);
 	}
+
+	@Override
+	public String toString() {
+		return "RepositoryDto{" +
+			"id=" + id +
+			", name='" + name + '\'' +
+			'}';
+	}
 }

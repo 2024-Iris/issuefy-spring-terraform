@@ -30,13 +30,12 @@ import site.iris.issuefy.vo.TokenDto;
 public class SubscribeService {
 	private final SubscribeRepository subscribeRepository;
 	private final UserRepository userRepository;
-	private final TokenProvider tokenProvider;
 	private final OrgRepository orgRepository;
 	private final RepositoryRepository repositoryRepository;
 
-	public List<SubscribeResponse> getSubscribedRepositories(String token) {
-		TokenDto tokenDto = TokenDto.fromClaims(tokenProvider.getClaims(token));
-		User user = userRepository.findByGithubId(tokenDto.getGithubId()).orElseThrow();
+	public List<SubscribeResponse> getSubscribedRepositories(String githubId) {
+		// TODO 커스텀 예외 추가
+		User user = userRepository.findByGithubId(githubId).orElseThrow();
 		List<Subscribe> subscribes = subscribeRepository.findByUserId(user.getId());
 
 		Map<OrgRecord, List<RepositoryDto>> orgResponseMap = new HashMap<>();
