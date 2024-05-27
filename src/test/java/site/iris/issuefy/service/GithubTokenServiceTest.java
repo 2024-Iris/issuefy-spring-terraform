@@ -1,55 +1,82 @@
 package site.iris.issuefy.service;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
 
-import java.io.IOException;
+import java.util.Optional;
 
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.test.util.ReflectionTestUtils;
-import org.springframework.web.reactive.function.client.WebClient;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-import okhttp3.mockwebserver.MockResponse;
-import okhttp3.mockwebserver.MockWebServer;
+import site.iris.issuefy.entity.GithubToken;
+import site.iris.issuefy.repository.GithubTokenRedisRepository;
 
+@ExtendWith(MockitoExtension.class)
 class GithubTokenServiceTest {
-	private MockWebServer mockWebServer;
+    @Mock
+    private GithubTokenRedisRepository githubTokenRedisRepository;
 
-	@DisplayName("mockWebServer로 Github API의 응답을 mocking 합니다.")
-	@BeforeEach
-	void setUp() throws IOException {
-		mockWebServer = new MockWebServer();
-		mockWebServer.start();
-		mockWebServer.enqueue(new MockResponse()
-			.setResponseCode(200)
-			.setBody("access_token=testToken&scope=&token_type=bearer")
-			.addHeader("Content-Type", "application/json"));
-	}
+    @InjectMocks
+    private GithubTokenService githubTokenService;
 
-	@AfterEach
-	void tearDown() throws IOException {
-		mockWebServer.shutdown();
-	}
+    private static final String GITHUB_ID = "testUser";
+    private static final String ACCESS_TOKEN = "testToken";
 
-	@Test
-	@DisplayName("AuthenticationCode를 전송하면 AccessToken을 반환한다.")
-	void getToken() {
-		// given
-		WebClient webClient = WebClient.builder().baseUrl(mockWebServer.url("/").toString()).build();
-		GithubAccessTokenService githubAccessTokenService = new GithubAccessTokenService(webClient);
-		ReflectionTestUtils.setField(githubAccessTokenService, "clientId", "testClientId");
-		ReflectionTestUtils.setField(githubAccessTokenService, "clientSecret", "testClientSecret");
+    @BeforeEach
+    void setUp() {
+        githubTokenService = new GithubTokenService(githubTokenRedisRepository);
+    }
 
-		String authenticationCode = "testCode";
-		String expectedResponse = "access_token=testToken&scope=&token_type=bearer";
+    @DisplayName("액세스 토큰을 저장한다")
+    @Test
+    void storeAccessToken() {
+        // when
+        githubTokenService.storeAccessToken(GITHUB_ID, ACCESS_TOKEN);
 
-		// when
-		String result = githubAccessTokenService.getToken(authenticationCode);
+        // then
+        verify(githubTokenRedisRepository, times(1)).save(any(GithubToken.class));
+    }
 
-		// then
-		assertNotNull(result);
-		assertEquals(result, expectedResponse);
-	}
+    @DisplayName("액세스 토큰을 조회한다")
+    @Test
+    void findAccessToken() {
+        // given
+        GithubToken githubToken = GithubToken.of(GITHUB_ID, ACCESS_TOKEN, 60L * 60 * 8);
+        when(githubTokenRedisRepository.findById(GITHUB_ID)).thenReturn(Optional.of(githubToken));
+
+        // when
+        String accessToken = githubTokenService.findAccessToken(GITHUB_ID);
+
+        // then
+        assertEquals(ACCESS_TOKEN, accessToken);
+    }
+
+    @DisplayName("액세스 토큰이 없을 경우 'Token not found'를 반환한다")
+    @Test
+    void findAccessTokenNotFound() {
+        // given
+        when(githubTokenRedisRepository.findById(GITHUB_ID)).thenReturn(Optional.empty());
+
+        // when
+        String accessToken = githubTokenService.findAccessToken(GITHUB_ID);
+
+        // then
+        assertEquals("Token not found", accessToken);
+    }
+
+    @DisplayName("액세스 토큰을 삭제한다")
+    @Test
+    void deleteAccessToken() {
+        // when
+        githubTokenService.deleteAccessToken(GITHUB_ID);
+
+        // then
+        verify(githubTokenRedisRepository, times(1)).deleteById(GITHUB_ID);
+    }
 }
