@@ -1,1 +1,2 @@
 *.html linguist-detectable=false
+*.adoc linguist-detectable=false
