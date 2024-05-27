@@ -13,7 +13,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
-import site.iris.issuefy.vo.UserDto;
+import site.iris.issuefy.model.dto.UserDto;
 
 class AuthenticationServiceTest {
 	private MockWebServer mockWebServer;

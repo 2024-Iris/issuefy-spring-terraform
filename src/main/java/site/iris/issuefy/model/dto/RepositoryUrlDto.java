@@ -1,4 +1,4 @@
-package site.iris.issuefy.vo;
+package site.iris.issuefy.model.dto;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;

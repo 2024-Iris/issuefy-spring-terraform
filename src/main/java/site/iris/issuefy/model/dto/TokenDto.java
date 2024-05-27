@@ -1,4 +1,4 @@
-package site.iris.issuefy.vo;
+package site.iris.issuefy.model.dto;
 
 import io.jsonwebtoken.Claims;
 import lombok.AllArgsConstructor;

@@ -15,7 +15,7 @@ import org.mockito.MockitoAnnotations;
 
 import site.iris.issuefy.entity.User;
 import site.iris.issuefy.repository.UserRepository;
-import site.iris.issuefy.vo.UserDto;
+import site.iris.issuefy.model.dto.UserDto;
 
 class UserServiceTest {
 

@@ -17,11 +17,11 @@ import org.springframework.web.reactive.function.client.WebClientException;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import site.iris.issuefy.dto.SubscribeResponse;
+import site.iris.issuefy.model.vo.RepositoryRecord;
+import site.iris.issuefy.response.SubscribeResponse;
 import site.iris.issuefy.service.GithubTokenService;
 import site.iris.issuefy.service.SubscribeService;
-import site.iris.issuefy.vo.RepositoryUrlDto;
-import site.iris.issuefy.vo.RepositoryUrlVo;
+import site.iris.issuefy.model.dto.RepositoryUrlDto;
 
 @RestController
 @RequestMapping("/api/subscribe")
@@ -44,25 +44,25 @@ public class SubscribeController {
 
     @PostMapping
     public ResponseEntity<String> addRepository(@RequestAttribute String githubId,
-       @RequestBody RepositoryUrlVo repositoryUrlVo) {
+       @RequestBody RepositoryRecord RepositoryRecord) {
        logRequest(githubId, "Request AddRepository");
        try {
-          checkRepositoryExistence(githubId, repositoryUrlVo);
-          RepositoryUrlDto repositoryUrlDto = RepositoryUrlDto.of(repositoryUrlVo.repositoryUrl(), githubId);
+          checkRepositoryExistence(githubId, RepositoryRecord);
+          RepositoryUrlDto repositoryUrlDto = RepositoryUrlDto.of(RepositoryRecord.repositoryUrl(), githubId);
           subscribeService.addSubscribeRepository(repositoryUrlDto, githubId);
        } catch (WebClientException e) {
           return handleWebClientException(e);
        }
-       logResponse(githubId, repositoryUrlVo.repositoryUrl());
-       return ResponseEntity.created(URI.create(repositoryUrlVo.repositoryUrl())).build();
+       logResponse(githubId, RepositoryRecord.repositoryUrl());
+       return ResponseEntity.created(URI.create(RepositoryRecord.repositoryUrl())).build();
     }
 
-    private void checkRepositoryExistence(String githubId, RepositoryUrlVo repositoryUrlVo) {
+    private void checkRepositoryExistence(String githubId, RepositoryRecord RepositoryRecord) {
        String accessToken = githubTokenService.findAccessToken(githubId);
-       logRequest(githubId, "Request Github API, Repository Url : " + repositoryUrlVo.repositoryUrl());
+       logRequest(githubId, "Request Github API, Repository Url : " + RepositoryRecord.repositoryUrl());
        WebClient.create()
           .get()
-          .uri(repositoryUrlVo.repositoryUrl())
+          .uri(RepositoryRecord.repositoryUrl())
           .headers(headers -> {
              headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
              headers.setBearerAuth(accessToken);

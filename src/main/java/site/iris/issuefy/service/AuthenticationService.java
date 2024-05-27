@@ -1,6 +1,6 @@
 package site.iris.issuefy.service;
 
-import static site.iris.issuefy.vo.OauthDto.*;
+import static site.iris.issuefy.model.dto.OauthDto.*;
 
 import java.util.Collections;
 import java.util.concurrent.ConcurrentHashMap;
@@ -13,8 +13,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import lombok.extern.slf4j.Slf4j;
-import site.iris.issuefy.vo.OauthDto;
-import site.iris.issuefy.vo.UserDto;
+import site.iris.issuefy.model.dto.OauthDto;
+import site.iris.issuefy.model.dto.UserDto;
 
 @Slf4j
 @Service

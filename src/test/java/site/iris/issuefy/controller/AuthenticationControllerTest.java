@@ -23,7 +23,7 @@ import org.springframework.test.web.servlet.ResultActions;
 import site.iris.issuefy.entity.Jwt;
 import site.iris.issuefy.service.AuthenticationService;
 import site.iris.issuefy.service.TokenProvider;
-import site.iris.issuefy.vo.UserDto;
+import site.iris.issuefy.model.dto.UserDto;
 
 @WebMvcTest(AuthenticationController.class)
 @AutoConfigureRestDocs
