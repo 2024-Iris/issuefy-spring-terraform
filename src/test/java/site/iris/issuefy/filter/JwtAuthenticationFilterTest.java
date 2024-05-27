@@ -4,8 +4,6 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -16,9 +14,8 @@ import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 
 import io.jsonwebtoken.Claims;
-import site.iris.issuefy.entity.Jwt;
-
 import jakarta.servlet.ServletException;
+import site.iris.issuefy.entity.Jwt;
 import site.iris.issuefy.exception.UnauthenticatedException;
 import site.iris.issuefy.service.TokenProvider;
 
@@ -42,9 +39,6 @@ class JwtAuthenticationFilterTest {
 		// given
 		request.addHeader("Authorization", "Bearer validToken");
 
-		Map<String, Object> claimsMap = new HashMap<>();
-		claimsMap.put("githubId", "dokkisan");
-
 		Claims claims = mock(Claims.class);
 		when(claims.get("githubId")).thenReturn("dokkisan");
 
@@ -64,7 +58,7 @@ class JwtAuthenticationFilterTest {
 
 	@DisplayName("만료기간이 지난 토큰은 UnauthorizedException을 발생시킨다")
 	@Test
-	void testInvalidToken() {
+	void testInvalidToken() throws ServletException, IOException {
 		MockHttpServletRequest request = new MockHttpServletRequest();
 		MockHttpServletResponse response = new MockHttpServletResponse();
 		MockFilterChain filterChain = new MockFilterChain();
@@ -75,34 +69,34 @@ class JwtAuthenticationFilterTest {
 		when(tokenProvider.isValidToken("invalidToken")).thenReturn(false);
 
 		// when
-		assertThrows(UnauthenticatedException.class, () -> {
-			jwtAuthenticationFilter.doFilterInternal(request, response, filterChain);
-		});
+		jwtAuthenticationFilter.doFilterInternal(request, response, filterChain);
 
 		// then
 		assertEquals(HttpStatus.FORBIDDEN.value(), response.getStatus());
+		assertTrue(response.getContentAsString()
+			.contains("\"message\":\"" + UnauthenticatedException.ACCESS_TOKEN_EXPIRED + "\""));
 	}
 
 	@DisplayName("Authorization 헤더가 없을 경우 UnauthorizedException을 발생시킨다.")
 	@Test
-	void testMissingAuthorizationHeader() {
+	void testMissingAuthorizationHeader() throws ServletException, IOException {
 		// given
 		MockHttpServletRequest request = new MockHttpServletRequest();
 		MockHttpServletResponse response = new MockHttpServletResponse();
 		MockFilterChain filterChain = new MockFilterChain();
 
 		// when
-		assertThrows(UnauthenticatedException.class, () -> {
-			jwtAuthenticationFilter.doFilterInternal(request, response, filterChain);
-		});
+		jwtAuthenticationFilter.doFilterInternal(request, response, filterChain);
 
 		// then
 		assertEquals(HttpStatus.UNAUTHORIZED.value(), response.getStatus());
+		assertTrue(
+			response.getContentAsString().contains("\"message\":\"" + UnauthenticatedException.INVALID_HEADER + "\""));
 	}
 
 	@DisplayName("Bearer 토큰이 아닐 경우 UnauthorizedException을 발생시킨다.")
 	@Test
-	void testInvalidTokenType() {
+	void testInvalidTokenType() throws ServletException, IOException {
 		MockHttpServletRequest request = new MockHttpServletRequest();
 		MockHttpServletResponse response = new MockHttpServletResponse();
 		MockFilterChain filterChain = new MockFilterChain();
@@ -111,12 +105,12 @@ class JwtAuthenticationFilterTest {
 		request.addHeader("Authorization", "invalidTokenType");
 
 		// when
-		assertThrows(UnauthenticatedException.class, () -> {
-			jwtAuthenticationFilter.doFilterInternal(request, response, filterChain);
-		});
+		jwtAuthenticationFilter.doFilterInternal(request, response, filterChain);
 
 		// then
 		assertEquals(HttpStatus.UNAUTHORIZED.value(), response.getStatus());
+		assertEquals("{\"message\":\"" + UnauthenticatedException.INVALID_HEADER + "\"}",
+			response.getContentAsString());
 	}
 
 	@DisplayName("API 명세서 url 접속시 필터링을 하지 않는다")
@@ -151,5 +145,25 @@ class JwtAuthenticationFilterTest {
 
 		// then
 		assertEquals(200, response.getStatus());
+	}
+
+	@DisplayName("프리플라이트 요청 처리")
+	@Test
+	void testPreflightRequest() throws ServletException, IOException {
+		MockHttpServletRequest request = new MockHttpServletRequest();
+		MockHttpServletResponse response = new MockHttpServletResponse();
+		MockFilterChain filterChain = new MockFilterChain();
+
+		// given
+		request.setMethod("OPTIONS");
+
+		// when
+		jwtAuthenticationFilter.doFilterInternal(request, response, filterChain);
+
+		// then
+		assertEquals(HttpStatus.OK.value(), response.getStatus());
+		assertEquals("http://localhost:3000", response.getHeader("Access-Control-Allow-Origin"));
+		assertEquals("GET, POST, PUT, DELETE", response.getHeader("Access-Control-Allow-Methods"));
+		assertEquals("*", response.getHeader("Access-Control-Allow-Headers"));
 	}
 }

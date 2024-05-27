@@ -1,5 +1,6 @@
 package site.iris.issuefy.controller;
 
+import java.net.URI;
 import java.util.Collections;
 import java.util.List;
 
@@ -51,7 +52,7 @@ public class SubscribeController {
 			log.warn(NOT_EXIST_MESSAGE + ": {}", webClientException.getMessage());
 			return ResponseEntity.notFound().build();
 		}
-		return ResponseEntity.ok().build();
+		return ResponseEntity.created(URI.create(repositoryUrlVo.repositoryUrl())).build();
 	}
 
 	public void validateUrl(String githubId, RepositoryUrlVo repositoryUrlVo) {

@@ -34,7 +34,7 @@ class UserServiceTest {
 	@Test
 	void registerUserIfNotExist() {
 		// given
-		UserDto loginUserDto = new UserDto("dokkisan", "https://avatars.githubusercontent.com/u/117690393?v=4");
+		UserDto loginUserDto = new UserDto("dokkisan", "https://avatars.githubusercontent.com/u/117690393?v=4", "test@email.com");
 
 		// when
 		when(userRepository.findByGithubId(loginUserDto.getGithubId())).thenReturn(Optional.empty());
