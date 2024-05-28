@@ -14,8 +14,8 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import site.iris.issuefy.entity.User;
-import site.iris.issuefy.repository.UserRepository;
 import site.iris.issuefy.model.dto.UserDto;
+import site.iris.issuefy.repository.UserRepository;
 
 class UserServiceTest {
 
@@ -34,7 +34,8 @@ class UserServiceTest {
 	@Test
 	void registerUserIfNotExist() {
 		// given
-		UserDto loginUserDto = new UserDto("dokkisan", "https://avatars.githubusercontent.com/u/117690393?v=4", "test@email.com");
+		UserDto loginUserDto = new UserDto("dokkisan", "https://avatars.githubusercontent.com/u/117690393?v=4",
+			"test@email.com");
 
 		// when
 		when(userRepository.findByGithubId(loginUserDto.getGithubId())).thenReturn(Optional.empty());

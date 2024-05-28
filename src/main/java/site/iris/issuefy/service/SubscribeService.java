@@ -10,18 +10,18 @@ import org.springframework.stereotype.Service;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import site.iris.issuefy.response.SubscribeResponse;
 import site.iris.issuefy.entity.Org;
 import site.iris.issuefy.entity.Repository;
 import site.iris.issuefy.entity.Subscribe;
 import site.iris.issuefy.entity.User;
+import site.iris.issuefy.model.dto.RepositoryDto;
+import site.iris.issuefy.model.dto.RepositoryUrlDto;
+import site.iris.issuefy.model.vo.OrgRecord;
 import site.iris.issuefy.repository.OrgRepository;
 import site.iris.issuefy.repository.RepositoryRepository;
 import site.iris.issuefy.repository.SubscribeRepository;
 import site.iris.issuefy.repository.UserRepository;
-import site.iris.issuefy.model.vo.OrgRecord;
-import site.iris.issuefy.model.dto.RepositoryDto;
-import site.iris.issuefy.model.dto.RepositoryUrlDto;
+import site.iris.issuefy.response.SubscribeResponse;
 
 @Service
 @RequiredArgsConstructor

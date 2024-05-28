@@ -4,9 +4,9 @@ import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
 import site.iris.issuefy.entity.User;
-import site.iris.issuefy.repository.UserRepository;
 import site.iris.issuefy.model.dto.UserDto;
 import site.iris.issuefy.model.dto.UserVerifyDto;
+import site.iris.issuefy.repository.UserRepository;
 
 @Service
 @RequiredArgsConstructor

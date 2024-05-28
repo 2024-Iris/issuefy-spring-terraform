@@ -1,7 +1,7 @@
 package site.iris.issuefy.service;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 import java.util.Optional;
@@ -19,64 +19,62 @@ import site.iris.issuefy.repository.GithubTokenRedisRepository;
 
 @ExtendWith(MockitoExtension.class)
 class GithubTokenServiceTest {
-    @Mock
-    private GithubTokenRedisRepository githubTokenRedisRepository;
+	private static final String GITHUB_ID = "testUser";
+	private static final String ACCESS_TOKEN = "testToken";
+	@Mock
+	private GithubTokenRedisRepository githubTokenRedisRepository;
+	@InjectMocks
+	private GithubTokenService githubTokenService;
 
-    @InjectMocks
-    private GithubTokenService githubTokenService;
+	@BeforeEach
+	void setUp() {
+		githubTokenService = new GithubTokenService(githubTokenRedisRepository);
+	}
 
-    private static final String GITHUB_ID = "testUser";
-    private static final String ACCESS_TOKEN = "testToken";
+	@DisplayName("액세스 토큰을 저장한다")
+	@Test
+	void storeAccessToken() {
+		// when
+		githubTokenService.storeAccessToken(GITHUB_ID, ACCESS_TOKEN);
 
-    @BeforeEach
-    void setUp() {
-        githubTokenService = new GithubTokenService(githubTokenRedisRepository);
-    }
+		// then
+		verify(githubTokenRedisRepository, times(1)).save(any(GithubToken.class));
+	}
 
-    @DisplayName("액세스 토큰을 저장한다")
-    @Test
-    void storeAccessToken() {
-        // when
-        githubTokenService.storeAccessToken(GITHUB_ID, ACCESS_TOKEN);
+	@DisplayName("액세스 토큰을 조회한다")
+	@Test
+	void findAccessToken() {
+		// given
+		GithubToken githubToken = GithubToken.of(GITHUB_ID, ACCESS_TOKEN, 60L * 60 * 8);
+		when(githubTokenRedisRepository.findById(GITHUB_ID)).thenReturn(Optional.of(githubToken));
 
-        // then
-        verify(githubTokenRedisRepository, times(1)).save(any(GithubToken.class));
-    }
+		// when
+		String accessToken = githubTokenService.findAccessToken(GITHUB_ID);
 
-    @DisplayName("액세스 토큰을 조회한다")
-    @Test
-    void findAccessToken() {
-        // given
-        GithubToken githubToken = GithubToken.of(GITHUB_ID, ACCESS_TOKEN, 60L * 60 * 8);
-        when(githubTokenRedisRepository.findById(GITHUB_ID)).thenReturn(Optional.of(githubToken));
+		// then
+		assertEquals(ACCESS_TOKEN, accessToken);
+	}
 
-        // when
-        String accessToken = githubTokenService.findAccessToken(GITHUB_ID);
+	@DisplayName("액세스 토큰이 없을 경우 'Token not found'를 반환한다")
+	@Test
+	void findAccessTokenNotFound() {
+		// given
+		when(githubTokenRedisRepository.findById(GITHUB_ID)).thenReturn(Optional.empty());
 
-        // then
-        assertEquals(ACCESS_TOKEN, accessToken);
-    }
+		// when
+		String accessToken = githubTokenService.findAccessToken(GITHUB_ID);
 
-    @DisplayName("액세스 토큰이 없을 경우 'Token not found'를 반환한다")
-    @Test
-    void findAccessTokenNotFound() {
-        // given
-        when(githubTokenRedisRepository.findById(GITHUB_ID)).thenReturn(Optional.empty());
+		// then
+		assertEquals("Token not found", accessToken);
+	}
 
-        // when
-        String accessToken = githubTokenService.findAccessToken(GITHUB_ID);
+	@DisplayName("액세스 토큰을 삭제한다")
+	@Test
+	void deleteAccessToken() {
+		// when
+		githubTokenService.deleteAccessToken(GITHUB_ID);
 
-        // then
-        assertEquals("Token not found", accessToken);
-    }
-
-    @DisplayName("액세스 토큰을 삭제한다")
-    @Test
-    void deleteAccessToken() {
-        // when
-        githubTokenService.deleteAccessToken(GITHUB_ID);
-
-        // then
-        verify(githubTokenRedisRepository, times(1)).deleteById(GITHUB_ID);
-    }
+		// then
+		verify(githubTokenRedisRepository, times(1)).deleteById(GITHUB_ID);
+	}
 }

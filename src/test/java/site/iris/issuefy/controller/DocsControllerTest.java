@@ -1,11 +1,8 @@
 package site.iris.issuefy.controller;
 
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -21,24 +18,24 @@ import org.springframework.test.web.servlet.MockMvc;
 
 @WebMvcTest(DocsController.class)
 class DocsControllerTest {
-    @Autowired
-    private MockMvc mockMvc;
+	@Autowired
+	private MockMvc mockMvc;
 
-    @MockBean
-    private ResourceLoader resourceLoader;
+	@MockBean
+	private ResourceLoader resourceLoader;
 
-    @BeforeEach
-    void setUp() {
-        Resource mockResource = mock(Resource.class);
-        when(resourceLoader.getResource("classpath:/static/docs/api-guide.html")).thenReturn(mockResource);
-    }
+	@BeforeEach
+	void setUp() {
+		Resource mockResource = mock(Resource.class);
+		when(resourceLoader.getResource("classpath:/static/docs/api-guide.html")).thenReturn(mockResource);
+	}
 
-    @DisplayName("API 문서를 조회한다")
-    @Test
-    void getDocs() throws Exception {
-        mockMvc.perform(get("/api/docs"))
-                .andExpect(status().isOk())
-                .andExpect(header().string(HttpHeaders.CONTENT_TYPE, MediaType.TEXT_HTML_VALUE))
-                .andExpect(content().contentType(MediaType.TEXT_HTML));
-    }
+	@DisplayName("API 문서를 조회한다")
+	@Test
+	void getDocs() throws Exception {
+		mockMvc.perform(get("/api/docs"))
+			.andExpect(status().isOk())
+			.andExpect(header().string(HttpHeaders.CONTENT_TYPE, MediaType.TEXT_HTML_VALUE))
+			.andExpect(content().contentType(MediaType.TEXT_HTML));
+	}
 }

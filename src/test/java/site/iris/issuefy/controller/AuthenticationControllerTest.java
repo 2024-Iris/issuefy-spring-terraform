@@ -21,9 +21,9 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 
 import site.iris.issuefy.entity.Jwt;
+import site.iris.issuefy.model.dto.UserDto;
 import site.iris.issuefy.service.AuthenticationService;
 import site.iris.issuefy.service.TokenProvider;
-import site.iris.issuefy.model.dto.UserDto;
 
 @WebMvcTest(AuthenticationController.class)
 @AutoConfigureRestDocs
@@ -56,7 +56,7 @@ class AuthenticationControllerTest {
 		String accessToken = "test-jwt-token";
 		String refreshToken = "test-refresh-token";
 		Jwt jwt = new Jwt(accessToken, refreshToken);
-        when(tokenProvider.createJwt(claims)).thenReturn(jwt);
+		when(tokenProvider.createJwt(claims)).thenReturn(jwt);
 
 		// when
 		ResultActions result = mockMvc.perform(get("/api/login", code)
@@ -68,13 +68,13 @@ class AuthenticationControllerTest {
 			.andExpect(jsonPath("$.userName", is(userName)))
 			.andExpect(jsonPath("$.avatarURL", is(avatarURL)))
 			.andExpect(jsonPath("$.jwt.accessToken", is(accessToken)))
-            .andExpect(jsonPath("$.jwt.refreshToken", is(refreshToken)))
+			.andExpect(jsonPath("$.jwt.refreshToken", is(refreshToken)))
 			.andDo(document("issuefy/oauth/login",
 				responseFields(
 					fieldWithPath("userName").description("사용자 로그인 이름"),
 					fieldWithPath("avatarURL").description("사용자 아바타 URL"),
 					fieldWithPath("jwt.accessToken").description("JWT 액세스 토큰"),
-                    fieldWithPath("jwt.refreshToken").description("JWT 리프레시 토큰")
+					fieldWithPath("jwt.refreshToken").description("JWT 리프레시 토큰")
 				)));
 	}
 }

@@ -7,9 +7,9 @@ jwt:
 
 spring:
   datasource:
-#    url: jdbc:tc:mysql:8://issuefy/?TC_INITSCRIPT=file:src/test/resources/schema.sql
+    #    url: jdbc:tc:mysql:8://issuefy/?TC_INITSCRIPT=file:src/test/resources/schema.sql
     driver-class-name: org.testcontainers.jdbc.ContainerDatabaseDriver
-#    url: jdbc:tc:mysql:8://TLqkf
+    #    url: jdbc:tc:mysql:8://TLqkf
     url: jdbc:tc:mysql:8://issuefy
     username: root
     password: root
