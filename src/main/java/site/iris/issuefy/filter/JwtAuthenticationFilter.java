@@ -41,19 +41,21 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 			return;
 		}
 
+		String githubId = null;
 		try {
 			String token = getJwtFromRequest(request);
+			githubId = (String)tokenProvider.getClaims(token).get("githubId");
 
 			if (!tokenProvider.isValidToken(token)) {
 				throw new UnauthenticatedException(UnauthenticatedException.ACCESS_TOKEN_EXPIRED,
 					HttpStatus.FORBIDDEN.value());
 			}
 
-			request.setAttribute("githubId", tokenProvider.getClaims(token).get("githubId"));
+			request.setAttribute("githubId", githubId);
 
 			filterChain.doFilter(request, response);
 		} catch (UnauthenticatedException e) {
-			log.info(e.getMessage());
+			log.info("{} : {}", githubId, e.getMessage());
 			handleUnauthorizedException(response, e);
 		}
 	}
