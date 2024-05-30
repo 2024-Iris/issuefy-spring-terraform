@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+
+    <property name="CONSOLE_PATTERN"
+              value="%d{yyyy-MM-dd HH:mm:ss.SSS} %magenta([%thread]) %green([%-3level]) %highlight(%logger{5}) - %msg %n"/>
+    <property name="ROLLING_PATTERN" value="%d{yyyy-MM-dd HH:mm:ss.SSS}  %logger{5} - %msg %n"/>
+    <property name="FILE_PATH_NAME" value="C:\Users\roy\Desktop\Dev\Issuefy\logs\issuefy.log"/>
+    <property name="LOG_NAME_PATTERN" value="C:\Users\roy\Desktop\Dev\Issuefy\logs\issuefy-%d{yyyy-MM-dd}.%i.log"/>
+    <property name="MAX_FILE_SIZE" value="10MB"/>
+    <property name="TOTAL_SIZE" value="30MB"/>
+    <property name="MAX_HISTORY" value="5"/>
+
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>${CONSOLE_PATTERN}</pattern>
+        </encoder>
+    </appender>
+
+    <appender name="ROLLING_LOG_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <encoder>
+            <pattern>${ROLLING_PATTERN}</pattern>
+        </encoder>
+        <file>${FILE_PATH_NAME}</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_NAME_PATTERN}</fileNamePattern>
+            <maxHistory>${MAX_HISTORY}</maxHistory>
+            <maxFileSize>${MAX_FILE_SIZE}</maxFileSize>
+            <totalSizeCap>${TOTAL_SIZE}</totalSizeCap>
+        </rollingPolicy>
+    </appender>
+
+    <root level="INFO">
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="ROLLING_LOG_FILE"/>
+    </root>
+</configuration>
