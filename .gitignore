@@ -36,4 +36,5 @@ out/
 
 ### VS Code ###
 .vscode/
-!.config.yml
+/config.yml
+/src/main/resources/logback.xml
