@@ -2,7 +2,7 @@
 <configuration>
 
     <property name="CONSOLE_PATTERN"
-              value="%d{yyyy-MM-dd HH:mm:ss.SSS} %magenta([%thread]) %green([%-3level]) %highlight(%logger{5}) - %msg %n"/>
+              value="%d{yyyy-MM-dd HH:mm:ss.SSS} %magenta([%thread]) %highlight([%-3level]) %green(%logger{5}) - %msg %n"/>
     <property name="ROLLING_PATTERN" value="%d{yyyy-MM-dd HH:mm:ss.SSS}  %logger{5} - %msg %n"/>
     <property name="FILE_PATH_NAME" value="C:\Users\roy\Desktop\Dev\Issuefy\logs\issuefy.log"/>
     <property name="LOG_NAME_PATTERN" value="C:\Users\roy\Desktop\Dev\Issuefy\logs\issuefy-%d{yyyy-MM-dd}.%i.log"/>
