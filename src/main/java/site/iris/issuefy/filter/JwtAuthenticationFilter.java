@@ -7,6 +7,7 @@ import java.io.IOException;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.filter.OncePerRequestFilter;
 
+import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -44,13 +45,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 		String githubId = null;
 		try {
 			String token = getJwtFromRequest(request);
-			githubId = (String)tokenProvider.getClaims(token).get("githubId");
 
 			if (!tokenProvider.isValidToken(token)) {
 				throw new UnauthenticatedException(UnauthenticatedException.ACCESS_TOKEN_EXPIRED,
 					HttpStatus.FORBIDDEN.value());
 			}
 
+			Claims claims = tokenProvider.getClaims(token);
+			githubId = (String)claims.get("githubId");
 			request.setAttribute("githubId", githubId);
 
 			filterChain.doFilter(request, response);
