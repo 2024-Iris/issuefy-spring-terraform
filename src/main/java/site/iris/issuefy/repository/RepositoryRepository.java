@@ -7,5 +7,5 @@ import org.springframework.data.repository.CrudRepository;
 import site.iris.issuefy.entity.Repository;
 
 public interface RepositoryRepository extends CrudRepository<Repository, Long> {
-	Optional<Repository> findByOrgIdAndName(Long orgId, String repositoryName);
+	Optional<Repository> findByNameAndOrgId(String repositoryName, Long orgId);
 }
