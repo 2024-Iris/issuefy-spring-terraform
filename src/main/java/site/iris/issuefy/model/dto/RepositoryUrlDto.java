@@ -5,12 +5,12 @@ import java.util.regex.Pattern;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import site.iris.issuefy.exception.InvalidUrlException;
 
 @Getter
 @AllArgsConstructor
 public class RepositoryUrlDto {
 
-	private static final String INVALID_URL_MESSAGE = "Invalid repository URL";
 	private final String repositoryUrl;
 	private final String githubId;
 	private final String orgName;
@@ -22,7 +22,7 @@ public class RepositoryUrlDto {
 		if (matcher.find()) {
 			return new RepositoryUrlDto(repositoryUrl, githubId, matcher.group(1), matcher.group(2));
 		}
-		throw new IllegalArgumentException(INVALID_URL_MESSAGE);
+		throw new InvalidUrlException(InvalidUrlException.INVALID_URL);
 	}
 
 	@Override
