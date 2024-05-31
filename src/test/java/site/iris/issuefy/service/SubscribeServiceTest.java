@@ -80,7 +80,7 @@ class SubscribeServiceTest {
 		Subscribe subscribe = new Subscribe(user, repository);
 
 		when(orgRepository.findByName(repositoryUrlDto.getOrgName())).thenReturn(Optional.of(org));
-		when(repositoryRepository.findByOrgIdAndName(org.getId(), repositoryUrlDto.getRepositoryName())).thenReturn(
+		when(repositoryRepository.findByNameAndOrgId(repositoryUrlDto.getRepositoryName(), org.getId())).thenReturn(
 			Optional.of(repository));
 		when(userRepository.findByGithubId(repositoryUrlDto.getGithubId())).thenReturn(Optional.of(user));
 		when(subscribeRepository.findByUserIdAndRepositoryId(user.getId(), repository.getId())).thenReturn(
@@ -91,7 +91,7 @@ class SubscribeServiceTest {
 
 		// then
 		verify(orgRepository, times(1)).findByName(repositoryUrlDto.getOrgName());
-		verify(repositoryRepository, times(1)).findByOrgIdAndName(org.getId(), repositoryUrlDto.getRepositoryName());
+		verify(repositoryRepository, times(1)).findByNameAndOrgId(repositoryUrlDto.getRepositoryName(), org.getId());
 		verify(userRepository, times(1)).findByGithubId(repositoryUrlDto.getGithubId());
 		verify(subscribeRepository, times(1)).findByUserIdAndRepositoryId(user.getId(), repository.getId());
 		verify(subscribeRepository, never()).save(any(Subscribe.class));

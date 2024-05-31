@@ -14,6 +14,7 @@ import site.iris.issuefy.entity.Org;
 import site.iris.issuefy.entity.Repository;
 import site.iris.issuefy.entity.Subscribe;
 import site.iris.issuefy.entity.User;
+import site.iris.issuefy.exception.UserNotFoundException;
 import site.iris.issuefy.model.dto.RepositoryDto;
 import site.iris.issuefy.model.dto.RepositoryUrlDto;
 import site.iris.issuefy.model.vo.OrgRecord;
@@ -33,8 +34,8 @@ public class SubscribeService {
 	private final RepositoryRepository repositoryRepository;
 
 	public List<SubscribeResponse> getSubscribedRepositories(String githubId) {
-		// TODO 커스텀 예외 추가
-		User user = userRepository.findByGithubId(githubId).orElseThrow();
+		User user = userRepository.findByGithubId(githubId)
+			.orElseThrow(() -> new UserNotFoundException(githubId));
 		List<Subscribe> subscribes = subscribeRepository.findByUserId(user.getId());
 
 		Map<OrgRecord, List<RepositoryDto>> orgResponseMap = new HashMap<>();
@@ -70,8 +71,8 @@ public class SubscribeService {
 					Org newOrg = new Org(repositoryUrlDto.getOrgName());
 					return orgRepository.save(newOrg);
 				});
-			Repository repository = repositoryRepository.findByOrgIdAndName(org.getId(),
-					repositoryUrlDto.getRepositoryName())
+			Repository repository = repositoryRepository.findByNameAndOrgId(
+					repositoryUrlDto.getRepositoryName(), org.getId())
 				.orElseGet(() -> {
 					Repository newRepository = new Repository(org, repositoryUrlDto.getRepositoryName());
 					return repositoryRepository.save(newRepository);
