@@ -46,10 +46,11 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GH_ISSUEFY_ROY_TOKEN }}
 
-      - name: Overwrite application.yml with submodule version
+      - name: Overwrite application.yml and logback.xml with submodule versions
         run: |
           mkdir -p src/main/resources
           cp submodules/application.yml src/main/resources/application.yml
+          cp submodules/logback.xml src/main/resources/logback.xml
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4

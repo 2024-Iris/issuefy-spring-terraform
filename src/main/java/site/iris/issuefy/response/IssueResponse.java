@@ -1,4 +1,4 @@
-package site.iris.issuefy.dto;
+package site.iris.issuefy.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

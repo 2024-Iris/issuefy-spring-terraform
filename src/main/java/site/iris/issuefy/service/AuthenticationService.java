@@ -1,6 +1,6 @@
 package site.iris.issuefy.service;
 
-import static site.iris.issuefy.vo.OauthDto.*;
+import static site.iris.issuefy.model.dto.OauthDto.*;
 
 import java.util.Collections;
 import java.util.concurrent.ConcurrentHashMap;
@@ -13,9 +13,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import lombok.extern.slf4j.Slf4j;
-import site.iris.issuefy.repository.GithubTokenRepository;
-import site.iris.issuefy.vo.OauthDto;
-import site.iris.issuefy.vo.UserDto;
+import site.iris.issuefy.model.dto.OauthDto;
+import site.iris.issuefy.model.dto.UserDto;
 
 @Slf4j
 @Service
@@ -27,30 +26,26 @@ public class AuthenticationService {
 	private final WebClient webClient;
 	private final GithubAccessTokenService githubAccessTokenService;
 	private final UserService userService;
-	private final GithubTokenRepository githubTokenRepository;
+	private final GithubTokenService githubTokenService;
 
 	// 2개의 WebClient Bean중에서 apiWebClient Bean을 사용하기 위해 생성자를 만들었습니다.
 	@Autowired
 	public AuthenticationService(GithubAccessTokenService githubAccessTokenService,
 		@Qualifier("apiWebClient") WebClient webClient,
-		UserService userService, GithubTokenRepository githubTokenRepository) {
+		UserService userService, GithubTokenService githubTokenService) {
 		this.githubAccessTokenService = githubAccessTokenService;
 		this.webClient = webClient;
 		this.userService = userService;
-		this.githubTokenRepository = githubTokenRepository;
+		this.githubTokenService = githubTokenService;
 	}
 
 	public UserDto githubLogin(String code) {
 		String accessToken = githubAccessTokenService.getToken(code);
-		log.info("accessToken : {}", accessToken);
+		log.info("Successfully retrieve GitHub access token");
 		OauthDto oauthDto = parseOauthDto(accessToken);
-		log.info(oauthDto.toString());
-
 		UserDto loginUserDto = getUserInfo(oauthDto);
-		githubTokenRepository.storeAccessToken(loginUserDto.getGithubId(), oauthDto.getAccessToken());
-
+		githubTokenService.storeAccessToken(loginUserDto.getGithubId(), oauthDto.getAccessToken());
 		userService.registerUserIfNotExist(loginUserDto);
-
 		return loginUserDto;
 	}
 

@@ -10,11 +10,11 @@ import org.springframework.web.bind.annotation.RestController;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import site.iris.issuefy.dto.OauthResponse;
 import site.iris.issuefy.entity.Jwt;
+import site.iris.issuefy.model.dto.UserDto;
+import site.iris.issuefy.response.OauthResponse;
 import site.iris.issuefy.service.AuthenticationService;
 import site.iris.issuefy.service.TokenProvider;
-import site.iris.issuefy.vo.UserDto;
 
 @Slf4j
 @RestController
@@ -25,12 +25,16 @@ public class AuthenticationController {
 
 	@GetMapping("/api/login")
 	public ResponseEntity<OauthResponse> login(@RequestParam String code) {
+		log.info("Login request occurs");
 		UserDto userDto = authenticationService.githubLogin(code);
 		Map<String, Object> claims = new HashMap<>();
 		claims.put("githubId", userDto.getGithubId());
 		Jwt jwt = tokenProvider.createJwt(claims);
 
+		log.info("user login : {}, authorization code : {}", userDto.getGithubId(), code);
+		log.info("response : {}", jwt.toString());
 		return ResponseEntity.ok()
-			.body(OauthResponse.of(userDto.getGithubId(), userDto.getGithubProfileImage(), jwt));
+			.body(OauthResponse.of(userDto.getGithubId(), userDto.getGithubProfileImage(), jwt
+			));
 	}
 }

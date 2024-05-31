@@ -21,9 +21,9 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 
 import site.iris.issuefy.entity.Jwt;
+import site.iris.issuefy.model.dto.UserDto;
 import site.iris.issuefy.service.AuthenticationService;
 import site.iris.issuefy.service.TokenProvider;
-import site.iris.issuefy.vo.UserDto;
 
 @WebMvcTest(AuthenticationController.class)
 @AutoConfigureRestDocs
@@ -46,13 +46,17 @@ class AuthenticationControllerTest {
 		String code = "test-auth-code";
 		String userName = "testUser";
 		String avatarURL = "https://avatars.githubusercontent.com/12345";
+		String email = "test@gmail.com";
 
-		UserDto userDto = UserDto.of(userName, avatarURL);
+		UserDto userDto = UserDto.of(userName, avatarURL, email);
 		when(authenticationService.githubLogin(code)).thenReturn(userDto);
 
 		Map<String, Object> claims = new HashMap<>();
 		claims.put("githubId", userDto.getGithubId());
-		Jwt jwt = tokenProvider.createJwt(claims);
+		String accessToken = "test-jwt-token";
+		String refreshToken = "test-refresh-token";
+		Jwt jwt = new Jwt(accessToken, refreshToken);
+		when(tokenProvider.createJwt(claims)).thenReturn(jwt);
 
 		// when
 		ResultActions result = mockMvc.perform(get("/api/login", code)
@@ -63,12 +67,14 @@ class AuthenticationControllerTest {
 		result.andExpect(status().isOk())
 			.andExpect(jsonPath("$.userName", is(userName)))
 			.andExpect(jsonPath("$.avatarURL", is(avatarURL)))
-			.andExpect(jsonPath("$.jwt", is(jwt)))
+			.andExpect(jsonPath("$.jwt.accessToken", is(accessToken)))
+			.andExpect(jsonPath("$.jwt.refreshToken", is(refreshToken)))
 			.andDo(document("issuefy/oauth/login",
 				responseFields(
 					fieldWithPath("userName").description("사용자 로그인 이름"),
 					fieldWithPath("avatarURL").description("사용자 아바타 URL"),
-					fieldWithPath("jwt").description("JWT 토큰")
+					fieldWithPath("jwt.accessToken").description("JWT 액세스 토큰"),
+					fieldWithPath("jwt.refreshToken").description("JWT 리프레시 토큰")
 				)));
 	}
 }

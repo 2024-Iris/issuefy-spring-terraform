@@ -4,9 +4,9 @@ import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
 import site.iris.issuefy.entity.User;
+import site.iris.issuefy.model.dto.UserDto;
+import site.iris.issuefy.model.dto.UserVerifyDto;
 import site.iris.issuefy.repository.UserRepository;
-import site.iris.issuefy.vo.UserDto;
-import site.iris.issuefy.vo.UserVerifyDto;
 
 @Service
 @RequiredArgsConstructor
@@ -17,7 +17,7 @@ public class UserService {
 	public void registerUserIfNotExist(UserDto loginUserDto) {
 		UserVerifyDto userVerifyDto = verifyUser(loginUserDto);
 		if (!userVerifyDto.isValid()) {
-			User user = new User(loginUserDto.getGithubId());
+			User user = new User(loginUserDto.getGithubId(), loginUserDto.getEmail());
 			userRepository.save(user);
 		}
 	}

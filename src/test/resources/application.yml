@@ -7,7 +7,22 @@ jwt:
 
 spring:
   datasource:
-    url: jdbc:tc:mysql://localhost:3306/test
-    username: test
-    password: test
+    #    url: jdbc:tc:mysql:8://issuefy/?TC_INITSCRIPT=file:src/test/resources/schema.sql
     driver-class-name: org.testcontainers.jdbc.ContainerDatabaseDriver
+    #    url: jdbc:tc:mysql:8://TLqkf
+    url: jdbc:tc:mysql:8://issuefy
+    username: root
+    password: root
+#  jpa:
+#    show-sql: false
+#    hibernate:
+#      ddl-auto: create
+#    open-in-view: false
+#    properties:
+#      hibernate:
+#        format_sql: true
+#  sql:
+#    init:
+#      schema-locations: ../../../src/test/resources/
+#      data-locations: classpath:data.sql
+#      mode: always

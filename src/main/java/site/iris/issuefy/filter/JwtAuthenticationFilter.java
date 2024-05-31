@@ -7,15 +7,18 @@ import java.io.IOException;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.filter.OncePerRequestFilter;
 
+import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import site.iris.issuefy.exception.UnauthenticatedException;
 import site.iris.issuefy.service.TokenProvider;
 
+@Slf4j
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 	public static final String BEARER_DELIMITER = "Bearer ";
@@ -27,29 +30,54 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 		@NonNull FilterChain filterChain)
 		throws ServletException, IOException {
 
+		// 프리플라이트 요청 처리
+		if (request.getMethod().equals("OPTIONS")) {
+			handlePreflightRequest(response);
+			return;
+		}
+
 		String path = request.getRequestURI();
 		if (path.startsWith("/api/login") || path.equals("/api/docs")) {
 			filterChain.doFilter(request, response);
 			return;
 		}
 
+		String githubId = null;
 		try {
 			String token = getJwtFromRequest(request);
 
-			// 토큰이 만료된 경우 403 반환
 			if (!tokenProvider.isValidToken(token)) {
 				throw new UnauthenticatedException(UnauthenticatedException.ACCESS_TOKEN_EXPIRED,
 					HttpStatus.FORBIDDEN.value());
 			}
 
-			request.setAttribute("githubId", tokenProvider.getClaims(token).get("githubId"));
+			Claims claims = tokenProvider.getClaims(token);
+			githubId = (String)claims.get("githubId");
+			request.setAttribute("githubId", githubId);
 
 			filterChain.doFilter(request, response);
 		} catch (UnauthenticatedException e) {
-			logger.warn(e.getMessage());
-			response.sendError(e.getStatusCode(), e.getMessage());
-			throw e;
+			log.info("{} : {}", githubId, e.getMessage());
+			handleUnauthorizedException(response, e);
 		}
+	}
+
+	private void handlePreflightRequest(HttpServletResponse response) {
+		response.setHeader("Access-Control-Allow-Origin", "http://localhost:3000");
+		response.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
+		response.setHeader("Access-Control-Allow-Headers", "*");
+		response.setStatus(HttpServletResponse.SC_OK);
+	}
+
+	private void handleUnauthorizedException(HttpServletResponse response, UnauthenticatedException e)
+		throws IOException {
+		response.setHeader("Access-Control-Allow-Origin", "http://localhost:3000");
+		response.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
+		response.setHeader("Access-Control-Allow-Headers", "*");
+		response.setStatus(e.getStatusCode());
+		response.setContentType("application/json");
+		response.setCharacterEncoding("UTF-8");
+		response.getWriter().write("{\"message\":\"" + e.getMessage() + "\"}");
 	}
 
 	private String getJwtFromRequest(HttpServletRequest request) {
