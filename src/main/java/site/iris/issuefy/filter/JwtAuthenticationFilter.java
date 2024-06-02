@@ -30,6 +30,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 		@NonNull FilterChain filterChain)
 		throws ServletException, IOException {
 
+		String clientIP = request.getHeader("X-Forwarded-For");
+		if (clientIP == null || clientIP.isEmpty() || "unknown".equalsIgnoreCase(clientIP)) {
+			clientIP = request.getRemoteHost();
+		}
+
 		// 프리플라이트 요청 처리
 		if (request.getMethod().equals("OPTIONS")) {
 			handlePreflightRequest(response);
@@ -45,7 +50,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 		String githubId = null;
 		try {
 			String token = getJwtFromRequest(request);
-
 			if (!tokenProvider.isValidToken(token)) {
 				throw new UnauthenticatedException(UnauthenticatedException.ACCESS_TOKEN_EXPIRED,
 					HttpStatus.FORBIDDEN.value());
@@ -56,8 +60,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 			request.setAttribute("githubId", githubId);
 
 			filterChain.doFilter(request, response);
+
 		} catch (UnauthenticatedException e) {
-			log.info("{} : {}", githubId, e.getMessage());
+			log.warn("ClientIP : {} - RequestURL : {} - GithubID : {} - {}", clientIP, request.getRequestURL(), githubId, e.getMessage());
 			handleUnauthorizedException(response, e);
 		}
 	}
