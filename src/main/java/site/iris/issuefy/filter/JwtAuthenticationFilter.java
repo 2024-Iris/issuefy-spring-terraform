@@ -62,7 +62,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 			filterChain.doFilter(request, response);
 
 		} catch (UnauthenticatedException e) {
-			log.info("ClientIP : {} - RequestURL : {} - GithubID : {} - {}", clientIP, request.getRequestURL(), githubId, e.getMessage());
+			log.warn("ClientIP : {} - RequestURL : {} - GithubID : {} - {}", clientIP, request.getRequestURL(), githubId, e.getMessage());
 			handleUnauthorizedException(response, e);
 		}
 	}
