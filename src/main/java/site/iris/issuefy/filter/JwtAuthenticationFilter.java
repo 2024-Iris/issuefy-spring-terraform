@@ -4,7 +4,6 @@ import static org.springframework.http.HttpHeaders.*;
 
 import java.io.IOException;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -23,8 +22,6 @@ import site.iris.issuefy.service.TokenProvider;
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 	public static final String BEARER_DELIMITER = "Bearer ";
-	@Value("${management.endpoints.web.base-path}")
-	private String metricsUrl;
 	private final TokenProvider tokenProvider;
 
 	@Override
@@ -44,7 +41,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 		}
 
 		String path = request.getRequestURI();
-		if (path.startsWith("/api/login") || path.equals("/api/docs") || path.equals(metricsUrl)) {
+		if (path.startsWith("/api/login") || path.equals("/api/docs")) {
 			filterChain.doFilter(request, response);
 			return;
 		}
@@ -64,7 +61,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 			filterChain.doFilter(request, response);
 
 		} catch (UnauthenticatedException e) {
-			log.warn("ClientIP : {} - RequestURL : {} - GithubID : {} - {}", clientIP, request.getRequestURL(), githubId, e.getMessage());
+			log.warn("ClientIP : {} - RequestURL : {} - GithubID : {} - {}", clientIP, request.getRequestURL(),
+				githubId, e.getMessage());
 			handleUnauthorizedException(response, e);
 		}
 	}
