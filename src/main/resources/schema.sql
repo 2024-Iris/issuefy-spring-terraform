@@ -13,9 +13,6 @@ SET @OLD_SQL_MODE = @@SQL_MODE, SQL_MODE =
 -- -----------------------------------------------------
 DROP SCHEMA IF EXISTS `issuefy`;
 
--- -----------------------------------------------------
--- Schema issuefy
--- -----------------------------------------------------
 CREATE SCHEMA IF NOT EXISTS `issuefy` DEFAULT CHARACTER SET utf8;
 USE `issuefy`;
 
@@ -26,16 +23,15 @@ DROP TABLE IF EXISTS `issuefy`.`user`;
 
 CREATE TABLE IF NOT EXISTS `issuefy`.`user`
 (
-    `id`        BIGINT       NOT NULL AUTO_INCREMENT,
-    `github_id` VARCHAR(255) NOT NULL,
-    `email`     VARCHAR(255) NULL,
+    `id`            BIGINT       NOT NULL AUTO_INCREMENT,
+    `github_id`     VARCHAR(255) NOT NULL,
+    `email`         VARCHAR(255) NULL,
+    `alert_status`  TINYINT      NOT NULL DEFAULT 0,
     PRIMARY KEY (`id`),
-    UNIQUE INDEX `login_id_UNIQUE` (`github_id` ASC) VISIBLE,
-    UNIQUE INDEX `email_UNIQUE` (`email` ASC) VISIBLE,
-    UNIQUE INDEX `id_UNIQUE` (`id` ASC) VISIBLE
+    UNIQUE INDEX `github_id_UNIQUE` (`github_id` ASC) VISIBLE,
+    UNIQUE INDEX `email_UNIQUE` (`email` ASC) VISIBLE
 )
     ENGINE = InnoDB;
-
 
 -- -----------------------------------------------------
 -- Table `issuefy`.`org`
@@ -44,12 +40,13 @@ DROP TABLE IF EXISTS `issuefy`.`org`;
 
 CREATE TABLE IF NOT EXISTS `issuefy`.`org`
 (
-    `id`   BIGINT       NOT NULL AUTO_INCREMENT,
-    `name` VARCHAR(100) NULL,
-    PRIMARY KEY (`id`)
+    `id`        BIGINT       NOT NULL AUTO_INCREMENT,
+    `name`      VARCHAR(100) NULL,
+    `gh_org_id` BIGINT       NOT NULL,
+    PRIMARY KEY (`id`),
+    UNIQUE INDEX `gh_org_id_UNIQUE` (`gh_org_id` ASC) VISIBLE
 )
     ENGINE = InnoDB;
-
 
 -- -----------------------------------------------------
 -- Table `issuefy`.`repository`
@@ -58,19 +55,21 @@ DROP TABLE IF EXISTS `issuefy`.`repository`;
 
 CREATE TABLE IF NOT EXISTS `issuefy`.`repository`
 (
-    `id`     BIGINT      NOT NULL AUTO_INCREMENT,
-    `org_id` BIGINT      NOT NULL,
-    `name`   VARCHAR(45) NULL,
+    `id`         BIGINT       NOT NULL AUTO_INCREMENT,
+    `org_id`     BIGINT       NOT NULL,
+    `name`       VARCHAR(45)  NULL,
+    `is_starred` TINYINT      NOT NULL DEFAULT 0,
+    `gh_repo_id` BIGINT       NOT NULL,
     PRIMARY KEY (`id`),
-    INDEX `fk_repository_org1_idx` (`org_id` ASC) VISIBLE,
-    CONSTRAINT `fk_repository_org1`
+    INDEX `fk_repository_org_idx` (`org_id` ASC) VISIBLE,
+    UNIQUE INDEX `gh_repo_id_UNIQUE` (`gh_repo_id` ASC) VISIBLE,
+    CONSTRAINT `fk_repository_org`
         FOREIGN KEY (`org_id`)
             REFERENCES `issuefy`.`org` (`id`)
-            ON DELETE NO ACTION
-            ON UPDATE NO ACTION
+            ON DELETE CASCADE
+            ON UPDATE CASCADE
 )
     ENGINE = InnoDB;
-
 
 -- -----------------------------------------------------
 -- Table `issuefy`.`issue`
@@ -79,19 +78,22 @@ DROP TABLE IF EXISTS `issuefy`.`issue`;
 
 CREATE TABLE IF NOT EXISTS `issuefy`.`issue`
 (
-    `id`            BIGINT      NOT NULL AUTO_INCREMENT,
-    `repository_id` BIGINT      NOT NULL,
-    `name`          VARCHAR(45) NULL,
+    `id`             BIGINT       NOT NULL AUTO_INCREMENT,
+    `repository_id`  BIGINT       NOT NULL,
+    `title`          VARCHAR(45)  CHARACTER SET 'utf8mb4' NOT NULL,
+    `is_starred`     TINYINT      NOT NULL DEFAULT 0,
+    `is_read`        TINYINT      NOT NULL DEFAULT 0,
+    `gh_issue_number` BIGINT      NOT NULL,
     PRIMARY KEY (`id`),
-    INDEX `fk_issue_repository1_idx` (`repository_id` ASC) VISIBLE,
-    CONSTRAINT `fk_issue_repository1`
+    INDEX `fk_issue_repository_idx` (`repository_id` ASC) VISIBLE,
+    UNIQUE INDEX `gh_issue_number_UNIQUE` (`gh_issue_number` ASC) VISIBLE,
+    CONSTRAINT `fk_issue_repository`
         FOREIGN KEY (`repository_id`)
             REFERENCES `issuefy`.`repository` (`id`)
-            ON DELETE NO ACTION
-            ON UPDATE NO ACTION
+            ON DELETE CASCADE
+            ON UPDATE CASCADE
 )
     ENGINE = InnoDB;
-
 
 -- -----------------------------------------------------
 -- Table `issuefy`.`label`
@@ -100,12 +102,36 @@ DROP TABLE IF EXISTS `issuefy`.`label`;
 
 CREATE TABLE IF NOT EXISTS `issuefy`.`label`
 (
-    `id`   BIGINT      NOT NULL AUTO_INCREMENT,
-    `name` VARCHAR(45) NULL,
+    `id`   BIGINT       NOT NULL AUTO_INCREMENT,
+    `name` VARCHAR(45)  CHARACTER SET 'utf8mb4' NOT NULL,
     PRIMARY KEY (`id`)
 )
     ENGINE = InnoDB;
 
+-- -----------------------------------------------------
+-- Table `issuefy`.`issue_label`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `issuefy`.`issue_label`;
+
+CREATE TABLE IF NOT EXISTS `issuefy`.`issue_label`
+(
+    `issue_id` BIGINT NOT NULL,
+    `label_id` BIGINT NOT NULL,
+    PRIMARY KEY (`issue_id`, `label_id`),
+    INDEX `fk_issue_label_issue_idx` (`issue_id` ASC) VISIBLE,
+    INDEX `fk_issue_label_label_idx` (`label_id` ASC) VISIBLE,
+    CONSTRAINT `fk_issue_label_issue`
+        FOREIGN KEY (`issue_id`)
+            REFERENCES `issuefy`.`issue` (`id`)
+            ON DELETE CASCADE
+            ON UPDATE CASCADE,
+    CONSTRAINT `fk_issue_label_label`
+        FOREIGN KEY (`label_id`)
+            REFERENCES `issuefy`.`label` (`id`)
+            ON DELETE CASCADE
+            ON UPDATE CASCADE
+)
+    ENGINE = InnoDB;
 
 -- -----------------------------------------------------
 -- Table `issuefy`.`subscribe`
@@ -117,19 +143,65 @@ CREATE TABLE IF NOT EXISTS `issuefy`.`subscribe`
     `id`            BIGINT NOT NULL AUTO_INCREMENT,
     `user_id`       BIGINT NOT NULL,
     `repository_id` BIGINT NOT NULL,
-    INDEX `fk_subscribe_repository1_idx` (`repository_id` ASC) VISIBLE,
-    INDEX `fk_subscribe_user1_idx` (`user_id` ASC) VISIBLE,
+    INDEX `fk_subscribe_repository_idx` (`repository_id` ASC) VISIBLE,
+    INDEX `fk_subscribe_user_idx` (`user_id` ASC) VISIBLE,
     PRIMARY KEY (`id`),
-    CONSTRAINT `fk_subscribe_repository1`
+    CONSTRAINT `fk_subscribe_repository`
         FOREIGN KEY (`repository_id`)
             REFERENCES `issuefy`.`repository` (`id`)
             ON DELETE NO ACTION
             ON UPDATE NO ACTION,
-    CONSTRAINT `fk_subscribe_user1`
+    CONSTRAINT `fk_subscribe_user`
         FOREIGN KEY (`user_id`)
             REFERENCES `issuefy`.`user` (`id`)
-            ON DELETE NO ACTION
-            ON UPDATE NO ACTION
+            ON DELETE CASCADE
+            ON UPDATE CASCADE
+)
+    ENGINE = InnoDB;
+
+-- -----------------------------------------------------
+-- Table `issuefy`.`notification`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `issuefy`.`notification`;
+
+CREATE TABLE IF NOT EXISTS `issuefy`.`notification`
+(
+    `id`        BIGINT      NOT NULL AUTO_INCREMENT,
+    `issue_id`  BIGINT      NOT NULL,
+    `title`     VARCHAR(45) CHARACTER SET 'utf8mb4' NOT NULL,
+    `is_read`   TINYINT     NOT NULL DEFAULT 0,
+    PRIMARY KEY (`id`),
+    INDEX `fk_notification_issue_idx` (`issue_id` ASC) VISIBLE,
+    CONSTRAINT `fk_notification_issue`
+        FOREIGN KEY (`issue_id`)
+            REFERENCES `issuefy`.`issue` (`id`)
+            ON DELETE CASCADE
+            ON UPDATE CASCADE
+)
+    ENGINE = InnoDB;
+
+-- -----------------------------------------------------
+-- Table `issuefy`.`user_notification`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `issuefy`.`user_notification`;
+
+CREATE TABLE IF NOT EXISTS `issuefy`.`user_notification`
+(
+    `user_id`         BIGINT NOT NULL,
+    `notification_id` BIGINT NOT NULL,
+    PRIMARY KEY (`user_id`, `notification_id`),
+    INDEX `fk_user_notification_user_idx` (`user_id` ASC) VISIBLE,
+    INDEX `fk_user_notification_notification_idx` (`notification_id` ASC) VISIBLE,
+    CONSTRAINT `fk_user_notification_user`
+        FOREIGN KEY (`user_id`)
+            REFERENCES `issuefy`.`user` (`id`)
+            ON DELETE CASCADE
+            ON UPDATE CASCADE,
+    CONSTRAINT `fk_user_notification_notification`
+        FOREIGN KEY (`notification_id`)
+            REFERENCES `issuefy`.`notification` (`id`)
+            ON DELETE CASCADE
+            ON UPDATE CASCADE
 )
     ENGINE = InnoDB;
 
