@@ -24,6 +24,15 @@ public class Issue {
 	@JoinColumn(name = "repository_id", nullable = false)
 	private Repository repository;
 
-	@Column(name = "name")
-	private String name;
+	@Column(name = "title")
+	private String title;
+
+	@Column
+	private boolean isStarred;
+
+	@Column
+	private boolean isRead;
+
+	@Column
+	private long ghIssueNumber;
 }

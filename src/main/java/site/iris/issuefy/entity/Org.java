@@ -21,8 +21,12 @@ public class Org {
 	@Column(name = "name")
 	private String name;
 
-	public Org(String name) {
+	@Column
+	private long ghOrgId;
+
+	public Org(String name, long ghOrgId) {
 		this.name = name;
+		this.ghOrgId = ghOrgId;
 	}
 
 	@Override

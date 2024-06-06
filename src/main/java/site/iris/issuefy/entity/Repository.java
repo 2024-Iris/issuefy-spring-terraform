@@ -28,9 +28,17 @@ public class Repository {
 	@Column(name = "name")
 	private String name;
 
-	public Repository(Org org, String name) {
+	@Column
+	private boolean isStarred;
+
+	@Column
+	private long ghRepoId;
+
+	public Repository(Org org, String name, long ghRepoId) {
 		this.org = org;
 		this.name = name;
+		this.isStarred = false;
+		this.ghRepoId = ghRepoId;
 	}
 
 	@Override
