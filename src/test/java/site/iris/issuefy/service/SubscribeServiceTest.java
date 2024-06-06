@@ -49,8 +49,8 @@ class SubscribeServiceTest {
 		// given
 		String githubId = "testUser";
 		User user = new User(githubId, "testuser@example.com");
-		Org org = new Org("testOrg");
-		Repository repository = new Repository(org, "testRepo");
+		Org org = new Org("testOrg", 123L);
+		Repository repository = new Repository(org, "testRepo", 123L);
 		Subscribe subscribe = new Subscribe(user, repository);
 
 		when(userRepository.findByGithubId(githubId)).thenReturn(Optional.of(user));
@@ -74,8 +74,8 @@ class SubscribeServiceTest {
 		RepositoryUrlDto repositoryUrlDto = new RepositoryUrlDto("https://github.com/testOrg/testRepo", "testId",
 			"testOrg", "testRepo");
 		String githubId = "testUser";
-		Org org = new Org("testOrg");
-		Repository repository = new Repository(org, "testRepo");
+		Org org = new Org("testOrg", 123L);
+		Repository repository = new Repository(org, "testRepo", 123L);
 		User user = new User(githubId, "testuser@example.com");
 		Subscribe subscribe = new Subscribe(user, repository);
 
