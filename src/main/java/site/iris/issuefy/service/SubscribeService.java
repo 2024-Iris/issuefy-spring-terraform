@@ -51,11 +51,10 @@ public class SubscribeService {
 
 		Map<OrgRecord, List<RepositoryDto>> orgResponseMap = new HashMap<>();
 		for (Subscribe subscribe : subscribes) {
-			Long orgId = subscribe.getRepository().getOrg().getId();
+			Long orgId = subscribe.getRepository().getOrg().getGhOrgId();
 			String orgName = subscribe.getRepository().getOrg().getName();
-
-			RepositoryDto repositoryDto = RepositoryDto.of(subscribe.getRepository().getId(),
-				subscribe.getRepository().getName());
+			RepositoryDto repositoryDto = RepositoryDto.of(subscribe.getRepository().getGhRepoId(),
+				subscribe.getRepository().getName(), subscribe.getRepository().isStarred());
 
 			OrgRecord orgRecord = OrgRecord.from(orgId, orgName, new ArrayList<>());
 
@@ -123,7 +122,6 @@ public class SubscribeService {
 
 	public ResponseEntity<GithubRepositoryDto> getRepositoryInfo(RepositoryUrlDto repositoryUrlDto,
 		String accessToken) {
-		log.info(repositoryUrlDto.getRepositoryUrl());
 		return WebClient.create()
 			.get()
 			.uri(REPOSITORY_REQUEST_URL + repositoryUrlDto.getOrgName() + "/" +repositoryUrlDto.getRepositoryName())
