@@ -7,13 +7,13 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class GithubOrgDto {
 	private long id;
-	private String name;
+	private String login;
 
 	@Override
 	public String toString() {
 		return "GithubOrgDto{" +
 			"id=" + id +
-			", name='" + name + '\'' +
+			", name='" + login + '\'' +
 			'}';
 	}
 }

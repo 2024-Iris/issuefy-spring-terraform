@@ -82,7 +82,9 @@ public class SubscribeService {
 		try {
 			Org org = orgRepository.findByName(repositoryUrlDto.getOrgName())
 				.orElseGet(() -> {
-					Org newOrg = new Org(orgInfo.getBody().getName(), orgInfo.getBody().getId());
+					log.info("1 "+repositoryUrlDto.getOrgName());
+					log.info("2 "+orgInfo.getBody().getLogin());
+					Org newOrg = new Org(orgInfo.getBody().getLogin(), orgInfo.getBody().getId());
 					return orgRepository.save(newOrg);
 				});
 			Repository repository = repositoryRepository.findByNameAndOrgId(
