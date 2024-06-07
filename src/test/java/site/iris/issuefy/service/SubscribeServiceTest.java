@@ -96,4 +96,17 @@ class SubscribeServiceTest {
 		verify(subscribeRepository, times(1)).findByUserIdAndRepositoryId(user.getId(), repository.getId());
 		verify(subscribeRepository, never()).save(any(Subscribe.class));
 	}
+
+	@DisplayName("리포지토리 구독을 삭제한다")
+	@Test
+	void unsubscribeRepository() {
+		// given
+		Long ghRepoId = 123L;
+
+		// when
+		subscribeRepository.deleteByRepository_GhRepoId(ghRepoId);
+
+		// then
+		verify(subscribeRepository, times(1)).deleteByRepository_GhRepoId(ghRepoId);
+	}
 }
