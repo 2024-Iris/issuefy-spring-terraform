@@ -16,7 +16,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.http.ResponseEntity;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import okhttp3.mockwebserver.MockResponse;
@@ -25,8 +24,6 @@ import site.iris.issuefy.entity.Org;
 import site.iris.issuefy.entity.Repository;
 import site.iris.issuefy.entity.Subscribe;
 import site.iris.issuefy.entity.User;
-import site.iris.issuefy.model.dto.GithubOrgDto;
-import site.iris.issuefy.model.dto.GithubRepositoryDto;
 import site.iris.issuefy.model.dto.RepositoryUrlDto;
 import site.iris.issuefy.repository.OrgRepository;
 import site.iris.issuefy.repository.RepositoryRepository;
@@ -72,7 +69,7 @@ class SubscribeServiceTest {
 		mockWebServer.shutdown();
 	}
 
-	@DisplayName("구독한 레포지토리 목록을 가져온다")
+	@DisplayName("구독한 리포지토리 목록을 가져온다")
 	@Test
 	void getSubscribedRepositories() {
 		// given
@@ -96,7 +93,7 @@ class SubscribeServiceTest {
 		assertEquals("testRepo", responses.get(0).org().repositories().get(0).getName());
 	}
 
-	@DisplayName("레포지토리를 구독한다")
+	@DisplayName("리포지토리를 구독한다")
 	@Test
 	void addSubscribeRepository() throws Exception {
 		// given

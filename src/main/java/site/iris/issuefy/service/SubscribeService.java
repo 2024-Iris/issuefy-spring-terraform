@@ -34,15 +34,14 @@ import site.iris.issuefy.response.SubscribeResponse;
 @RequiredArgsConstructor
 @Slf4j
 public class SubscribeService {
+	// TODO Enum으로 변경
+	private static String ORG_REQUEST_URL = "https://api.github.com/orgs/";
+	private static String REPOSITORY_REQUEST_URL = "https://api.github.com/repos/";
 	private final SubscribeRepository subscribeRepository;
 	private final UserRepository userRepository;
 	private final OrgRepository orgRepository;
 	private final RepositoryRepository repositoryRepository;
 	private final GithubTokenService githubTokenService;
-
-	// TODO Enum으로 변경
-	private static String ORG_REQUEST_URL = "https://api.github.com/orgs/";
-	private static String REPOSITORY_REQUEST_URL = "https://api.github.com/repos/";
 
 	public List<SubscribeResponse> getSubscribedRepositories(String githubId) {
 		User user = userRepository.findByGithubId(githubId)
@@ -88,7 +87,8 @@ public class SubscribeService {
 			Repository repository = repositoryRepository.findByGhRepoId(
 					repositoryInfo.getBody().getId())
 				.orElseGet(() -> {
-					Repository newRepository = new Repository(org, repositoryInfo.getBody().getName(), repositoryInfo.getBody().getId());
+					Repository newRepository = new Repository(org, repositoryInfo.getBody().getName(),
+						repositoryInfo.getBody().getId());
 					return repositoryRepository.save(newRepository);
 				});
 			User user = userRepository.findByGithubId(repositoryUrlDto.getGithubId())
@@ -129,7 +129,7 @@ public class SubscribeService {
 		String accessToken) {
 		return WebClient.create()
 			.get()
-			.uri(REPOSITORY_REQUEST_URL + repositoryUrlDto.getOrgName() + "/" +repositoryUrlDto.getRepositoryName())
+			.uri(REPOSITORY_REQUEST_URL + repositoryUrlDto.getOrgName() + "/" + repositoryUrlDto.getRepositoryName())
 			.headers(headers -> {
 				headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
 				headers.setBearerAuth(accessToken);
