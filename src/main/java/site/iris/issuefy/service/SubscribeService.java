@@ -41,8 +41,8 @@ public class SubscribeService {
 	private final GithubTokenService githubTokenService;
 
 	// TODO Enum으로 변경
-	private static final String ORG_REQUEST_URL = "https://api.github.com/orgs/";
-	private static final String REPOSITORY_REQUEST_URL = "https://api.github.com/repos/";
+	private static String ORG_REQUEST_URL = "https://api.github.com/orgs/";
+	private static String REPOSITORY_REQUEST_URL = "https://api.github.com/repos/";
 
 	public List<SubscribeResponse> getSubscribedRepositories(String githubId) {
 		User user = userRepository.findByGithubId(githubId)

@@ -4,20 +4,29 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.ResponseEntity;
+import org.springframework.test.util.ReflectionTestUtils;
 
+import okhttp3.mockwebserver.MockResponse;
+import okhttp3.mockwebserver.MockWebServer;
 import site.iris.issuefy.entity.Org;
 import site.iris.issuefy.entity.Repository;
 import site.iris.issuefy.entity.Subscribe;
 import site.iris.issuefy.entity.User;
+import site.iris.issuefy.model.dto.GithubOrgDto;
+import site.iris.issuefy.model.dto.GithubRepositoryDto;
 import site.iris.issuefy.model.dto.RepositoryUrlDto;
 import site.iris.issuefy.repository.OrgRepository;
 import site.iris.issuefy.repository.RepositoryRepository;
@@ -42,6 +51,26 @@ class SubscribeServiceTest {
 
 	@InjectMocks
 	private SubscribeService subscribeService;
+
+	@Mock
+	private GithubTokenService githubTokenService;
+
+	private MockWebServer mockWebServer;
+
+	@BeforeEach
+	void setup() throws IOException {
+		mockWebServer = new MockWebServer();
+		mockWebServer.start();
+		mockWebServer.enqueue(new MockResponse()
+			.setBody("{\"login\": \"testUser\", \"avatar_url\": \"testUserUrl\"}")
+			.addHeader("Content-Type", "application/json")
+			.setResponseCode(200));
+	}
+
+	@AfterEach
+	void tearDown() throws IOException {
+		mockWebServer.shutdown();
+	}
 
 	@DisplayName("구독한 레포지토리 목록을 가져온다")
 	@Test
@@ -69,7 +98,7 @@ class SubscribeServiceTest {
 
 	@DisplayName("레포지토리를 구독한다")
 	@Test
-	void addSubscribeRepository() {
+	void addSubscribeRepository() throws Exception {
 		// given
 		RepositoryUrlDto repositoryUrlDto = new RepositoryUrlDto("https://github.com/testOrg/testRepo", "testId",
 			"testOrg", "testRepo");
@@ -79,21 +108,52 @@ class SubscribeServiceTest {
 		User user = new User(githubId, "testuser@example.com");
 		Subscribe subscribe = new Subscribe(user, repository);
 
+		// Mock 서버 설정
+		mockWebServer.enqueue(new MockResponse()
+			.setResponseCode(200)
+			.setHeader("Content-Type", "application/json")
+			.setBody("{\"id\":123,\"login\":\"testOrg\"}"));
+
+		mockWebServer.enqueue(new MockResponse()
+			.setResponseCode(200)
+			.setHeader("Content-Type", "application/json")
+			.setBody("{\"id\":123,\"name\":\"testRepo\"}"));
+
+		String baseUrl = mockWebServer.url("/").toString();
+		String orgRequestUrl = baseUrl + "orgs/";
+		String repoRequestUrl = baseUrl + "repos/";
+
+		when(githubTokenService.findAccessToken(githubId)).thenReturn("testAccessToken");
 		when(orgRepository.findByName(repositoryUrlDto.getOrgName())).thenReturn(Optional.of(org));
-		when(repositoryRepository.findByNameAndOrgId(repositoryUrlDto.getRepositoryName(), org.getId())).thenReturn(
-			Optional.of(repository));
+		when(repositoryRepository.findByGhRepoId(123L)).thenReturn(Optional.of(repository));
 		when(userRepository.findByGithubId(repositoryUrlDto.getGithubId())).thenReturn(Optional.of(user));
 		when(subscribeRepository.findByUserIdAndRepositoryId(user.getId(), repository.getId())).thenReturn(
 			Optional.of(subscribe));
+
+		ReflectionTestUtils.setField(subscribeService, "ORG_REQUEST_URL", orgRequestUrl);
+		ReflectionTestUtils.setField(subscribeService, "REPOSITORY_REQUEST_URL", repoRequestUrl);
 
 		// when
 		subscribeService.addSubscribeRepository(repositoryUrlDto, githubId);
 
 		// then
 		verify(orgRepository, times(1)).findByName(repositoryUrlDto.getOrgName());
-		verify(repositoryRepository, times(1)).findByNameAndOrgId(repositoryUrlDto.getRepositoryName(), org.getId());
+		verify(repositoryRepository, times(1)).findByGhRepoId(123L);
 		verify(userRepository, times(1)).findByGithubId(repositoryUrlDto.getGithubId());
 		verify(subscribeRepository, times(1)).findByUserIdAndRepositoryId(user.getId(), repository.getId());
 		verify(subscribeRepository, never()).save(any(Subscribe.class));
+	}
+
+	@DisplayName("리포지토리 구독을 삭제한다")
+	@Test
+	void unsubscribeRepository() {
+		// given
+		Long ghRepoId = 123L;
+
+		// when
+		subscribeRepository.deleteByRepository_GhRepoId(ghRepoId);
+
+		// then
+		verify(subscribeRepository, times(1)).deleteByRepository_GhRepoId(ghRepoId);
 	}
 }
