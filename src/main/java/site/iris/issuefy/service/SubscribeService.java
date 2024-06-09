@@ -96,7 +96,7 @@ public class SubscribeService {
 					User newUser = new User(repositoryUrlDto.getGithubId(), githubId);
 					return userRepository.save(newUser);
 				});
-			subscribeRepository.findByUserIdAndRepositoryId(user.getId(), repository.getId())
+			Subscribe subscribe = subscribeRepository.findByUserIdAndRepositoryId(user.getId(), repository.getId())
 				.orElseGet(() -> {
 					Subscribe newSubscribe = new Subscribe(user, repository);
 					return subscribeRepository.save(newSubscribe);
