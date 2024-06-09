@@ -6,7 +6,9 @@ import java.util.List;
 
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -55,6 +57,14 @@ public class SubscribeController {
 		}
 		logResponse(githubId, RepositoryRecord.repositoryUrl());
 		return ResponseEntity.created(URI.create(RepositoryRecord.repositoryUrl())).build();
+	}
+
+	@DeleteMapping("/{gh_repo_id}")
+	public ResponseEntity<Void> unsubscribeRepository(@RequestAttribute String githubId,
+		@PathVariable("gh_repo_id") Long ghRepoId) {
+		logRequest(githubId, "Request UnsubscribeRepository");
+		subscribeService.unsubscribeRepository(ghRepoId);
+		return ResponseEntity.noContent().build();
 	}
 
 	private void checkRepositoryExistence(String githubId, RepositoryRecord RepositoryRecord) {

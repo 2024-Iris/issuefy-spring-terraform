@@ -34,15 +34,14 @@ import site.iris.issuefy.response.SubscribeResponse;
 @RequiredArgsConstructor
 @Slf4j
 public class SubscribeService {
+	// TODO Enum으로 변경
+	private static String ORG_REQUEST_URL = "https://api.github.com/orgs/";
+	private static String REPOSITORY_REQUEST_URL = "https://api.github.com/repos/";
 	private final SubscribeRepository subscribeRepository;
 	private final UserRepository userRepository;
 	private final OrgRepository orgRepository;
 	private final RepositoryRepository repositoryRepository;
 	private final GithubTokenService githubTokenService;
-
-	// TODO Enum으로 변경
-	private static final String ORG_REQUEST_URL = "https://api.github.com/orgs/";
-	private static final String REPOSITORY_REQUEST_URL = "https://api.github.com/repos/";
 
 	public List<SubscribeResponse> getSubscribedRepositories(String githubId) {
 		User user = userRepository.findByGithubId(githubId)
@@ -82,13 +81,14 @@ public class SubscribeService {
 		try {
 			Org org = orgRepository.findByName(repositoryUrlDto.getOrgName())
 				.orElseGet(() -> {
-					Org newOrg = new Org(orgInfo.getBody().getName(), orgInfo.getBody().getId());
+					Org newOrg = new Org(orgInfo.getBody().getLogin(), orgInfo.getBody().getId());
 					return orgRepository.save(newOrg);
 				});
-			Repository repository = repositoryRepository.findByNameAndOrgId(
-					repositoryUrlDto.getRepositoryName(), orgInfo.getBody().getId())
+			Repository repository = repositoryRepository.findByGhRepoId(
+					repositoryInfo.getBody().getId())
 				.orElseGet(() -> {
-					Repository newRepository = new Repository(org, repositoryInfo.getBody().getName(), repositoryInfo.getBody().getId());
+					Repository newRepository = new Repository(org, repositoryInfo.getBody().getName(),
+						repositoryInfo.getBody().getId());
 					return repositoryRepository.save(newRepository);
 				});
 			User user = userRepository.findByGithubId(repositoryUrlDto.getGithubId())
@@ -105,6 +105,11 @@ public class SubscribeService {
 			log.error("save subscribe repository error", exception);
 			throw new RuntimeException(exception);
 		}
+	}
+
+	@Transactional
+	public void unsubscribeRepository(Long ghRepoId) {
+		subscribeRepository.deleteByRepository_GhRepoId(ghRepoId);
 	}
 
 	public ResponseEntity<GithubOrgDto> getOrgInfo(RepositoryUrlDto repositoryUrlDto, String accessToken) {
@@ -124,7 +129,7 @@ public class SubscribeService {
 		String accessToken) {
 		return WebClient.create()
 			.get()
-			.uri(REPOSITORY_REQUEST_URL + repositoryUrlDto.getOrgName() + "/" +repositoryUrlDto.getRepositoryName())
+			.uri(REPOSITORY_REQUEST_URL + repositoryUrlDto.getOrgName() + "/" + repositoryUrlDto.getRepositoryName())
 			.headers(headers -> {
 				headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
 				headers.setBearerAuth(accessToken);
