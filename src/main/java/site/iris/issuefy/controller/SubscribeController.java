@@ -62,7 +62,7 @@ public class SubscribeController {
 	@DeleteMapping("/{gh_repo_id}")
 	public ResponseEntity<Void> unsubscribeRepository(@RequestAttribute String githubId,
 		@PathVariable("gh_repo_id") Long ghRepoId) {
-		logRequest(githubId, "Request UnsubscribeRepository");
+		logRequest(githubId, "Request UnsubscribeRepository for RepoId: " + ghRepoId);
 		subscribeService.unsubscribeRepository(ghRepoId);
 		return ResponseEntity.noContent().build();
 	}
@@ -88,7 +88,7 @@ public class SubscribeController {
 	}
 
 	private void logRequest(String githubId, String message) {
-		log.info("{} : {}", githubId, message);
+		log.info("GitHub ID: {} - {}", githubId, message);
 	}
 
 	private void logResponse(String githubId, Object response) {
