@@ -9,9 +9,6 @@ SET @OLD_SQL_MODE = @@SQL_MODE, SQL_MODE =
         'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION';
 
 -- -----------------------------------------------------
--- Schema mydb
--- -----------------------------------------------------
--- -----------------------------------------------------
 -- Schema issuefy
 -- -----------------------------------------------------
 DROP SCHEMA IF EXISTS `issuefy`;
@@ -19,7 +16,7 @@ DROP SCHEMA IF EXISTS `issuefy`;
 -- -----------------------------------------------------
 -- Schema issuefy
 -- -----------------------------------------------------
-CREATE SCHEMA IF NOT EXISTS `issuefy` DEFAULT CHARACTER SET utf8mb3;
+CREATE SCHEMA IF NOT EXISTS `issuefy` DEFAULT CHARACTER SET utf8mb4;
 USE `issuefy`;
 
 -- -----------------------------------------------------
@@ -30,14 +27,13 @@ DROP TABLE IF EXISTS `issuefy`.`org`;
 CREATE TABLE IF NOT EXISTS `issuefy`.`org`
 (
     `id`        BIGINT       NOT NULL AUTO_INCREMENT,
-    `name`      VARCHAR(100) NULL DEFAULT NULL,
+    `name`      VARCHAR(100) NOT NULL,
     `gh_org_id` BIGINT       NOT NULL,
     PRIMARY KEY (`id`),
     UNIQUE INDEX `gh_org_id_UNIQUE` (`gh_org_id` ASC) VISIBLE
 )
     ENGINE = InnoDB
-    AUTO_INCREMENT = 3
-    DEFAULT CHARACTER SET = utf8mb3;
+    DEFAULT CHARACTER SET = utf8mb4;
 
 
 -- -----------------------------------------------------
@@ -45,16 +41,22 @@ CREATE TABLE IF NOT EXISTS `issuefy`.`org`
 -- -----------------------------------------------------
 DROP TABLE IF EXISTS `issuefy`.`repository`;
 
+DROP TABLE IF EXISTS `issuefy`.`issue`;
+
+
+-- -----------------------------------------------------
+-- Table `issuefy`.`issue`
+-- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `issuefy`.`repository`
 (
     `id`         BIGINT      NOT NULL AUTO_INCREMENT,
     `org_id`     BIGINT      NOT NULL,
-    `name`       VARCHAR(45) NULL     DEFAULT NULL,
-    `is_starred` TINYINT     NOT NULL DEFAULT '0',
+    `name`       VARCHAR(45) NOT NULL,
+    `is_starred` TINYINT     NOT NULL DEFAULT 0,
     `gh_repo_id` BIGINT      NOT NULL,
     PRIMARY KEY (`id`),
-    UNIQUE INDEX `gh_repo_id_UNIQUE` (`gh_repo_id` ASC) VISIBLE,
     INDEX `fk_repository_org_idx` (`org_id` ASC) VISIBLE,
+    UNIQUE INDEX `gh_repo_id_UNIQUE` (`gh_repo_id` ASC) VISIBLE,
     CONSTRAINT `fk_repository_org`
         FOREIGN KEY (`org_id`)
             REFERENCES `issuefy`.`org` (`id`)
@@ -62,14 +64,7 @@ CREATE TABLE IF NOT EXISTS `issuefy`.`repository`
             ON UPDATE CASCADE
 )
     ENGINE = InnoDB
-    AUTO_INCREMENT = 4
-    DEFAULT CHARACTER SET = utf8mb3;
-
-
--- -----------------------------------------------------
--- Table `issuefy`.`issue`
--- -----------------------------------------------------
-DROP TABLE IF EXISTS `issuefy`.`issue`;
+    DEFAULT CHARACTER SET = utf8mb4;
 
 CREATE TABLE IF NOT EXISTS `issuefy`.`issue`
 (
@@ -89,8 +84,7 @@ CREATE TABLE IF NOT EXISTS `issuefy`.`issue`
             ON UPDATE CASCADE
 )
     ENGINE = InnoDB
-    AUTO_INCREMENT = 5
-    DEFAULT CHARACTER SET = utf8mb3;
+    DEFAULT CHARACTER SET = utf8mb4;
 
 
 -- -----------------------------------------------------
@@ -105,8 +99,7 @@ CREATE TABLE IF NOT EXISTS `issuefy`.`label`
     PRIMARY KEY (`id`)
 )
     ENGINE = InnoDB
-    AUTO_INCREMENT = 3
-    DEFAULT CHARACTER SET = utf8mb3;
+    DEFAULT CHARACTER SET = utf8mb4;
 
 
 -- -----------------------------------------------------
@@ -133,7 +126,7 @@ CREATE TABLE IF NOT EXISTS `issuefy`.`issue_label`
             ON UPDATE CASCADE
 )
     ENGINE = InnoDB
-    DEFAULT CHARACTER SET = utf8mb3;
+    DEFAULT CHARACTER SET = utf8mb4;
 
 
 -- -----------------------------------------------------
@@ -154,7 +147,7 @@ CREATE TABLE IF NOT EXISTS `issuefy`.`notification`
             ON UPDATE NO ACTION
 )
     ENGINE = InnoDB
-    DEFAULT CHARACTER SET = utf8mb3;
+    DEFAULT CHARACTER SET = utf8mb4;
 
 
 -- -----------------------------------------------------
@@ -173,8 +166,7 @@ CREATE TABLE IF NOT EXISTS `issuefy`.`user`
     UNIQUE INDEX `email_UNIQUE` (`email` ASC) VISIBLE
 )
     ENGINE = InnoDB
-    AUTO_INCREMENT = 4
-    DEFAULT CHARACTER SET = utf8mb3;
+    DEFAULT CHARACTER SET = utf8mb4;
 
 
 -- -----------------------------------------------------
@@ -200,8 +192,7 @@ CREATE TABLE IF NOT EXISTS `issuefy`.`subscribe`
             ON UPDATE CASCADE
 )
     ENGINE = InnoDB
-    AUTO_INCREMENT = 8
-    DEFAULT CHARACTER SET = utf8mb3;
+    DEFAULT CHARACTER SET = utf8mb4;
 
 
 -- -----------------------------------------------------
@@ -229,7 +220,7 @@ CREATE TABLE IF NOT EXISTS `issuefy`.`user_notification`
             ON UPDATE CASCADE
 )
     ENGINE = InnoDB
-    DEFAULT CHARACTER SET = utf8mb3;
+    DEFAULT CHARACTER SET = utf8mb4;
 
 
 SET SQL_MODE = @OLD_SQL_MODE;
