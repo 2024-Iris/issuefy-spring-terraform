@@ -1,11 +1,15 @@
 package site.iris.issuefy.service;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.reactive.function.client.WebClient;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -15,6 +19,8 @@ import site.iris.issuefy.entity.Repository;
 import site.iris.issuefy.entity.Subscribe;
 import site.iris.issuefy.entity.User;
 import site.iris.issuefy.exception.UserNotFoundException;
+import site.iris.issuefy.model.dto.GithubOrgDto;
+import site.iris.issuefy.model.dto.GithubRepositoryDto;
 import site.iris.issuefy.model.dto.RepositoryDto;
 import site.iris.issuefy.model.dto.RepositoryUrlDto;
 import site.iris.issuefy.model.vo.OrgRecord;
@@ -28,10 +34,14 @@ import site.iris.issuefy.response.SubscribeResponse;
 @RequiredArgsConstructor
 @Slf4j
 public class SubscribeService {
+	// TODO Enum으로 변경
+	private static String ORG_REQUEST_URL = "https://api.github.com/orgs/";
+	private static String REPOSITORY_REQUEST_URL = "https://api.github.com/repos/";
 	private final SubscribeRepository subscribeRepository;
 	private final UserRepository userRepository;
 	private final OrgRepository orgRepository;
 	private final RepositoryRepository repositoryRepository;
+	private final GithubTokenService githubTokenService;
 
 	public List<SubscribeResponse> getSubscribedRepositories(String githubId) {
 		User user = userRepository.findByGithubId(githubId)
@@ -40,11 +50,10 @@ public class SubscribeService {
 
 		Map<OrgRecord, List<RepositoryDto>> orgResponseMap = new HashMap<>();
 		for (Subscribe subscribe : subscribes) {
-			Long orgId = subscribe.getRepository().getOrg().getId();
+			Long orgId = subscribe.getRepository().getOrg().getGhOrgId();
 			String orgName = subscribe.getRepository().getOrg().getName();
-
-			RepositoryDto repositoryDto = RepositoryDto.of(subscribe.getRepository().getId(),
-				subscribe.getRepository().getName());
+			RepositoryDto repositoryDto = RepositoryDto.of(subscribe.getRepository().getGhRepoId(),
+				subscribe.getRepository().getName(), subscribe.getRepository().isStarred());
 
 			OrgRecord orgRecord = OrgRecord.from(orgId, orgName, new ArrayList<>());
 
@@ -63,18 +72,23 @@ public class SubscribeService {
 		return responses;
 	}
 
+	//TODO 리펙터링 필요
 	@Transactional
 	public void addSubscribeRepository(RepositoryUrlDto repositoryUrlDto, String githubId) {
+		String accessToken = githubTokenService.findAccessToken(githubId);
+		ResponseEntity<GithubOrgDto> orgInfo = getOrgInfo(repositoryUrlDto, accessToken);
+		ResponseEntity<GithubRepositoryDto> repositoryInfo = getRepositoryInfo(repositoryUrlDto, accessToken);
 		try {
 			Org org = orgRepository.findByName(repositoryUrlDto.getOrgName())
 				.orElseGet(() -> {
-					Org newOrg = new Org(repositoryUrlDto.getOrgName());
+					Org newOrg = new Org(orgInfo.getBody().getLogin(), orgInfo.getBody().getId());
 					return orgRepository.save(newOrg);
 				});
-			Repository repository = repositoryRepository.findByNameAndOrgId(
-					repositoryUrlDto.getRepositoryName(), org.getId())
+			Repository repository = repositoryRepository.findByGhRepoId(
+					repositoryInfo.getBody().getId())
 				.orElseGet(() -> {
-					Repository newRepository = new Repository(org, repositoryUrlDto.getRepositoryName());
+					Repository newRepository = new Repository(org, repositoryInfo.getBody().getName(),
+						repositoryInfo.getBody().getId());
 					return repositoryRepository.save(newRepository);
 				});
 			User user = userRepository.findByGithubId(repositoryUrlDto.getGithubId())
@@ -91,5 +105,36 @@ public class SubscribeService {
 			log.error("save subscribe repository error", exception);
 			throw new RuntimeException(exception);
 		}
+	}
+
+	public void unsubscribeRepository(Long ghRepoId) {
+		subscribeRepository.deleteByRepository_GhRepoId(ghRepoId);
+	}
+
+	public ResponseEntity<GithubOrgDto> getOrgInfo(RepositoryUrlDto repositoryUrlDto, String accessToken) {
+		return WebClient.create()
+			.get()
+			.uri(ORG_REQUEST_URL + repositoryUrlDto.getOrgName())
+			.headers(headers -> {
+				headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+				headers.setBearerAuth(accessToken);
+			})
+			.retrieve()
+			.toEntity(GithubOrgDto.class)
+			.block();
+	}
+
+	public ResponseEntity<GithubRepositoryDto> getRepositoryInfo(RepositoryUrlDto repositoryUrlDto,
+		String accessToken) {
+		return WebClient.create()
+			.get()
+			.uri(REPOSITORY_REQUEST_URL + repositoryUrlDto.getOrgName() + "/" + repositoryUrlDto.getRepositoryName())
+			.headers(headers -> {
+				headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+				headers.setBearerAuth(accessToken);
+			})
+			.retrieve()
+			.toEntity(GithubRepositoryDto.class)
+			.block();
 	}
 }

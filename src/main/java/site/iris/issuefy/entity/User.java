@@ -26,9 +26,13 @@ public class User {
 	@Column
 	private String email;
 
+	@Column
+	private boolean alertStatus;
+
 	public User(String githubId, String email) {
 		this.githubId = githubId;
 		this.email = email;
+		this.alertStatus = false;
 	}
 
 	@Override

@@ -31,7 +31,7 @@ CREATE TABLE IF NOT EXISTS `issuefy`.`user`
     UNIQUE INDEX `github_id_UNIQUE` (`github_id` ASC) VISIBLE,
     UNIQUE INDEX `email_UNIQUE` (`email` ASC) VISIBLE
 )
-    ENGINE = InnoDB;
+ENGINE = InnoDB;
 
 -- -----------------------------------------------------
 -- Table `issuefy`.`org`
@@ -46,7 +46,7 @@ CREATE TABLE IF NOT EXISTS `issuefy`.`org`
     PRIMARY KEY (`id`),
     UNIQUE INDEX `gh_org_id_UNIQUE` (`gh_org_id` ASC) VISIBLE
 )
-    ENGINE = InnoDB;
+ENGINE = InnoDB;
 
 -- -----------------------------------------------------
 -- Table `issuefy`.`repository`
@@ -69,7 +69,7 @@ CREATE TABLE IF NOT EXISTS `issuefy`.`repository`
             ON DELETE CASCADE
             ON UPDATE CASCADE
 )
-    ENGINE = InnoDB;
+ENGINE = InnoDB;
 
 -- -----------------------------------------------------
 -- Table `issuefy`.`issue`
@@ -93,7 +93,7 @@ CREATE TABLE IF NOT EXISTS `issuefy`.`issue`
             ON DELETE CASCADE
             ON UPDATE CASCADE
 )
-    ENGINE = InnoDB;
+ENGINE = InnoDB;
 
 -- -----------------------------------------------------
 -- Table `issuefy`.`label`
@@ -106,7 +106,7 @@ CREATE TABLE IF NOT EXISTS `issuefy`.`label`
     `name` VARCHAR(45)  CHARACTER SET 'utf8mb4' NOT NULL,
     PRIMARY KEY (`id`)
 )
-    ENGINE = InnoDB;
+ENGINE = InnoDB;
 
 -- -----------------------------------------------------
 -- Table `issuefy`.`issue_label`
@@ -131,7 +131,7 @@ CREATE TABLE IF NOT EXISTS `issuefy`.`issue_label`
             ON DELETE CASCADE
             ON UPDATE CASCADE
 )
-    ENGINE = InnoDB;
+ENGINE = InnoDB;
 
 -- -----------------------------------------------------
 -- Table `issuefy`.`subscribe`
@@ -157,7 +157,7 @@ CREATE TABLE IF NOT EXISTS `issuefy`.`subscribe`
             ON DELETE CASCADE
             ON UPDATE CASCADE
 )
-    ENGINE = InnoDB;
+ENGINE = InnoDB;
 
 -- -----------------------------------------------------
 -- Table `issuefy`.`notification`
@@ -166,15 +166,15 @@ DROP TABLE IF EXISTS `issuefy`.`notification`;
 
 CREATE TABLE IF NOT EXISTS `issuefy`.`notification`
 (
-    `id`        BIGINT      NOT NULL AUTO_INCREMENT,
-    `issue_id`  BIGINT      NOT NULL,
-    `title`     VARCHAR(45) CHARACTER SET 'utf8mb4' NOT NULL,
-    `is_read`   TINYINT     NOT NULL DEFAULT 0,
+    `id`            BIGINT       NOT NULL AUTO_INCREMENT,
+    `subscribe_id`  BIGINT       NOT NULL,
+    `title`         VARCHAR(45)  CHARACTER SET 'utf8mb4' NOT NULL,
+    `is_read`       TINYINT      NOT NULL DEFAULT 0,
     PRIMARY KEY (`id`),
-    INDEX `fk_notification_issue_idx` (`issue_id` ASC) VISIBLE,
-    CONSTRAINT `fk_notification_issue`
-        FOREIGN KEY (`issue_id`)
-            REFERENCES `issuefy`.`issue` (`id`)
+    INDEX `fk_notification_subscribe_idx` (`subscribe_id` ASC) VISIBLE,
+    CONSTRAINT `fk_notification_subscribe`
+        FOREIGN KEY (`subscribe_id`)
+            REFERENCES `issuefy`.`subscribe` (`id`)
             ON DELETE CASCADE
             ON UPDATE CASCADE
 )
@@ -203,7 +203,7 @@ CREATE TABLE IF NOT EXISTS `issuefy`.`user_notification`
             ON DELETE CASCADE
             ON UPDATE CASCADE
 )
-    ENGINE = InnoDB;
+ENGINE = InnoDB;
 
 
 SET SQL_MODE = @OLD_SQL_MODE;

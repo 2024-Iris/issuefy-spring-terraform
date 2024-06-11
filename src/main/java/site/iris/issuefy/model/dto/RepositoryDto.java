@@ -8,9 +8,10 @@ import lombok.Getter;
 public class RepositoryDto {
 	private Long id;
 	private String name;
+	private boolean isStarred;
 
-	public static RepositoryDto of(Long id, String name) {
-		return new RepositoryDto(id, name);
+	public static RepositoryDto of(Long id, String name, boolean isStarred) {
+		return new RepositoryDto(id, name, isStarred);
 	}
 
 	@Override

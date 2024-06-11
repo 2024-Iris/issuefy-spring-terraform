@@ -22,7 +22,6 @@ import site.iris.issuefy.service.TokenProvider;
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 	public static final String BEARER_DELIMITER = "Bearer ";
-
 	private final TokenProvider tokenProvider;
 
 	@Override
@@ -62,7 +61,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 			filterChain.doFilter(request, response);
 
 		} catch (UnauthenticatedException e) {
-			log.warn("ClientIP : {} - RequestURL : {} - GithubID : {} - {}", clientIP, request.getRequestURL(), githubId, e.getMessage());
+			log.warn("ClientIP : {} - RequestURL : {} - GithubID : {} - {}", clientIP, request.getRequestURL(),
+				githubId, e.getMessage());
 			handleUnauthorizedException(response, e);
 		}
 	}
