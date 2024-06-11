@@ -78,33 +78,29 @@ public class SubscribeService {
 		String accessToken = githubTokenService.findAccessToken(githubId);
 		ResponseEntity<GithubOrgDto> orgInfo = getOrgInfo(repositoryUrlDto, accessToken);
 		ResponseEntity<GithubRepositoryDto> repositoryInfo = getRepositoryInfo(repositoryUrlDto, accessToken);
-		try {
-			Org org = orgRepository.findByName(repositoryUrlDto.getOrgName())
-				.orElseGet(() -> {
-					Org newOrg = new Org(orgInfo.getBody().getLogin(), orgInfo.getBody().getId());
-					return orgRepository.save(newOrg);
-				});
-			Repository repository = repositoryRepository.findByGhRepoId(
-					repositoryInfo.getBody().getId())
-				.orElseGet(() -> {
-					Repository newRepository = new Repository(org, repositoryInfo.getBody().getName(),
-						repositoryInfo.getBody().getId());
-					return repositoryRepository.save(newRepository);
-				});
-			User user = userRepository.findByGithubId(repositoryUrlDto.getGithubId())
-				.orElseGet(() -> {
-					User newUser = new User(repositoryUrlDto.getGithubId(), githubId);
-					return userRepository.save(newUser);
-				});
-			Subscribe subscribe = subscribeRepository.findByUserIdAndRepositoryId(user.getId(), repository.getId())
-				.orElseGet(() -> {
-					Subscribe newSubscribe = new Subscribe(user, repository);
-					return subscribeRepository.save(newSubscribe);
-				});
-		} catch (Exception exception) {
-			log.error("save subscribe repository error", exception);
-			throw new RuntimeException(exception);
-		}
+
+		Org org = orgRepository.findByName(repositoryUrlDto.getOrgName())
+			.orElseGet(() -> {
+				Org newOrg = new Org(orgInfo.getBody().getLogin(), orgInfo.getBody().getId());
+				return orgRepository.save(newOrg);
+			});
+		Repository repository = repositoryRepository.findByGhRepoId(
+				repositoryInfo.getBody().getId())
+			.orElseGet(() -> {
+				Repository newRepository = new Repository(org, repositoryInfo.getBody().getName(),
+					repositoryInfo.getBody().getId());
+				return repositoryRepository.save(newRepository);
+			});
+		User user = userRepository.findByGithubId(repositoryUrlDto.getGithubId())
+			.orElseGet(() -> {
+				User newUser = new User(repositoryUrlDto.getGithubId(), githubId);
+				return userRepository.save(newUser);
+			});
+		Subscribe subscribe = subscribeRepository.findByUserIdAndRepositoryId(user.getId(), repository.getId())
+			.orElseGet(() -> {
+				Subscribe newSubscribe = new Subscribe(user, repository);
+				return subscribeRepository.save(newSubscribe);
+			});
 	}
 
 	public void unsubscribeRepository(Long ghRepoId) {
