@@ -13,6 +13,13 @@ import site.iris.issuefy.exception.code.ErrorCode;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+	@ExceptionHandler(IllegalArgumentException.class)
+	public ResponseEntity<ErrorResponse> handleIllegalArgumentException(IllegalArgumentException e) {
+		log.info("IllegalArgumentException", e);
+		ErrorResponse errorResponse = ErrorResponse.of(ErrorCode.REQUIRED_KEYS_MISSING, e.getMessage());
+		return new ResponseEntity<>(errorResponse, HttpStatus.OK);
+	}
+
 	@ExceptionHandler(Exception.class)
 	public ResponseEntity<ErrorResponse> handleAll(Exception e) {
 		log.error("Server Internal Exception", e);
