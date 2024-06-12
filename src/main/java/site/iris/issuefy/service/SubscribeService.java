@@ -107,6 +107,7 @@ public class SubscribeService {
 		}
 	}
 
+	@Transactional
 	public void unsubscribeRepository(Long ghRepoId) {
 		subscribeRepository.deleteByRepository_GhRepoId(ghRepoId);
 	}
