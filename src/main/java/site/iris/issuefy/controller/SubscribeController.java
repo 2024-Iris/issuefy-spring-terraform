@@ -15,7 +15,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.reactive.function.client.WebClient;
-import org.springframework.web.reactive.function.client.WebClientException;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -30,7 +29,6 @@ import site.iris.issuefy.service.SubscribeService;
 @RequiredArgsConstructor
 @Slf4j
 public class SubscribeController {
-	private static final String NOT_EXIST_REPOSITORY_MESSAGE = "Repository does not exist";
 
 	private final SubscribeService subscribeService;
 	private final GithubTokenService githubTokenService;
@@ -48,13 +46,9 @@ public class SubscribeController {
 	public ResponseEntity<String> addRepository(@RequestAttribute String githubId,
 		@RequestBody RepositoryRecord RepositoryRecord) {
 		logRequest(githubId, "Request AddRepository");
-		try {
-			checkRepositoryExistence(githubId, RepositoryRecord);
-			RepositoryUrlDto repositoryUrlDto = RepositoryUrlDto.of(RepositoryRecord.repositoryUrl(), githubId);
-			subscribeService.addSubscribeRepository(repositoryUrlDto, githubId);
-		} catch (WebClientException e) {
-			return handleWebClientException(e);
-		}
+		checkRepositoryExistence(githubId, RepositoryRecord);
+		RepositoryUrlDto repositoryUrlDto = RepositoryUrlDto.of(RepositoryRecord.repositoryUrl(), githubId);
+		subscribeService.addSubscribeRepository(repositoryUrlDto, githubId);
 		logResponse(githubId, RepositoryRecord.repositoryUrl());
 		return ResponseEntity.created(URI.create(RepositoryRecord.repositoryUrl())).build();
 	}
@@ -80,11 +74,6 @@ public class SubscribeController {
 			.retrieve()
 			.toBodilessEntity()
 			.block();
-	}
-
-	private ResponseEntity<String> handleWebClientException(WebClientException e) {
-		log.warn(NOT_EXIST_REPOSITORY_MESSAGE + ": {}", e.getMessage());
-		return ResponseEntity.notFound().build();
 	}
 
 	private void logRequest(String githubId, String message) {
