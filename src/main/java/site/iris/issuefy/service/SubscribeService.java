@@ -9,9 +9,9 @@ import java.util.Map;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.reactive.function.client.WebClient;
 
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import site.iris.issuefy.entity.Org;
@@ -24,7 +24,6 @@ import site.iris.issuefy.model.dto.GithubRepositoryDto;
 import site.iris.issuefy.model.dto.RepositoryDto;
 import site.iris.issuefy.model.dto.RepositoryUrlDto;
 import site.iris.issuefy.model.vo.OrgRecord;
-import site.iris.issuefy.repository.RepositoryRepository;
 import site.iris.issuefy.repository.SubscribeRepository;
 import site.iris.issuefy.repository.UserRepository;
 import site.iris.issuefy.response.SubscribeResponse;
@@ -39,7 +38,7 @@ public class SubscribeService {
 	private final SubscribeRepository subscribeRepository;
 	private final UserRepository userRepository;
 	private final OrgService orgService;
-	private final RepositoryRepository repositoryRepository;
+	private final RepositoryService repositoryService;
 	private final GithubTokenService githubTokenService;
 
 	public List<SubscribeResponse> getSubscribedRepositories(String githubId) {
@@ -78,13 +77,8 @@ public class SubscribeService {
 		ResponseEntity<GithubRepositoryDto> repositoryInfo = getRepositoryInfo(repositoryUrlDto, accessToken);
 
 		Org org = orgService.saveOrg(orgInfo);
-		Repository repository = repositoryRepository.findByGhRepoId(
-				repositoryInfo.getBody().getId())
-			.orElseGet(() -> {
-				Repository newRepository = new Repository(org, repositoryInfo.getBody().getName(),
-					repositoryInfo.getBody().getId());
-				return repositoryRepository.save(newRepository);
-			});
+		Repository repository = repositoryService.saveRepository(repositoryInfo, org);
+
 		User user = userRepository.findByGithubId(repositoryUrlDto.getGithubId())
 			.orElseGet(() -> {
 				User newUser = new User(repositoryUrlDto.getGithubId(), githubId);
