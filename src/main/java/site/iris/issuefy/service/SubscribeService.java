@@ -84,15 +84,26 @@ public class SubscribeService {
 				User newUser = new User(repositoryUrlDto.getGithubId(), githubId);
 				return userRepository.save(newUser);
 			});
-		Subscribe subscribe = subscribeRepository.findByUserIdAndRepositoryId(user.getId(), repository.getId())
-			.orElseGet(() -> {
-				Subscribe newSubscribe = new Subscribe(user, repository);
-				return subscribeRepository.save(newSubscribe);
-			});
+		saveSubscription(user, repository);
+
 	}
 
 	public void unsubscribeRepository(Long ghRepoId) {
 		subscribeRepository.deleteByRepository_GhRepoId(ghRepoId);
+	}
+
+	public ResponseEntity<GithubRepositoryDto> getRepositoryInfo(RepositoryUrlDto repositoryUrlDto,
+		String accessToken) {
+		return WebClient.create()
+			.get()
+			.uri(REPOSITORY_REQUEST_URL + repositoryUrlDto.getOrgName() + "/" + repositoryUrlDto.getRepositoryName())
+			.headers(headers -> {
+				headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+				headers.setBearerAuth(accessToken);
+			})
+			.retrieve()
+			.toEntity(GithubRepositoryDto.class)
+			.block();
 	}
 
 	public ResponseEntity<GithubOrgDto> getOrgInfo(RepositoryUrlDto repositoryUrlDto, String accessToken) {
@@ -108,17 +119,11 @@ public class SubscribeService {
 			.block();
 	}
 
-	public ResponseEntity<GithubRepositoryDto> getRepositoryInfo(RepositoryUrlDto repositoryUrlDto,
-		String accessToken) {
-		return WebClient.create()
-			.get()
-			.uri(REPOSITORY_REQUEST_URL + repositoryUrlDto.getOrgName() + "/" + repositoryUrlDto.getRepositoryName())
-			.headers(headers -> {
-				headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
-				headers.setBearerAuth(accessToken);
-			})
-			.retrieve()
-			.toEntity(GithubRepositoryDto.class)
-			.block();
+	private void saveSubscription(User user, Repository repository) {
+		subscribeRepository.findByUserIdAndRepositoryId(user.getId(), repository.getId())
+			.orElseGet(() -> {
+				Subscribe newSubscribe = new Subscribe(user, repository);
+				return subscribeRepository.save(newSubscribe);
+			});
 	}
 }
