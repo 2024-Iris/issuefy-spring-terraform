@@ -29,7 +29,7 @@ import site.iris.issuefy.repository.OrgRepository;
 import site.iris.issuefy.repository.RepositoryRepository;
 import site.iris.issuefy.repository.SubscribeRepository;
 import site.iris.issuefy.repository.UserRepository;
-import site.iris.issuefy.response.SubscribeResponse;
+import site.iris.issuefy.response.SubscrptionResponse;
 
 @ExtendWith(MockitoExtension.class)
 class SubscriptionServiceTest {
@@ -83,7 +83,7 @@ class SubscriptionServiceTest {
 		when(subscribeRepository.findByUserId(user.getId())).thenReturn(List.of(subscription));
 
 		// when
-		List<SubscribeResponse> responses = subscriptionService.getSubscribedRepositories(githubId);
+		List<SubscrptionResponse> responses = subscriptionService.getSubscribedRepositories(githubId);
 
 		// then
 		assertNotNull(responses);
@@ -95,7 +95,7 @@ class SubscriptionServiceTest {
 
 	@DisplayName("리포지토리를 구독한다")
 	@Test
-	void addSubscribeRepository() throws Exception {
+	void addSubscribeRepository(){
 		// given
 		RepositoryUrlDto repositoryUrlDto = new RepositoryUrlDto("https://github.com/testOrg/testRepo", "testId",
 			"testOrg", "testRepo");

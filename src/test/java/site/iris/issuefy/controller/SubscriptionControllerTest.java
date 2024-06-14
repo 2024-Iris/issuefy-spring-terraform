@@ -24,7 +24,7 @@ import org.springframework.test.web.servlet.ResultActions;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import site.iris.issuefy.model.vo.RepositoryRecord;
-import site.iris.issuefy.response.SubscribeResponse;
+import site.iris.issuefy.response.SubscrptionResponse;
 import site.iris.issuefy.service.GithubTokenService;
 import site.iris.issuefy.service.SubscriptionService;
 
@@ -50,17 +50,17 @@ class SubscriptionControllerTest {
 		// given
 		String token = "Bearer testToken";
 		String githubId = "testGithubId";
-		List<SubscribeResponse> subscribeResponses = new ArrayList<>();
-		when(subscriptionService.getSubscribedRepositories("testToken")).thenReturn(subscribeResponses);
+		List<SubscrptionResponse> subscriptionResponses = new ArrayList<>();
+		when(subscriptionService.getSubscribedRepositories("testToken")).thenReturn(subscriptionResponses);
 
 		// when
-		ResultActions result = mockMvc.perform(get("/api/subscribe")
+		ResultActions result = mockMvc.perform(get("/api/subscription")
 			.header("Authorization", token)
 			.requestAttr("githubId", githubId));
 
 		// then
 		result.andExpect(status().isOk())
-			.andDo(document("issuefy/subscribe/get",
+			.andDo(document("issuefy/subscription/get",
 				getDocumentRequest(),
 				getDocumentResponse()
 			));
@@ -75,14 +75,14 @@ class SubscriptionControllerTest {
 		RepositoryRecord repositoryUrlVo = new RepositoryRecord(repositoryUrl);
 
 		// when
-		ResultActions result = mockMvc.perform(post("/api/subscribe")
+		ResultActions result = mockMvc.perform(post("/api/subscription")
 			.requestAttr("githubId", githubId)
 			.contentType(MediaType.APPLICATION_JSON)
 			.content(objectMapper.writeValueAsString(repositoryUrlVo)));
 
 		// then
 		result.andExpect(status().isCreated())
-			.andDo(document("issuefy/subscribe/post",
+			.andDo(document("issuefy/subscription/post",
 				getDocumentRequest(),
 				getDocumentResponse(),
 				requestFields(
