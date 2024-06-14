@@ -15,6 +15,13 @@ import site.iris.issuefy.exception.code.ErrorCode;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+	@ExceptionHandler(NullPointerException.class)
+	public ResponseEntity<ErrorResponse> handleNullPointerException(NullPointerException e) {
+		log.info(e.getMessage());
+		ErrorResponse errorResponse = new ErrorResponse(e.getMessage());
+		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+	}
+
 	@ExceptionHandler(IllegalArgumentException.class)
 	public ResponseEntity<ErrorResponse> handleIllegalArgumentException(IllegalArgumentException e) {
 		log.info(e.getMessage());
