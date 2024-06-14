@@ -23,7 +23,7 @@ import site.iris.issuefy.exception.RepositoryNotFoundException;
 import site.iris.issuefy.exception.code.ErrorCode;
 import site.iris.issuefy.model.dto.RepositoryUrlDto;
 import site.iris.issuefy.model.vo.RepositoryRecord;
-import site.iris.issuefy.response.SubscribeResponse;
+import site.iris.issuefy.response.SubscrptionResponse;
 import site.iris.issuefy.service.GithubTokenService;
 import site.iris.issuefy.service.SubscriptionService;
 
@@ -37,12 +37,12 @@ public class SubscriptionController {
 	private final GithubTokenService githubTokenService;
 
 	@GetMapping
-	public ResponseEntity<List<SubscribeResponse>> getSubscribedRepositories(
+	public ResponseEntity<List<SubscrptionResponse>> getSubscribedRepositories(
 		@RequestAttribute("githubId") String githubId) {
 		logRequest(githubId, "Request SubscribedRepositories");
-		List<SubscribeResponse> subscribeResponse = subscriptionService.getSubscribedRepositories(githubId);
-		logResponse(githubId, subscribeResponse);
-		return ResponseEntity.ok(subscribeResponse);
+		List<SubscrptionResponse> subscrptionResponse = subscriptionService.getSubscribedRepositories(githubId);
+		logResponse(githubId, subscrptionResponse);
+		return ResponseEntity.ok(subscrptionResponse);
 	}
 
 	@PostMapping

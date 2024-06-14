@@ -26,7 +26,7 @@ import site.iris.issuefy.model.dto.RepositoryUrlDto;
 import site.iris.issuefy.model.vo.OrgRecord;
 import site.iris.issuefy.repository.SubscribeRepository;
 import site.iris.issuefy.repository.UserRepository;
-import site.iris.issuefy.response.SubscribeResponse;
+import site.iris.issuefy.response.SubscrptionResponse;
 
 @Service
 @RequiredArgsConstructor
@@ -41,7 +41,7 @@ public class SubscriptionService {
 	private final RepositoryService repositoryService;
 	private final GithubTokenService githubTokenService;
 
-	public List<SubscribeResponse> getSubscribedRepositories(String githubId) {
+	public List<SubscrptionResponse> getSubscribedRepositories(String githubId) {
 		User user = userRepository.findByGithubId(githubId)
 			.orElseThrow(() -> new UserNotFoundException(githubId));
 		List<Subscription> subscriptions = subscribeRepository.findByUserId(user.getId());
@@ -61,10 +61,10 @@ public class SubscriptionService {
 			orgResponseMap.get(orgRecord).add(repositoryDto);
 		}
 
-		List<SubscribeResponse> responses = new ArrayList<>();
+		List<SubscrptionResponse> responses = new ArrayList<>();
 		for (Map.Entry<OrgRecord, List<RepositoryDto>> entry : orgResponseMap.entrySet()) {
 			OrgRecord orgRecord = OrgRecord.from(entry.getKey().id(), entry.getKey().name(), entry.getValue());
-			responses.add(SubscribeResponse.from(orgRecord));
+			responses.add(SubscrptionResponse.from(orgRecord));
 		}
 
 		return responses;
