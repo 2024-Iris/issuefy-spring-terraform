@@ -24,7 +24,6 @@ import site.iris.issuefy.model.dto.GithubRepositoryDto;
 import site.iris.issuefy.model.dto.RepositoryDto;
 import site.iris.issuefy.model.dto.RepositoryUrlDto;
 import site.iris.issuefy.model.vo.OrgRecord;
-import site.iris.issuefy.repository.OrgRepository;
 import site.iris.issuefy.repository.RepositoryRepository;
 import site.iris.issuefy.repository.SubscribeRepository;
 import site.iris.issuefy.repository.UserRepository;
@@ -39,7 +38,7 @@ public class SubscribeService {
 	private static String REPOSITORY_REQUEST_URL = "https://api.github.com/repos/";
 	private final SubscribeRepository subscribeRepository;
 	private final UserRepository userRepository;
-	private final OrgRepository orgRepository;
+	private final OrgService orgService;
 	private final RepositoryRepository repositoryRepository;
 	private final GithubTokenService githubTokenService;
 
@@ -72,18 +71,13 @@ public class SubscribeService {
 		return responses;
 	}
 
-	//TODO 리펙터링 필요
 	@Transactional
 	public void addSubscribeRepository(RepositoryUrlDto repositoryUrlDto, String githubId) {
 		String accessToken = githubTokenService.findAccessToken(githubId);
 		ResponseEntity<GithubOrgDto> orgInfo = getOrgInfo(repositoryUrlDto, accessToken);
 		ResponseEntity<GithubRepositoryDto> repositoryInfo = getRepositoryInfo(repositoryUrlDto, accessToken);
 
-		Org org = orgRepository.findByName(repositoryUrlDto.getOrgName())
-			.orElseGet(() -> {
-				Org newOrg = new Org(orgInfo.getBody().getLogin(), orgInfo.getBody().getId());
-				return orgRepository.save(newOrg);
-			});
+		Org org = orgService.saveOrg(orgInfo);
 		Repository repository = repositoryRepository.findByGhRepoId(
 				repositoryInfo.getBody().getId())
 			.orElseGet(() -> {
