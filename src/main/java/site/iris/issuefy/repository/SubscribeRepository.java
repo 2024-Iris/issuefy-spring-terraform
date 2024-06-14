@@ -5,12 +5,12 @@ import java.util.Optional;
 
 import org.springframework.data.repository.CrudRepository;
 
-import site.iris.issuefy.entity.Subscribe;
+import site.iris.issuefy.entity.Subscription;
 
-public interface SubscribeRepository extends CrudRepository<Subscribe, Long> {
-	List<Subscribe> findByUserId(Long userId);
+public interface SubscribeRepository extends CrudRepository<Subscription, Long> {
+	List<Subscription> findByUserId(Long userId);
 
-	Optional<Subscribe> findByUserIdAndRepositoryId(Long userId, Long repositoryId);
+	Optional<Subscription> findByUserIdAndRepositoryId(Long userId, Long repositoryId);
 
 	void deleteByRepository_GhRepoId(Long ghRepoId);
 }

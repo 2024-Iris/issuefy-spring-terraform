@@ -22,7 +22,7 @@ import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 import site.iris.issuefy.entity.Org;
 import site.iris.issuefy.entity.Repository;
-import site.iris.issuefy.entity.Subscribe;
+import site.iris.issuefy.entity.Subscription;
 import site.iris.issuefy.entity.User;
 import site.iris.issuefy.model.dto.RepositoryUrlDto;
 import site.iris.issuefy.repository.OrgRepository;
@@ -77,10 +77,10 @@ class SubscriptionServiceTest {
 		User user = new User(githubId, "testuser@example.com");
 		Org org = new Org("testOrg", 123L);
 		Repository repository = new Repository(org, "testRepo", 123L);
-		Subscribe subscribe = new Subscribe(user, repository);
+		Subscription subscription = new Subscription(user, repository);
 
 		when(userRepository.findByGithubId(githubId)).thenReturn(Optional.of(user));
-		when(subscribeRepository.findByUserId(user.getId())).thenReturn(List.of(subscribe));
+		when(subscribeRepository.findByUserId(user.getId())).thenReturn(List.of(subscription));
 
 		// when
 		List<SubscribeResponse> responses = subscriptionService.getSubscribedRepositories(githubId);
@@ -103,7 +103,7 @@ class SubscriptionServiceTest {
 		Org org = new Org("testOrg", 123L);
 		Repository repository = new Repository(org, "testRepo", 123L);
 		User user = new User(githubId, "testuser@example.com");
-		Subscribe subscribe = new Subscribe(user, repository);
+		Subscription subscription = new Subscription(user, repository);
 
 		// Mock 서버 설정
 		mockWebServer.enqueue(new MockResponse()
@@ -125,7 +125,7 @@ class SubscriptionServiceTest {
 		when(repositoryRepository.findByGhRepoId(123L)).thenReturn(Optional.of(repository));
 		when(userRepository.findByGithubId(repositoryUrlDto.getGithubId())).thenReturn(Optional.of(user));
 		when(subscribeRepository.findByUserIdAndRepositoryId(user.getId(), repository.getId())).thenReturn(
-			Optional.of(subscribe));
+			Optional.of(subscription));
 
 		ReflectionTestUtils.setField(subscriptionService, "ORG_REQUEST_URL", orgRequestUrl);
 		ReflectionTestUtils.setField(subscriptionService, "REPOSITORY_REQUEST_URL", repoRequestUrl);
@@ -138,7 +138,7 @@ class SubscriptionServiceTest {
 		verify(repositoryRepository, times(1)).findByGhRepoId(123L);
 		verify(userRepository, times(1)).findByGithubId(repositoryUrlDto.getGithubId());
 		verify(subscribeRepository, times(1)).findByUserIdAndRepositoryId(user.getId(), repository.getId());
-		verify(subscribeRepository, never()).save(any(Subscribe.class));
+		verify(subscribeRepository, never()).save(any(Subscription.class));
 	}
 
 	@DisplayName("리포지토리 구독을 삭제한다")

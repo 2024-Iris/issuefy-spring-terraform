@@ -16,7 +16,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import site.iris.issuefy.entity.Org;
 import site.iris.issuefy.entity.Repository;
-import site.iris.issuefy.entity.Subscribe;
+import site.iris.issuefy.entity.Subscription;
 import site.iris.issuefy.entity.User;
 import site.iris.issuefy.exception.UserNotFoundException;
 import site.iris.issuefy.model.dto.GithubOrgDto;
@@ -44,14 +44,14 @@ public class SubscriptionService {
 	public List<SubscribeResponse> getSubscribedRepositories(String githubId) {
 		User user = userRepository.findByGithubId(githubId)
 			.orElseThrow(() -> new UserNotFoundException(githubId));
-		List<Subscribe> subscribes = subscribeRepository.findByUserId(user.getId());
+		List<Subscription> subscriptions = subscribeRepository.findByUserId(user.getId());
 
 		Map<OrgRecord, List<RepositoryDto>> orgResponseMap = new HashMap<>();
-		for (Subscribe subscribe : subscribes) {
-			Long orgId = subscribe.getRepository().getOrg().getGhOrgId();
-			String orgName = subscribe.getRepository().getOrg().getName();
-			RepositoryDto repositoryDto = RepositoryDto.of(subscribe.getRepository().getGhRepoId(),
-				subscribe.getRepository().getName(), subscribe.getRepository().isStarred());
+		for (Subscription subscription : subscriptions) {
+			Long orgId = subscription.getRepository().getOrg().getGhOrgId();
+			String orgName = subscription.getRepository().getOrg().getName();
+			RepositoryDto repositoryDto = RepositoryDto.of(subscription.getRepository().getGhRepoId(),
+				subscription.getRepository().getName(), subscription.getRepository().isStarred());
 
 			OrgRecord orgRecord = OrgRecord.from(orgId, orgName, new ArrayList<>());
 
@@ -122,8 +122,8 @@ public class SubscriptionService {
 	private void saveSubscription(User user, Repository repository) {
 		subscribeRepository.findByUserIdAndRepositoryId(user.getId(), repository.getId())
 			.orElseGet(() -> {
-				Subscribe newSubscribe = new Subscribe(user, repository);
-				return subscribeRepository.save(newSubscribe);
+				Subscription newSubscription = new Subscription(user, repository);
+				return subscribeRepository.save(newSubscription);
 			});
 	}
 }

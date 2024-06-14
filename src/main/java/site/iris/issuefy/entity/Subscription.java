@@ -14,8 +14,8 @@ import lombok.NoArgsConstructor;
 @Entity
 @NoArgsConstructor
 @Getter
-@Table(name = "subscribe")
-public class Subscribe {
+@Table(name = "subscription")
+public class Subscription {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
@@ -28,14 +28,14 @@ public class Subscribe {
 	@JoinColumn(name = "repository_id", nullable = false)
 	private Repository repository;
 
-	public Subscribe(User user, Repository repository) {
+	public Subscription(User user, Repository repository) {
 		this.user = user;
 		this.repository = repository;
 	}
 
 	@Override
 	public String toString() {
-		return "Subscribe{" +
+		return "Subscription{" +
 			"id=" + id +
 			", user=" + user +
 			", repository=" + repository +
