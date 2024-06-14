@@ -32,7 +32,7 @@ import site.iris.issuefy.repository.UserRepository;
 import site.iris.issuefy.response.SubscribeResponse;
 
 @ExtendWith(MockitoExtension.class)
-class SubscribeServiceTest {
+class SubscriptionServiceTest {
 
 	@Mock
 	private SubscribeRepository subscribeRepository;
@@ -47,7 +47,7 @@ class SubscribeServiceTest {
 	private RepositoryRepository repositoryRepository;
 
 	@InjectMocks
-	private SubscribeService subscribeService;
+	private SubscriptionService subscriptionService;
 
 	@Mock
 	private GithubTokenService githubTokenService;
@@ -83,7 +83,7 @@ class SubscribeServiceTest {
 		when(subscribeRepository.findByUserId(user.getId())).thenReturn(List.of(subscribe));
 
 		// when
-		List<SubscribeResponse> responses = subscribeService.getSubscribedRepositories(githubId);
+		List<SubscribeResponse> responses = subscriptionService.getSubscribedRepositories(githubId);
 
 		// then
 		assertNotNull(responses);
@@ -127,11 +127,11 @@ class SubscribeServiceTest {
 		when(subscribeRepository.findByUserIdAndRepositoryId(user.getId(), repository.getId())).thenReturn(
 			Optional.of(subscribe));
 
-		ReflectionTestUtils.setField(subscribeService, "ORG_REQUEST_URL", orgRequestUrl);
-		ReflectionTestUtils.setField(subscribeService, "REPOSITORY_REQUEST_URL", repoRequestUrl);
+		ReflectionTestUtils.setField(subscriptionService, "ORG_REQUEST_URL", orgRequestUrl);
+		ReflectionTestUtils.setField(subscriptionService, "REPOSITORY_REQUEST_URL", repoRequestUrl);
 
 		// when
-		subscribeService.addSubscribeRepository(repositoryUrlDto, githubId);
+		subscriptionService.addSubscribeRepository(repositoryUrlDto, githubId);
 
 		// then
 		verify(orgRepository, times(1)).findByName(repositoryUrlDto.getOrgName());

@@ -25,22 +25,22 @@ import site.iris.issuefy.model.dto.RepositoryUrlDto;
 import site.iris.issuefy.model.vo.RepositoryRecord;
 import site.iris.issuefy.response.SubscribeResponse;
 import site.iris.issuefy.service.GithubTokenService;
-import site.iris.issuefy.service.SubscribeService;
+import site.iris.issuefy.service.SubscriptionService;
 
 @RestController
-@RequestMapping("/api/subscribe")
+@RequestMapping("/api/subscription")
 @RequiredArgsConstructor
 @Slf4j
-public class SubscribeController {
+public class SubscriptionController {
 
-	private final SubscribeService subscribeService;
+	private final SubscriptionService subscriptionService;
 	private final GithubTokenService githubTokenService;
 
 	@GetMapping
 	public ResponseEntity<List<SubscribeResponse>> getSubscribedRepositories(
 		@RequestAttribute("githubId") String githubId) {
 		logRequest(githubId, "Request SubscribedRepositories");
-		List<SubscribeResponse> subscribeResponse = subscribeService.getSubscribedRepositories(githubId);
+		List<SubscribeResponse> subscribeResponse = subscriptionService.getSubscribedRepositories(githubId);
 		logResponse(githubId, subscribeResponse);
 		return ResponseEntity.ok(subscribeResponse);
 	}
@@ -52,7 +52,7 @@ public class SubscribeController {
 		try {
 			checkRepositoryExistence(githubId, RepositoryRecord);
 			RepositoryUrlDto repositoryUrlDto = RepositoryUrlDto.of(RepositoryRecord.repositoryUrl(), githubId);
-			subscribeService.addSubscribeRepository(repositoryUrlDto, githubId);
+			subscriptionService.addSubscribeRepository(repositoryUrlDto, githubId);
 		} catch (WebClientException e) {
 			throw new RepositoryNotFoundException(ErrorCode.NOT_EXIST_REPOSITORY.getMessage());
 		}
@@ -64,7 +64,7 @@ public class SubscribeController {
 	public ResponseEntity<Void> unsubscribeRepository(@RequestAttribute String githubId,
 		@PathVariable("gh_repo_id") Long ghRepoId) {
 		logRequest(githubId, "Request UnsubscribeRepository for RepoId: " + ghRepoId);
-		subscribeService.unsubscribeRepository(ghRepoId);
+		subscriptionService.unsubscribeRepository(ghRepoId);
 		return ResponseEntity.noContent().build();
 	}
 

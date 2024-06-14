@@ -31,7 +31,7 @@ import site.iris.issuefy.response.SubscribeResponse;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class SubscribeService {
+public class SubscriptionService {
 	// TODO Enum으로 변경
 	private static String ORG_REQUEST_URL = "https://api.github.com/orgs/";
 	private static String REPOSITORY_REQUEST_URL = "https://api.github.com/repos/";
@@ -73,6 +73,7 @@ public class SubscribeService {
 	@Transactional
 	public void addSubscribeRepository(RepositoryUrlDto repositoryUrlDto, String githubId) {
 		String accessToken = githubTokenService.findAccessToken(githubId);
+
 		ResponseEntity<GithubOrgDto> orgInfo = getOrgInfo(repositoryUrlDto, accessToken);
 		ResponseEntity<GithubRepositoryDto> repositoryInfo = getRepositoryInfo(repositoryUrlDto, accessToken);
 
@@ -85,7 +86,6 @@ public class SubscribeService {
 				return userRepository.save(newUser);
 			});
 		saveSubscription(user, repository);
-
 	}
 
 	public void unsubscribeRepository(Long ghRepoId) {

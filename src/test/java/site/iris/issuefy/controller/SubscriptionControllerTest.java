@@ -26,11 +26,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import site.iris.issuefy.model.vo.RepositoryRecord;
 import site.iris.issuefy.response.SubscribeResponse;
 import site.iris.issuefy.service.GithubTokenService;
-import site.iris.issuefy.service.SubscribeService;
+import site.iris.issuefy.service.SubscriptionService;
 
-@WebMvcTest(SubscribeController.class)
+@WebMvcTest(SubscriptionController.class)
 @AutoConfigureRestDocs
-class SubscribeControllerTest {
+class SubscriptionControllerTest {
 
 	@Autowired
 	private MockMvc mockMvc;
@@ -39,7 +39,7 @@ class SubscribeControllerTest {
 	private ObjectMapper objectMapper;
 
 	@MockBean
-	private SubscribeService subscribeService;
+	private SubscriptionService subscriptionService;
 
 	@MockBean
 	private GithubTokenService githubTokenService;
@@ -51,7 +51,7 @@ class SubscribeControllerTest {
 		String token = "Bearer testToken";
 		String githubId = "testGithubId";
 		List<SubscribeResponse> subscribeResponses = new ArrayList<>();
-		when(subscribeService.getSubscribedRepositories("testToken")).thenReturn(subscribeResponses);
+		when(subscriptionService.getSubscribedRepositories("testToken")).thenReturn(subscribeResponses);
 
 		// when
 		ResultActions result = mockMvc.perform(get("/api/subscribe")
