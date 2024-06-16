@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -118,9 +119,9 @@ public class SubscriptionService {
 
 	private void saveSubscription(User user, Repository repository) {
 		subscriptionRepository.findByUserIdAndRepository_GhRepoId(user.getId(), repository.getGhRepoId())
-			.orElseGet(() -> {
+			.or(() -> {
 				Subscription newSubscription = new Subscription(user, repository);
-				return subscriptionRepository.save(newSubscription);
+				return Optional.of(subscriptionRepository.save(newSubscription));
 			});
 	}
 }
