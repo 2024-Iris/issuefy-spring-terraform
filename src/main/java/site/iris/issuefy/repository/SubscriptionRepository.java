@@ -10,7 +10,7 @@ import site.iris.issuefy.entity.Subscription;
 public interface SubscriptionRepository extends CrudRepository<Subscription, Long> {
 	List<Subscription> findByUserId(Long userId);
 
-	Optional<Subscription> findByUserIdAndRepositoryId(Long userId, Long repositoryId);
+	Optional<Subscription> findByUserIdAndRepository_GhRepoId(Long userId, Long ghRepoId);
 
 	void deleteByRepository_GhRepoId(Long ghRepoId);
 }

@@ -79,9 +79,8 @@ public class SubscriptionService {
 
 		Org org = orgService.saveOrg(orgInfo);
 		Repository repository = repositoryService.saveRepository(repositoryInfo, org);
-
-		User user = userRepository.findByGithubId(repositoryUrlDto.getGithubId())
-			.orElseThrow();
+		User user = userRepository.findByGithubId(githubId)
+			.orElseThrow(() -> new UserNotFoundException(githubId));
 		saveSubscription(user, repository);
 	}
 
@@ -118,7 +117,7 @@ public class SubscriptionService {
 	}
 
 	private void saveSubscription(User user, Repository repository) {
-		subscriptionRepository.findByUserIdAndRepositoryId(user.getId(), repository.getId())
+		subscriptionRepository.findByUserIdAndRepository_GhRepoId(user.getId(), repository.getGhRepoId())
 			.orElseGet(() -> {
 				Subscription newSubscription = new Subscription(user, repository);
 				return subscriptionRepository.save(newSubscription);
