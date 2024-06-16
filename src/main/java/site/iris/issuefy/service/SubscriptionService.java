@@ -90,7 +90,7 @@ public class SubscriptionService {
 		subscriptionRepository.deleteByRepository_GhRepoId(ghRepoId);
 	}
 
-	public ResponseEntity<GithubRepositoryDto> getRepositoryInfo(RepositoryUrlDto repositoryUrlDto,
+	private ResponseEntity<GithubRepositoryDto> getRepositoryInfo(RepositoryUrlDto repositoryUrlDto,
 		String accessToken) {
 		return WebClient.create()
 			.get()
@@ -104,7 +104,7 @@ public class SubscriptionService {
 			.block();
 	}
 
-	public ResponseEntity<GithubOrgDto> getOrgInfo(RepositoryUrlDto repositoryUrlDto, String accessToken) {
+	private ResponseEntity<GithubOrgDto> getOrgInfo(RepositoryUrlDto repositoryUrlDto, String accessToken) {
 		return WebClient.create()
 			.get()
 			.uri(ORG_REQUEST_URL + repositoryUrlDto.getOrgName())
