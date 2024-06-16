@@ -16,8 +16,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.ResponseEntity;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import lombok.extern.slf4j.Slf4j;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 import site.iris.issuefy.entity.Org;
@@ -25,26 +27,24 @@ import site.iris.issuefy.entity.Repository;
 import site.iris.issuefy.entity.Subscription;
 import site.iris.issuefy.entity.User;
 import site.iris.issuefy.model.dto.RepositoryUrlDto;
-import site.iris.issuefy.repository.OrgRepository;
-import site.iris.issuefy.repository.RepositoryRepository;
-import site.iris.issuefy.repository.SubscribeRepository;
+import site.iris.issuefy.repository.SubscriptionRepository;
 import site.iris.issuefy.repository.UserRepository;
 import site.iris.issuefy.response.SubscrptionResponse;
-
+@Slf4j
 @ExtendWith(MockitoExtension.class)
 class SubscriptionServiceTest {
 
 	@Mock
-	private SubscribeRepository subscribeRepository;
+	private SubscriptionRepository subscriptionRepository;
 
 	@Mock
 	private UserRepository userRepository;
 
 	@Mock
-	private OrgRepository orgRepository;
+	private OrgService orgService;
 
 	@Mock
-	private RepositoryRepository repositoryRepository;
+	private RepositoryService repositoryService;
 
 	@InjectMocks
 	private SubscriptionService subscriptionService;
@@ -80,7 +80,7 @@ class SubscriptionServiceTest {
 		Subscription subscription = new Subscription(user, repository);
 
 		when(userRepository.findByGithubId(githubId)).thenReturn(Optional.of(user));
-		when(subscribeRepository.findByUserId(user.getId())).thenReturn(List.of(subscription));
+		when(subscriptionRepository.findByUserId(user.getId())).thenReturn(List.of(subscription));
 
 		// when
 		List<SubscrptionResponse> responses = subscriptionService.getSubscribedRepositories(githubId);
@@ -95,15 +95,13 @@ class SubscriptionServiceTest {
 
 	@DisplayName("리포지토리를 구독한다")
 	@Test
-	void addSubscribeRepository(){
+	void addSubscribeRepository() {
 		// given
-		RepositoryUrlDto repositoryUrlDto = new RepositoryUrlDto("https://github.com/testOrg/testRepo", "testId",
-			"testOrg", "testRepo");
-		String githubId = "testUser";
-		Org org = new Org("testOrg", 123L);
-		Repository repository = new Repository(org, "testRepo", 123L);
-		User user = new User(githubId, "testuser@example.com");
-		Subscription subscription = new Subscription(user, repository);
+		RepositoryUrlDto repositoryUrlDto = new RepositoryUrlDto("https://github.com/testOrg/testRepo", "testId", "testOrg", "testRepo");
+		String githubId = "githubuser1";
+		Org org = new Org("organization1", 1L);
+		Repository repository = new Repository(org, "repo-a1", 1L);
+		User user = new User(githubId, "user1@example.com");
 
 		// Mock 서버 설정
 		mockWebServer.enqueue(new MockResponse()
@@ -121,11 +119,15 @@ class SubscriptionServiceTest {
 		String repoRequestUrl = baseUrl + "repos/";
 
 		when(githubTokenService.findAccessToken(githubId)).thenReturn("testAccessToken");
-		when(orgRepository.findByName(repositoryUrlDto.getOrgName())).thenReturn(Optional.of(org));
-		when(repositoryRepository.findByGhRepoId(123L)).thenReturn(Optional.of(repository));
-		when(userRepository.findByGithubId(repositoryUrlDto.getGithubId())).thenReturn(Optional.of(user));
-		when(subscribeRepository.findByUserIdAndRepositoryId(user.getId(), repository.getId())).thenReturn(
-			Optional.of(subscription));
+		when(orgService.saveOrg(any(ResponseEntity.class))).thenReturn(org);
+
+		when(repositoryService.saveRepository(any(ResponseEntity.class), eq(org)))
+			.thenReturn(repository);
+
+		when(userRepository.findByGithubId(githubId)).thenReturn(Optional.of(user));
+		when(subscriptionRepository.findByUserIdAndRepository_GhRepoId(user.getId(), repository.getGhRepoId()))
+			.thenReturn(Optional.empty());
+		when(subscriptionRepository.save(any(Subscription.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
 		ReflectionTestUtils.setField(subscriptionService, "ORG_REQUEST_URL", orgRequestUrl);
 		ReflectionTestUtils.setField(subscriptionService, "REPOSITORY_REQUEST_URL", repoRequestUrl);
@@ -134,11 +136,7 @@ class SubscriptionServiceTest {
 		subscriptionService.addSubscribeRepository(repositoryUrlDto, githubId);
 
 		// then
-		verify(orgRepository, times(1)).findByName(repositoryUrlDto.getOrgName());
-		verify(repositoryRepository, times(1)).findByGhRepoId(123L);
-		verify(userRepository, times(1)).findByGithubId(repositoryUrlDto.getGithubId());
-		verify(subscribeRepository, times(1)).findByUserIdAndRepositoryId(user.getId(), repository.getId());
-		verify(subscribeRepository, never()).save(any(Subscription.class));
+		verify(subscriptionRepository, times(1)).save(any(Subscription.class));
 	}
 
 	@DisplayName("리포지토리 구독을 삭제한다")
@@ -148,9 +146,9 @@ class SubscriptionServiceTest {
 		Long ghRepoId = 123L;
 
 		// when
-		subscribeRepository.deleteByRepository_GhRepoId(ghRepoId);
+		subscriptionRepository.deleteByRepository_GhRepoId(ghRepoId);
 
 		// then
-		verify(subscribeRepository, times(1)).deleteByRepository_GhRepoId(ghRepoId);
+		verify(subscriptionRepository, times(1)).deleteByRepository_GhRepoId(ghRepoId);
 	}
 }
