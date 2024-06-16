@@ -7,7 +7,7 @@ import org.springframework.data.repository.CrudRepository;
 
 import site.iris.issuefy.entity.Subscription;
 
-public interface SubscribeRepository extends CrudRepository<Subscription, Long> {
+public interface SubscriptionRepository extends CrudRepository<Subscription, Long> {
 	List<Subscription> findByUserId(Long userId);
 
 	Optional<Subscription> findByUserIdAndRepositoryId(Long userId, Long repositoryId);

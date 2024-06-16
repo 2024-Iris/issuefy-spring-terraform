@@ -24,7 +24,7 @@ import site.iris.issuefy.model.dto.GithubRepositoryDto;
 import site.iris.issuefy.model.dto.RepositoryDto;
 import site.iris.issuefy.model.dto.RepositoryUrlDto;
 import site.iris.issuefy.model.vo.OrgRecord;
-import site.iris.issuefy.repository.SubscribeRepository;
+import site.iris.issuefy.repository.SubscriptionRepository;
 import site.iris.issuefy.repository.UserRepository;
 import site.iris.issuefy.response.SubscrptionResponse;
 
@@ -35,7 +35,7 @@ public class SubscriptionService {
 	// TODO Enum으로 변경
 	private static String ORG_REQUEST_URL = "https://api.github.com/orgs/";
 	private static String REPOSITORY_REQUEST_URL = "https://api.github.com/repos/";
-	private final SubscribeRepository subscribeRepository;
+	private final SubscriptionRepository subscriptionRepository;
 	private final UserRepository userRepository;
 	private final OrgService orgService;
 	private final RepositoryService repositoryService;
@@ -44,7 +44,7 @@ public class SubscriptionService {
 	public List<SubscrptionResponse> getSubscribedRepositories(String githubId) {
 		User user = userRepository.findByGithubId(githubId)
 			.orElseThrow(() -> new UserNotFoundException(githubId));
-		List<Subscription> subscriptions = subscribeRepository.findByUserId(user.getId());
+		List<Subscription> subscriptions = subscriptionRepository.findByUserId(user.getId());
 
 		Map<OrgRecord, List<RepositoryDto>> orgResponseMap = new HashMap<>();
 		for (Subscription subscription : subscriptions) {
@@ -81,15 +81,13 @@ public class SubscriptionService {
 		Repository repository = repositoryService.saveRepository(repositoryInfo, org);
 
 		User user = userRepository.findByGithubId(repositoryUrlDto.getGithubId())
-			.orElseGet(() -> {
-				User newUser = new User(repositoryUrlDto.getGithubId(), githubId);
-				return userRepository.save(newUser);
-			});
+			.orElseThrow();
 		saveSubscription(user, repository);
 	}
 
+	@Transactional
 	public void unsubscribeRepository(Long ghRepoId) {
-		subscribeRepository.deleteByRepository_GhRepoId(ghRepoId);
+		subscriptionRepository.deleteByRepository_GhRepoId(ghRepoId);
 	}
 
 	public ResponseEntity<GithubRepositoryDto> getRepositoryInfo(RepositoryUrlDto repositoryUrlDto,
@@ -120,10 +118,10 @@ public class SubscriptionService {
 	}
 
 	private void saveSubscription(User user, Repository repository) {
-		subscribeRepository.findByUserIdAndRepositoryId(user.getId(), repository.getId())
+		subscriptionRepository.findByUserIdAndRepositoryId(user.getId(), repository.getId())
 			.orElseGet(() -> {
 				Subscription newSubscription = new Subscription(user, repository);
-				return subscribeRepository.save(newSubscription);
+				return subscriptionRepository.save(newSubscription);
 			});
 	}
 }
