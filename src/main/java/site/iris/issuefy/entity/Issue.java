@@ -24,8 +24,8 @@ public class Issue {
 	@JoinColumn(name = "repository_id", nullable = false)
 	private Repository repository;
 
-	// @Column(name = "title")x
-	// private String title;
+	@Column(name = "title")
+	private String title;
 
 	@Column
 	private boolean isStarred;
@@ -36,12 +36,13 @@ public class Issue {
 	@Column
 	private long ghIssueNumber;
 
-	public Issue(Repository repository, long ghIssueNumber) {
+	public Issue(Repository repository, String title, long ghIssueNumber) {
 		this.repository = repository;
+		this.title = title;
 		this.ghIssueNumber = ghIssueNumber;
 	}
 
-	public static Issue of(Repository repository, long ghIssueNumber) {
-		return new Issue(repository, ghIssueNumber);
+	public static Issue of(Repository repository, String title, long ghIssueNumber) {
+		return new Issue(repository, title, ghIssueNumber);
 	}
 }

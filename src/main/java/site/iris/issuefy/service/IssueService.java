@@ -37,7 +37,7 @@ public class IssueService {
 		Optional<Repository> repository = repositoryRepository.findByName(repoName);
 		if (repository.isPresent()) {
 			List<Issue> issues = issueDtos.stream()
-				.map(dto -> Issue.of(repository.get(), dto.getGithubIssueNumber()))
+				.map(dto -> Issue.of(repository.get(), dto.getTitle(), dto.getGithubIssueNumber()))
 				.toList();
 			return issueRepository.saveAll(issues);
 		}

@@ -80,7 +80,7 @@ CREATE TABLE IF NOT EXISTS `issuefy`.`issue`
 (
     `id`              BIGINT       NOT NULL AUTO_INCREMENT,
     `repository_id`   BIGINT       NOT NULL,
-    `title`           VARCHAR(45)  CHARACTER SET 'utf8mb4' NULL,
+    `title`           VARCHAR(255)  CHARACTER SET 'utf8mb4' NULL,
     `is_starred`      TINYINT      NOT NULL DEFAULT 0,
     `is_read`         TINYINT      NOT NULL DEFAULT 0,
     `gh_issue_number` BIGINT       NOT NULL,
