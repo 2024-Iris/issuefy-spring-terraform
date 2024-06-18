@@ -78,22 +78,21 @@ DROP TABLE IF EXISTS `issuefy`.`issue`;
 
 CREATE TABLE IF NOT EXISTS `issuefy`.`issue`
 (
-    `id`             BIGINT       NOT NULL AUTO_INCREMENT,
-    `repository_id`  BIGINT       NOT NULL,
-    `title`          VARCHAR(45)  CHARACTER SET 'utf8mb4' NOT NULL,
-    `is_starred`     TINYINT      NOT NULL DEFAULT 0,
-    `is_read`        TINYINT      NOT NULL DEFAULT 0,
-    `gh_issue_number` BIGINT      NOT NULL,
+    `id`              BIGINT       NOT NULL AUTO_INCREMENT,
+    `repository_id`   BIGINT       NOT NULL,
+    `title`           VARCHAR(45)  CHARACTER SET 'utf8mb4' NULL,
+    `is_starred`      TINYINT      NOT NULL DEFAULT 0,
+    `is_read`         TINYINT      NOT NULL DEFAULT 0,
+    `gh_issue_number` BIGINT       NOT NULL,
     PRIMARY KEY (`id`),
-    INDEX `fk_issue_repository_idx` (`repository_id` ASC) VISIBLE,
-    UNIQUE INDEX `gh_issue_number_UNIQUE` (`gh_issue_number` ASC) VISIBLE,
+    INDEX `fk_issue_repository_idx` (`repository_id`),
     CONSTRAINT `fk_issue_repository`
         FOREIGN KEY (`repository_id`)
             REFERENCES `issuefy`.`repository` (`id`)
             ON DELETE CASCADE
             ON UPDATE CASCADE
-)
-ENGINE = InnoDB;
+) ENGINE = InnoDB;
+
 
 -- -----------------------------------------------------
 -- Table `issuefy`.`label`
