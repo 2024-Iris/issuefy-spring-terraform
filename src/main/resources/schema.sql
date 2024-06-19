@@ -134,24 +134,24 @@ CREATE TABLE IF NOT EXISTS `issuefy`.`issue_label`
 ENGINE = InnoDB;
 
 -- -----------------------------------------------------
--- Table `issuefy`.`subscribe`
+-- Table `issuefy`.`subscription`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `issuefy`.`subscribe`;
+DROP TABLE IF EXISTS `issuefy`.`subscription`;
 
-CREATE TABLE IF NOT EXISTS `issuefy`.`subscribe`
+CREATE TABLE IF NOT EXISTS `issuefy`.`subscription`
 (
     `id`            BIGINT NOT NULL AUTO_INCREMENT,
     `user_id`       BIGINT NOT NULL,
     `repository_id` BIGINT NOT NULL,
-    INDEX `fk_subscribe_repository_idx` (`repository_id` ASC) VISIBLE,
-    INDEX `fk_subscribe_user_idx` (`user_id` ASC) VISIBLE,
+    INDEX `fk_subscription_repository_idx` (`repository_id` ASC) VISIBLE,
+    INDEX `fk_subscription_user_idx` (`user_id` ASC) VISIBLE,
     PRIMARY KEY (`id`),
-    CONSTRAINT `fk_subscribe_repository`
+    CONSTRAINT `fk_subscription_repository`
         FOREIGN KEY (`repository_id`)
             REFERENCES `issuefy`.`repository` (`id`)
             ON DELETE NO ACTION
             ON UPDATE NO ACTION,
-    CONSTRAINT `fk_subscribe_user`
+    CONSTRAINT `fk_subscription_user`
         FOREIGN KEY (`user_id`)
             REFERENCES `issuefy`.`user` (`id`)
             ON DELETE CASCADE
@@ -167,14 +167,14 @@ DROP TABLE IF EXISTS `issuefy`.`notification`;
 CREATE TABLE IF NOT EXISTS `issuefy`.`notification`
 (
     `id`            BIGINT       NOT NULL AUTO_INCREMENT,
-    `subscribe_id`  BIGINT       NOT NULL,
+    `subscription_id`  BIGINT       NOT NULL,
     `title`         VARCHAR(45)  CHARACTER SET 'utf8mb4' NOT NULL,
     `is_read`       TINYINT      NOT NULL DEFAULT 0,
     PRIMARY KEY (`id`),
-    INDEX `fk_notification_subscribe_idx` (`subscribe_id` ASC) VISIBLE,
-    CONSTRAINT `fk_notification_subscribe`
-        FOREIGN KEY (`subscribe_id`)
-            REFERENCES `issuefy`.`subscribe` (`id`)
+    INDEX `fk_notification_subscription_idx` (`subscription_id` ASC) VISIBLE,
+    CONSTRAINT `fk_notification_subscription`
+        FOREIGN KEY (`subscription_id`)
+            REFERENCES `issuefy`.`subscription` (`id`)
             ON DELETE CASCADE
             ON UPDATE CASCADE
 )

@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import lombok.extern.slf4j.Slf4j;
+import site.iris.issuefy.exception.code.ErrorCode;
 import site.iris.issuefy.model.dto.OauthDto;
 import site.iris.issuefy.model.dto.UserDto;
 
@@ -65,7 +66,7 @@ public class AuthenticationService {
 
 		// 필수 키가 없으면 예외 발생
 		if (!responseMap.containsKey(KEY_ACCESS_TOKEN) || !responseMap.containsKey(KEY_TOKEN_TYPE)) {
-			throw new IllegalArgumentException("Response does not contain all required keys");
+			throw new IllegalArgumentException(ErrorCode.REQUIRED_KEYS_MISSING.getMessage());
 		}
 
 		return OauthDto.fromMap(responseMap);

@@ -18,29 +18,29 @@ endif::[]
 
 ==== HTTP 요청
 
-include::{snippets}/issuefy/subscribe/post/http-request.adoc[]
+include::{snippets}/issuefy/subscription/post/http-request.adoc[]
 
 ==== 요청 필드
 
-include::{snippets}/issuefy/subscribe/post/request-fields.adoc[]
+include::{snippets}/issuefy/subscription/post/request-fields.adoc[]
 
 ==== HTTP 응답 예시
 
-include::{snippets}/issuefy/subscribe/post/http-response.adoc[]
+include::{snippets}/issuefy/subscription/post/http-response.adoc[]
 
 ==== 응답 필드
 
-include::{snippets}/issuefy/subscribe/post/response-body.adoc[]
+include::{snippets}/issuefy/subscription/post/response-body.adoc[]
 
 === 1.2 등록한 리포지토리 목록
 
 ==== HTTP 요청
 
-include::{snippets}/issuefy/subscribe/get/http-request.adoc[]
+include::{snippets}/issuefy/subscription/get/http-request.adoc[]
 
 ==== HTTP 응답
 
-include::{snippets}/issuefy/subscribe/get/http-response.adoc[]
+include::{snippets}/issuefy/subscription/get/http-response.adoc[]
 
 == 2. Issues
 
