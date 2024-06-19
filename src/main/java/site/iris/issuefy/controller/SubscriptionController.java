@@ -20,7 +20,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import site.iris.issuefy.model.dto.RepositoryUrlDto;
 import site.iris.issuefy.model.vo.RepositoryRecord;
-import site.iris.issuefy.response.SubscrptionResponse;
+import site.iris.issuefy.response.SubscriptionResponse;
 import site.iris.issuefy.service.GithubTokenService;
 import site.iris.issuefy.service.SubscriptionService;
 
@@ -34,12 +34,12 @@ public class SubscriptionController {
 	private final GithubTokenService githubTokenService;
 
 	@GetMapping
-	public ResponseEntity<List<SubscrptionResponse>> getSubscribedRepositories(
+	public ResponseEntity<List<SubscriptionResponse>> getSubscribedRepositories(
 		@RequestAttribute("githubId") String githubId) {
 		logRequest(githubId, "Request SubscribedRepositories");
-		List<SubscrptionResponse> subscrptionResponse = subscriptionService.getSubscribedRepositories(githubId);
-		logResponse(githubId, subscrptionResponse);
-		return ResponseEntity.ok(subscrptionResponse);
+		List<SubscriptionResponse> subscriptionResponses = subscriptionService.getSubscribedRepositories(githubId);
+		logResponse(githubId, subscriptionResponses);
+		return ResponseEntity.ok(subscriptionResponses);
 	}
 
 	@PostMapping

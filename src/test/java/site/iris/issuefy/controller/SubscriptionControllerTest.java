@@ -24,7 +24,7 @@ import org.springframework.test.web.servlet.ResultActions;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import site.iris.issuefy.model.vo.RepositoryRecord;
-import site.iris.issuefy.response.SubscrptionResponse;
+import site.iris.issuefy.response.SubscriptionResponse;
 import site.iris.issuefy.service.GithubTokenService;
 import site.iris.issuefy.service.SubscriptionService;
 
@@ -50,7 +50,7 @@ class SubscriptionControllerTest {
 		// given
 		String token = "Bearer testToken";
 		String githubId = "testGithubId";
-		List<SubscrptionResponse> subscriptionResponses = new ArrayList<>();
+		List<SubscriptionResponse> subscriptionResponses = new ArrayList<>();
 		when(subscriptionService.getSubscribedRepositories("testToken")).thenReturn(subscriptionResponses);
 
 		// when
