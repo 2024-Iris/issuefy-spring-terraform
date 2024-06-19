@@ -2,12 +2,14 @@ package site.iris.issuefy.service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import site.iris.issuefy.entity.Issue;
+import site.iris.issuefy.entity.Label;
 import site.iris.issuefy.entity.Repository;
 import site.iris.issuefy.exception.RepositoryNotFoundException;
 import site.iris.issuefy.exception.code.ErrorCode;
@@ -37,8 +39,13 @@ public class IssueService {
 		Optional<Repository> repository = repositoryRepository.findByName(repoName);
 		if (repository.isPresent()) {
 			List<Issue> issues = issueDtos.stream()
-				.map(dto -> Issue.of(repository.get(), dto.getTitle(), dto.getGithubIssueNumber()))
-				.toList();
+				.map(dto -> {
+					List<Label> labels = dto.getLabels().stream()
+						.map(labelDto -> Label.from(labelDto.getName()))
+						.collect(Collectors.toList());
+					return Issue.of(repository.get(), dto.getTitle(), dto.getGithubIssueNumber(), labels);
+				})
+				.collect(Collectors.toList());
 			return issueRepository.saveAll(issues);
 		}
 		throw new RepositoryNotFoundException(ErrorCode.NOT_EXIST_REPOSITORY.getMessage() + repoName);
@@ -48,18 +55,32 @@ public class IssueService {
 		String accessToken = githubTokenService.findAccessToken(githubId);
 		return webClient.get()
 			.uri(uriBuilder -> uriBuilder
-				.path("repos/" + orgName + "/" + repoName + "/issues")
+				.path("/repos/{owner}/{repo}/issues")
 				.queryParam("state", "open")
 				.queryParam("sort", "created")
 				.queryParam("direction", "desc")
 				.queryParam("labels", "good first issue")
-				.build("ownerValue", "repoValue")
-			)
+				.build(orgName, repoName))
 			.header("accept", "application/vnd.github+json")
-			.header("auth", accessToken)
+			.header("Authorization", "Bearer " + accessToken)
 			.retrieve()
 			.bodyToFlux(IssueDto.class)
 			.collectList()
 			.block();
+		// return webClient.get()
+		// 	.uri(uriBuilder -> uriBuilder
+		// 		.path("repos/" + orgName + "/" + repoName + "/issues")
+		// 		.queryParam("state", "open")
+		// 		.queryParam("sort", "created")
+		// 		.queryParam("direction", "desc")
+		// 		.queryParam("labels", "good first issue")
+		// 		.build("ownerValue", "repoValue")
+		// 	)
+		// 	.header("accept", "application/vnd.github+json")
+		// 	.header("auth", accessToken)
+		// 	.retrieve()
+		// 	.bodyToFlux(IssueDto.class)
+		// 	.collectList()
+		// 	.block();
 	}
 }
