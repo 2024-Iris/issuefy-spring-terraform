@@ -89,6 +89,19 @@ public class SubscriptionService {
 		subscriptionRepository.deleteByRepository_GhRepoId(ghRepoId);
 	}
 
+	private ResponseEntity<GithubOrgDto> getOrgInfo(RepositoryUrlDto repositoryUrlDto, String accessToken) {
+		return WebClient.create()
+			.get()
+			.uri(ORG_REQUEST_URL + repositoryUrlDto.getOrgName())
+			.headers(headers -> {
+				headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+				headers.setBearerAuth(accessToken);
+			})
+			.retrieve()
+			.toEntity(GithubOrgDto.class)
+			.block();
+	}
+
 	private ResponseEntity<GithubRepositoryDto> getRepositoryInfo(RepositoryUrlDto repositoryUrlDto,
 		String accessToken) {
 		return WebClient.create()
@@ -100,19 +113,6 @@ public class SubscriptionService {
 			})
 			.retrieve()
 			.toEntity(GithubRepositoryDto.class)
-			.block();
-	}
-
-	private ResponseEntity<GithubOrgDto> getOrgInfo(RepositoryUrlDto repositoryUrlDto, String accessToken) {
-		return WebClient.create()
-			.get()
-			.uri(ORG_REQUEST_URL + repositoryUrlDto.getOrgName())
-			.headers(headers -> {
-				headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
-				headers.setBearerAuth(accessToken);
-			})
-			.retrieve()
-			.toEntity(GithubOrgDto.class)
 			.block();
 	}
 
