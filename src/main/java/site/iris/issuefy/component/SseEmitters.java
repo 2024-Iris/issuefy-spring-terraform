@@ -35,19 +35,6 @@ public class SseEmitters {
 		return emitter;
 	}
 
-	public void count() {
-		long count = counter.incrementAndGet();
-		emitters.forEach(emitter -> {
-			try {
-				emitter.send(SseEmitter.event()
-					.name("count")
-					.data(count));
-			} catch (IOException e) {
-				throw new RuntimeException(e);
-			}
-		});
-	}
-
 	public void testMessage() {
 		long count = counter.incrementAndGet();
 		TestDto testDto = new TestDto(1, "테스트 메시지 1");
