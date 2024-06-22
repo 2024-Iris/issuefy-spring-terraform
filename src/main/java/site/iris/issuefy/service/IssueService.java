@@ -23,6 +23,7 @@ import site.iris.issuefy.repository.LabelRepository;
 import site.iris.issuefy.repository.RepositoryRepository;
 import site.iris.issuefy.response.IssueResponse;
 import site.iris.issuefy.response.LabelResponse;
+import site.iris.issuefy.response.RepositoryIssuesResponse;
 
 @Service
 public class IssueService {
@@ -48,7 +49,7 @@ public class IssueService {
 		this.issueLabelRepository = issueLabelRepository;
 	}
 
-	public List<IssueResponse> saveIssuesByRepository(String orgName, String repoName, String githubId) {
+	public RepositoryIssuesResponse saveIssuesByRepository(String orgName, String repoName, String githubId) {
 		List<IssueDto> issueDtos = getOpenGoodFirstIssues(orgName, repoName, githubId);
 		Optional<Repository> repositoryOptional = repositoryRepository.findByName(repoName);
 
@@ -80,7 +81,7 @@ public class IssueService {
 		labelRepository.saveAll(allLabels);
 		issueLabelRepository.saveAll(issueLabels);
 
-		return convertToDto(issues);
+		return new RepositoryIssuesResponse(repository.getName(), convertToDto(issues));
 	}
 
 	private List<IssueResponse> convertToDto(List<Issue> issues) {
