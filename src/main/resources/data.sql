@@ -23,14 +23,14 @@ INSERT INTO `repository` (org_id, name, gh_repo_id)
 VALUES (2, 'repob-1', 3);
 
 -- Inserting issues
-INSERT INTO `issue` (repository_id, title, gh_issue_number)
-VALUES (1, 'issue-a1-1', 1234);
-INSERT INTO `issue` (repository_id, title, gh_issue_number)
-VALUES (1, 'issue-a1-2', 5678);
-INSERT INTO `issue` (repository_id, title, gh_issue_number)
-VALUES (2, 'issue-a2-1', 5679);
-INSERT INTO `issue` (repository_id, title, gh_issue_number)
-VALUES (3, 'issue-b1-1', 2000);
+INSERT INTO `issue` (repository_id, title, gh_issue_number, is_starred, is_read, state, created_at)
+VALUES (1, 'issue-a1-1', 1234, 0, 0, 'open', '2024-06-01');
+INSERT INTO `issue` (repository_id, title, gh_issue_number, is_starred, is_read, state, created_at)
+VALUES (1, 'issue-a1-2', 5678, 0, 0, 'open', '2024-06-01');
+INSERT INTO `issue` (repository_id, title, gh_issue_number, is_starred, is_read, state, created_at)
+VALUES (2, 'issue-a2-1', 5679, 0, 0, 'open', '2024-06-01');
+INSERT INTO `issue` (repository_id, title, gh_issue_number, is_starred, is_read, state, created_at)
+VALUES (3, 'issue-b1-1', 2000, 0, 0, 'open', '2024-06-01');
 
 -- Inserting labels
 INSERT INTO `label` (name, color)

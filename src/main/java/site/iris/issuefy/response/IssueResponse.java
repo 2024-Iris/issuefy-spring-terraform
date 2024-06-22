@@ -3,12 +3,14 @@ package site.iris.issuefy.response;
 import java.util.Date;
 import java.util.List;
 
+import lombok.Builder;
 import lombok.Data;
 
 @Data
+@Builder
 public class IssueResponse {
-	private int id;
-	private int githubIssueId;
+	private Long id;
+	private Long githubIssueId;
 	private String state;
 	private String title;
 	private List<LabelResponse> labels;
@@ -17,5 +19,4 @@ public class IssueResponse {
 	private Date createdAt;
 	private Date updatedAt;
 	private Date closedAt;
-
 }

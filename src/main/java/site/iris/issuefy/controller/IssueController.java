@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import site.iris.issuefy.entity.Issue;
+import site.iris.issuefy.response.IssueResponse;
 import site.iris.issuefy.service.IssueService;
 
 @RestController
@@ -21,12 +21,12 @@ public class IssueController {
 	private final IssueService issueService;
 
 	@GetMapping("/api/subscriptions/{org_name}/{repo_name}/issues")
-	public ResponseEntity<List<Issue>> getIssuesByRepoName(@PathVariable("org_name") String orgName,
+	public ResponseEntity<List<IssueResponse>> getIssuesByRepoName(@PathVariable("org_name") String orgName,
 		@PathVariable("repo_name") String repoName,
 		@RequestAttribute String githubId) {
 		log.info("getIssuesByRepoName: {}", repoName);
-		Iterable<Issue> issueResponse = issueService.saveIssuesByRepository(orgName, repoName, githubId);
-		log.info(issueResponse.toString());
-		return ResponseEntity.status(HttpStatus.OK).body((List<Issue>)issueResponse);
+		List<IssueResponse> issueResponses = issueService.saveIssuesByRepository(orgName, repoName, githubId);
+		log.info(issueResponses.toString());
+		return ResponseEntity.status(HttpStatus.OK).body(issueResponses);
 	}
 }

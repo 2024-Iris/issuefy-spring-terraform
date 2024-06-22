@@ -84,6 +84,10 @@ CREATE TABLE IF NOT EXISTS `issuefy`.`issue`
     `is_starred`      TINYINT                              NOT NULL DEFAULT 0,
     `is_read`         TINYINT                              NOT NULL DEFAULT 0,
     `gh_issue_number` BIGINT                               NOT NULL,
+    `state`           VARCHAR(45)                          NOT NULL,
+    `created_at`      DATE                                 NOT NULL,
+    `updated_at`      DATE                                 NULL,
+    `closed_at`       DATE                                 NULL,
     PRIMARY KEY (`id`),
     INDEX `fk_issue_repository_idx` (`repository_id`),
     CONSTRAINT `fk_issue_repository`
