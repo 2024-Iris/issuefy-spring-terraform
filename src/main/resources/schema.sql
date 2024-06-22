@@ -23,15 +23,15 @@ DROP TABLE IF EXISTS `issuefy`.`user`;
 
 CREATE TABLE IF NOT EXISTS `issuefy`.`user`
 (
-    `id`            BIGINT       NOT NULL AUTO_INCREMENT,
-    `github_id`     VARCHAR(255) NOT NULL,
-    `email`         VARCHAR(255) NULL,
-    `alert_status`  TINYINT      NOT NULL DEFAULT 0,
+    `id`           BIGINT       NOT NULL AUTO_INCREMENT,
+    `github_id`    VARCHAR(255) NOT NULL,
+    `email`        VARCHAR(255) NULL,
+    `alert_status` TINYINT      NOT NULL DEFAULT 0,
     PRIMARY KEY (`id`),
     UNIQUE INDEX `github_id_UNIQUE` (`github_id` ASC) VISIBLE,
     UNIQUE INDEX `email_UNIQUE` (`email` ASC) VISIBLE
 )
-ENGINE = InnoDB;
+    ENGINE = InnoDB;
 
 -- -----------------------------------------------------
 -- Table `issuefy`.`org`
@@ -46,7 +46,7 @@ CREATE TABLE IF NOT EXISTS `issuefy`.`org`
     PRIMARY KEY (`id`),
     UNIQUE INDEX `gh_org_id_UNIQUE` (`gh_org_id` ASC) VISIBLE
 )
-ENGINE = InnoDB;
+    ENGINE = InnoDB;
 
 -- -----------------------------------------------------
 -- Table `issuefy`.`repository`
@@ -55,11 +55,11 @@ DROP TABLE IF EXISTS `issuefy`.`repository`;
 
 CREATE TABLE IF NOT EXISTS `issuefy`.`repository`
 (
-    `id`         BIGINT       NOT NULL AUTO_INCREMENT,
-    `org_id`     BIGINT       NOT NULL,
-    `name`       VARCHAR(45)  NULL,
-    `is_starred` TINYINT      NOT NULL DEFAULT 0,
-    `gh_repo_id` BIGINT       NOT NULL,
+    `id`         BIGINT      NOT NULL AUTO_INCREMENT,
+    `org_id`     BIGINT      NOT NULL,
+    `name`       VARCHAR(45) NULL,
+    `is_starred` TINYINT     NOT NULL DEFAULT 0,
+    `gh_repo_id` BIGINT      NOT NULL,
     PRIMARY KEY (`id`),
     INDEX `fk_repository_org_idx` (`org_id` ASC) VISIBLE,
     UNIQUE INDEX `gh_repo_id_UNIQUE` (`gh_repo_id` ASC) VISIBLE,
@@ -69,7 +69,7 @@ CREATE TABLE IF NOT EXISTS `issuefy`.`repository`
             ON DELETE CASCADE
             ON UPDATE CASCADE
 )
-ENGINE = InnoDB;
+    ENGINE = InnoDB;
 
 -- -----------------------------------------------------
 -- Table `issuefy`.`issue`
@@ -78,12 +78,12 @@ DROP TABLE IF EXISTS `issuefy`.`issue`;
 
 CREATE TABLE IF NOT EXISTS `issuefy`.`issue`
 (
-    `id`              BIGINT       NOT NULL AUTO_INCREMENT,
-    `repository_id`   BIGINT       NOT NULL,
-    `title`           VARCHAR(255)  CHARACTER SET 'utf8mb4' NULL,
-    `is_starred`      TINYINT      NOT NULL DEFAULT 0,
-    `is_read`         TINYINT      NOT NULL DEFAULT 0,
-    `gh_issue_number` BIGINT       NOT NULL,
+    `id`              BIGINT                               NOT NULL AUTO_INCREMENT,
+    `repository_id`   BIGINT                               NOT NULL,
+    `title`           VARCHAR(255) CHARACTER SET 'utf8mb4' NULL,
+    `is_starred`      TINYINT                              NOT NULL DEFAULT 0,
+    `is_read`         TINYINT                              NOT NULL DEFAULT 0,
+    `gh_issue_number` BIGINT                               NOT NULL,
     PRIMARY KEY (`id`),
     INDEX `fk_issue_repository_idx` (`repository_id`),
     CONSTRAINT `fk_issue_repository`
@@ -101,11 +101,12 @@ DROP TABLE IF EXISTS `issuefy`.`label`;
 
 CREATE TABLE IF NOT EXISTS `issuefy`.`label`
 (
-    `id`   BIGINT       NOT NULL AUTO_INCREMENT,
-    `name` VARCHAR(45)  CHARACTER SET 'utf8mb4' NOT NULL,
+    `id`    BIGINT                              NOT NULL AUTO_INCREMENT,
+    `name`  VARCHAR(45) CHARACTER SET 'utf8mb4' NOT NULL,
+    `color` VARCHAR(45)                         NOT NULL,
     PRIMARY KEY (`id`)
 )
-ENGINE = InnoDB;
+    ENGINE = InnoDB;
 
 -- -----------------------------------------------------
 -- Table `issuefy`.`issue_label`
@@ -114,9 +115,10 @@ DROP TABLE IF EXISTS `issuefy`.`issue_label`;
 
 CREATE TABLE IF NOT EXISTS `issuefy`.`issue_label`
 (
+    `id`       BIGINT NOT NULL AUTO_INCREMENT,
     `issue_id` BIGINT NOT NULL,
     `label_id` BIGINT NOT NULL,
-    PRIMARY KEY (`issue_id`, `label_id`),
+    PRIMARY KEY (`id`),
     INDEX `fk_issue_label_issue_idx` (`issue_id` ASC) VISIBLE,
     INDEX `fk_issue_label_label_idx` (`label_id` ASC) VISIBLE,
     CONSTRAINT `fk_issue_label_issue`
@@ -130,7 +132,7 @@ CREATE TABLE IF NOT EXISTS `issuefy`.`issue_label`
             ON DELETE CASCADE
             ON UPDATE CASCADE
 )
-ENGINE = InnoDB;
+    ENGINE = InnoDB;
 
 -- -----------------------------------------------------
 -- Table `issuefy`.`subscription`
@@ -156,7 +158,7 @@ CREATE TABLE IF NOT EXISTS `issuefy`.`subscription`
             ON DELETE CASCADE
             ON UPDATE CASCADE
 )
-ENGINE = InnoDB;
+    ENGINE = InnoDB;
 
 -- -----------------------------------------------------
 -- Table `issuefy`.`notification`
@@ -165,10 +167,10 @@ DROP TABLE IF EXISTS `issuefy`.`notification`;
 
 CREATE TABLE IF NOT EXISTS `issuefy`.`notification`
 (
-    `id`            BIGINT       NOT NULL AUTO_INCREMENT,
-    `subscription_id`  BIGINT       NOT NULL,
-    `title`         VARCHAR(45)  CHARACTER SET 'utf8mb4' NOT NULL,
-    `is_read`       TINYINT      NOT NULL DEFAULT 0,
+    `id`              BIGINT                              NOT NULL AUTO_INCREMENT,
+    `subscription_id` BIGINT                              NOT NULL,
+    `title`           VARCHAR(45) CHARACTER SET 'utf8mb4' NOT NULL,
+    `is_read`         TINYINT                             NOT NULL DEFAULT 0,
     PRIMARY KEY (`id`),
     INDEX `fk_notification_subscription_idx` (`subscription_id` ASC) VISIBLE,
     CONSTRAINT `fk_notification_subscription`
@@ -202,7 +204,7 @@ CREATE TABLE IF NOT EXISTS `issuefy`.`user_notification`
             ON DELETE CASCADE
             ON UPDATE CASCADE
 )
-ENGINE = InnoDB;
+    ENGINE = InnoDB;
 
 
 SET SQL_MODE = @OLD_SQL_MODE;

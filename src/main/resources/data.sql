@@ -33,10 +33,10 @@ INSERT INTO `issue` (repository_id, title, gh_issue_number)
 VALUES (3, 'issue-b1-1', 2000);
 
 -- Inserting labels
-INSERT INTO `label` (name)
-VALUES ('bug');
-INSERT INTO `label` (name)
-VALUES ('feature');
+INSERT INTO `label` (name, color)
+VALUES ('bug', 'zzzz');
+INSERT INTO `label` (name, color)
+VALUES ('feature', 'xxxx');
 
 -- Inserting subscriptions
 INSERT INTO `subscription` (repository_id, user_id)

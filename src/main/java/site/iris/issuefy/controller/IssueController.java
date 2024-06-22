@@ -26,6 +26,7 @@ public class IssueController {
 		@RequestAttribute String githubId) {
 		log.info("getIssuesByRepoName: {}", repoName);
 		Iterable<Issue> issueResponse = issueService.saveIssuesByRepository(orgName, repoName, githubId);
+		log.info(issueResponse.toString());
 		return ResponseEntity.status(HttpStatus.OK).body((List<Issue>)issueResponse);
 	}
 }
