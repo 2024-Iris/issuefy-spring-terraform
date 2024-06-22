@@ -12,6 +12,7 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import site.iris.issuefy.component.SseEmitters;
+import site.iris.issuefy.model.dto.TestDto;
 
 @RestController
 @RequiredArgsConstructor
@@ -34,10 +35,11 @@ public class SseController {
         return ResponseEntity.ok(emitter);
     }
 
-	@PostMapping("/api/test")
-    public ResponseEntity<Void> count() {
+	@PostMapping("/api/push")
+    public ResponseEntity<Void> push() {
         log.info("request test");
-        sseEmitters.testMessage();
+        TestDto testDto = new TestDto(1L, "테스트 메시지");
+        sseEmitters.pushMessage(testDto);
         return ResponseEntity.ok().build();
     }
 }

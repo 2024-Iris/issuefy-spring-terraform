@@ -33,7 +33,7 @@ public class RedisConfig {
 
 	@Bean
 	public MessageListenerAdapter listenerAdapter(SseEmitters sseEmitters) {
-        return new MessageListenerAdapter(sseEmitters, "receiveMessage");
+        return new MessageListenerAdapter(sseEmitters, "pushMessage");
     }
 
 	@Bean
