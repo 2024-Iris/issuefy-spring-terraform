@@ -8,7 +8,6 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
-import lombok.extern.slf4j.Slf4j;
 import site.iris.issuefy.entity.Issue;
 import site.iris.issuefy.entity.IssueLabel;
 import site.iris.issuefy.entity.Label;
@@ -21,7 +20,6 @@ import site.iris.issuefy.repository.IssueRepository;
 import site.iris.issuefy.repository.LabelRepository;
 import site.iris.issuefy.repository.RepositoryRepository;
 
-@Slf4j
 @Service
 public class IssueService {
 
@@ -33,8 +31,10 @@ public class IssueService {
 	private final IssueLabelRepository issueLabelRepository;
 
 	public IssueService(@Qualifier("apiWebClient") WebClient webClient,
-		GithubTokenService githubTokenService, IssueRepository issueRepository,
-		RepositoryRepository repositoryRepository, LabelRepository labelRepository,
+		GithubTokenService githubTokenService,
+		IssueRepository issueRepository,
+		RepositoryRepository repositoryRepository,
+		LabelRepository labelRepository,
 		IssueLabelRepository issueLabelRepository) {
 		this.webClient = webClient;
 		this.githubTokenService = githubTokenService;
@@ -69,6 +69,7 @@ public class IssueService {
 				issueLabels.add(issueLabel);
 			});
 		});
+
 		issueRepository.saveAll(issues);
 		labelRepository.saveAll(allLabels);
 		issueLabelRepository.saveAll(issueLabels);
