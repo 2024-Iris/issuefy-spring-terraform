@@ -31,10 +31,10 @@ public class IssueDto {
 
 	private List<Label> labels;
 
-	public static IssueDto of(Long id, String title, boolean isStarred, boolean isRead, String state,
+	public static IssueDto of(Long ghIssueId, String title, boolean isStarred, boolean isRead, String state,
 		Date createdAt,
 		Date updatedAt, Date closedAt, List<Label> labels) {
-		return new IssueDto(id, title, isStarred, isRead, state, createdAt, updatedAt, closedAt,
+		return new IssueDto(ghIssueId, title, isStarred, isRead, state, createdAt, updatedAt, closedAt,
 			labels);
 	}
 }

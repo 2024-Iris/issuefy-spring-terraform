@@ -97,18 +97,16 @@ public class IssueService {
 				.orElseGet(ArrayList::new);
 
 			// 이슈 DTO 생성
-			return IssueResponse.builder()
-				.id(issue.getId())
-				.githubIssueId(issue.getGhIssueId())
-				.state(issue.getState())
-				.title(issue.getTitle())
-				.isStarred(issue.isStarred())
-				.isRead(issue.isRead())
-				.createdAt(issue.getCreatedAt())
-				.updatedAt(issue.getUpdatedAt())
-				.closedAt(issue.getClosedAt())
-				.labels(labelResponses)
-				.build();
+			return IssueResponse.of(issue.getId(),
+				issue.getGhIssueId(),
+				issue.getState(),
+				issue.getTitle(),
+				labelResponses,
+				issue.isRead(),
+				issue.isStarred(),
+				issue.getCreatedAt(),
+				issue.getUpdatedAt(),
+				issue.getClosedAt());
 		}).collect(Collectors.toList());
 	}
 
