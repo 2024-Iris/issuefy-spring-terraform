@@ -15,15 +15,12 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.reactive.function.client.WebClient;
-import org.springframework.web.reactive.function.client.WebClientException;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import site.iris.issuefy.exception.RepositoryNotFoundException;
-import site.iris.issuefy.exception.code.ErrorCode;
 import site.iris.issuefy.model.dto.RepositoryUrlDto;
 import site.iris.issuefy.model.vo.RepositoryRecord;
-import site.iris.issuefy.response.SubscrptionResponse;
+import site.iris.issuefy.response.SubscriptionResponse;
 import site.iris.issuefy.service.GithubTokenService;
 import site.iris.issuefy.service.SubscriptionService;
 
@@ -37,25 +34,21 @@ public class SubscriptionController {
 	private final GithubTokenService githubTokenService;
 
 	@GetMapping
-	public ResponseEntity<List<SubscrptionResponse>> getSubscribedRepositories(
+	public ResponseEntity<List<SubscriptionResponse>> getSubscribedRepositories(
 		@RequestAttribute("githubId") String githubId) {
 		logRequest(githubId, "Request SubscribedRepositories");
-		List<SubscrptionResponse> subscrptionResponse = subscriptionService.getSubscribedRepositories(githubId);
-		logResponse(githubId, subscrptionResponse);
-		return ResponseEntity.ok(subscrptionResponse);
+		List<SubscriptionResponse> subscriptionResponses = subscriptionService.getSubscribedRepositories(githubId);
+		logResponse(githubId, subscriptionResponses);
+		return ResponseEntity.ok(subscriptionResponses);
 	}
 
 	@PostMapping
 	public ResponseEntity<String> addRepository(@RequestAttribute String githubId,
 		@RequestBody RepositoryRecord RepositoryRecord) {
 		logRequest(githubId, "Request AddRepository");
-		try {
-			checkRepositoryExistence(githubId, RepositoryRecord);
-			RepositoryUrlDto repositoryUrlDto = RepositoryUrlDto.of(RepositoryRecord.repositoryUrl(), githubId);
-			subscriptionService.addSubscribeRepository(repositoryUrlDto, githubId);
-		} catch (WebClientException e) {
-			throw new RepositoryNotFoundException(ErrorCode.NOT_EXIST_REPOSITORY.getMessage());
-		}
+		checkRepositoryExistence(githubId, RepositoryRecord);
+		RepositoryUrlDto repositoryUrlDto = RepositoryUrlDto.of(RepositoryRecord.repositoryUrl(), githubId);
+		subscriptionService.addSubscribeRepository(repositoryUrlDto, githubId);
 		logResponse(githubId, RepositoryRecord.repositoryUrl());
 		return ResponseEntity.created(URI.create(RepositoryRecord.repositoryUrl())).build();
 	}

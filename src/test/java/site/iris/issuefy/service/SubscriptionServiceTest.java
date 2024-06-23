@@ -29,7 +29,8 @@ import site.iris.issuefy.entity.User;
 import site.iris.issuefy.model.dto.RepositoryUrlDto;
 import site.iris.issuefy.repository.SubscriptionRepository;
 import site.iris.issuefy.repository.UserRepository;
-import site.iris.issuefy.response.SubscrptionResponse;
+import site.iris.issuefy.response.SubscriptionResponse;
+
 @Slf4j
 @ExtendWith(MockitoExtension.class)
 class SubscriptionServiceTest {
@@ -83,7 +84,7 @@ class SubscriptionServiceTest {
 		when(subscriptionRepository.findByUserId(user.getId())).thenReturn(List.of(subscription));
 
 		// when
-		List<SubscrptionResponse> responses = subscriptionService.getSubscribedRepositories(githubId);
+		List<SubscriptionResponse> responses = subscriptionService.getSubscribedRepositories(githubId);
 
 		// then
 		assertNotNull(responses);
