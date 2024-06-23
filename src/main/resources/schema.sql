@@ -23,18 +23,19 @@ DROP TABLE IF EXISTS `issuefy`.`user`;
 
 CREATE TABLE IF NOT EXISTS `issuefy`.`user`
 (
-    `id`            BIGINT       NOT NULL AUTO_INCREMENT,
-    `github_id`     VARCHAR(255) NOT NULL,
-    `email`         VARCHAR(255) NULL,
-    `alert_status`  TINYINT      NOT NULL DEFAULT 0,
+    `id`           BIGINT       NOT NULL AUTO_INCREMENT,
+    `github_id`    VARCHAR(255) NOT NULL,
+    `email`        VARCHAR(255) NULL,
+    `alert_status` TINYINT      NOT NULL DEFAULT 0,
     PRIMARY KEY (`id`),
     UNIQUE INDEX `github_id_UNIQUE` (`github_id` ASC) VISIBLE,
     UNIQUE INDEX `email_UNIQUE` (`email` ASC) VISIBLE
 )
-ENGINE = InnoDB;
+    ENGINE = InnoDB
+    DEFAULT CHARACTER SET = utf8mb4;
 
 -- -----------------------------------------------------
--- Table `issuefy`.`org`
+-- Table `issuefy`.`organization`
 -- -----------------------------------------------------
 DROP TABLE IF EXISTS `issuefy`.`organization`;
 CREATE TABLE IF NOT EXISTS `issuefy`.`organization`
@@ -80,17 +81,18 @@ DROP TABLE IF EXISTS `issuefy`.`issue`;
 
 CREATE TABLE IF NOT EXISTS `issuefy`.`issue`
 (
-    `id`              BIGINT                               NOT NULL AUTO_INCREMENT,
-    `repository_id`   BIGINT                               NOT NULL,
-    `title`           VARCHAR(255) CHARACTER SET 'utf8mb4' NULL,
-    `is_starred`      TINYINT                              NOT NULL DEFAULT 0,
-    `is_read`         TINYINT                              NOT NULL DEFAULT 0,
-    `gh_issue_number` BIGINT                               NOT NULL,
-    `state`           VARCHAR(45)                          NOT NULL,
-    `created_at`      DATETIME                                 NOT NULL,
-    `updated_at`      DATETIME                                 NULL,
-    `closed_at`       DATETIME                                 NULL,
+    `id`            BIGINT                               NOT NULL AUTO_INCREMENT,
+    `repository_id` BIGINT                               NOT NULL,
+    `title`         VARCHAR(255) CHARACTER SET 'utf8mb4' NULL,
+    `is_starred`    TINYINT                              NOT NULL DEFAULT 0,
+    `is_read`       TINYINT                              NOT NULL DEFAULT 0,
+    `gh_issue_id`   BIGINT                               NOT NULL,
+    `state`         VARCHAR(45)                          NOT NULL,
+    `created_at`    DATETIME                             NOT NULL,
+    `updated_at`    DATETIME                             NULL,
+    `closed_at`     DATETIME                             NULL,
     PRIMARY KEY (`id`),
+    UNIQUE INDEX `gh_issue_id_UNIQUE` (`gh_issue_id` ASC) VISIBLE,
     INDEX `fk_issue_repository_idx` (`repository_id` ASC) VISIBLE,
     CONSTRAINT `fk_issue_repository`
         FOREIGN KEY (`repository_id`)
@@ -98,7 +100,7 @@ CREATE TABLE IF NOT EXISTS `issuefy`.`issue`
             ON DELETE CASCADE
             ON UPDATE CASCADE
 )
-ENGINE = InnoDB;
+    ENGINE = InnoDB;
 
 -- -----------------------------------------------------
 -- Table `issuefy`.`label`
@@ -148,11 +150,11 @@ CREATE TABLE IF NOT EXISTS `issuefy`.`issue_label`
 DROP TABLE IF EXISTS `issuefy`.`notification`;
 CREATE TABLE IF NOT EXISTS `issuefy`.`notification`
 (
-    `id`            BIGINT NOT NULL AUTO_INCREMENT,
-    `repository_id` BIGINT NOT NULL,
+    `id`            BIGINT       NOT NULL AUTO_INCREMENT,
+    `repository_id` BIGINT       NOT NULL,
     `message`       VARCHAR(255) NOT NULL,
     `push_time`     DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    `is_read`       TINYINT NOT NULL DEFAULT 0,
+    `is_read`       TINYINT      NOT NULL DEFAULT 0,
     PRIMARY KEY (`id`),
     INDEX `fk_notification_repository1_idx` (`repository_id` ASC) VISIBLE,
     CONSTRAINT `fk_notification_repository1`
@@ -160,23 +162,6 @@ CREATE TABLE IF NOT EXISTS `issuefy`.`notification`
             REFERENCES `issuefy`.`repository` (`id`)
             ON DELETE NO ACTION
             ON UPDATE NO ACTION
-)
-    ENGINE = InnoDB
-    DEFAULT CHARACTER SET = utf8mb4;
-
--- -----------------------------------------------------
--- Table `issuefy`.`user`
--- -----------------------------------------------------
-DROP TABLE IF EXISTS `issuefy`.`user`;
-CREATE TABLE IF NOT EXISTS `issuefy`.`user`
-(
-    `id`           BIGINT       NOT NULL AUTO_INCREMENT,
-    `github_id`    VARCHAR(255) NOT NULL,
-    `email`        VARCHAR(255) NULL     DEFAULT NULL,
-    `alert_status` TINYINT      NOT NULL DEFAULT '0',
-    PRIMARY KEY (`id`),
-    UNIQUE INDEX `github_id_UNIQUE` (`github_id` ASC) VISIBLE,
-    UNIQUE INDEX `email_UNIQUE` (`email` ASC) VISIBLE
 )
     ENGINE = InnoDB
     DEFAULT CHARACTER SET = utf8mb4;
