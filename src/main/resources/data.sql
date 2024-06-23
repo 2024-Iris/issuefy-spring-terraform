@@ -21,14 +21,14 @@ INSERT INTO `repository` (org_id, name, gh_repo_id)
 VALUES (1, 'issuefy-vue', 783652373);
 
 -- Inserting issues
-INSERT INTO `issue` (repository_id, title, gh_issue_number, is_starred, is_read, state, created_at)
-VALUES (1, 'issue-a1-1', 1234, 0, 0, 'open', '2024-06-01');
-INSERT INTO `issue` (repository_id, title, gh_issue_number, is_starred, is_read, state, created_at)
-VALUES (1, 'issue-a1-2', 5678, 0, 0, 'open', '2024-06-01');
-INSERT INTO `issue` (repository_id, title, gh_issue_number, is_starred, is_read, state, created_at)
-VALUES (2, 'issue-a2-1', 5679, 0, 0, 'open', '2024-06-01');
-INSERT INTO `issue` (repository_id, title, gh_issue_number, is_starred, is_read, state, created_at)
-VALUES (3, 'issue-b1-1', 2000, 0, 0, 'open', '2024-06-01');
+INSERT INTO `issue` (repository_id, title, gh_issue_id, is_starred, is_read, state, created_at)
+VALUES (1, 'issue-a1-1', 1234, 0, 0, 'open', '2024-06-01 12:30:00');
+INSERT INTO `issue` (repository_id, title, gh_issue_id, is_starred, is_read, state, created_at)
+VALUES (1, 'issue-a1-2', 5678, 0, 0, 'open', '2024-06-02 21:00:00');
+INSERT INTO `issue` (repository_id, title, gh_issue_id, is_starred, is_read, state, created_at)
+VALUES (2, 'issue-a2-1', 5679, 0, 0, 'open', '2024-06-03 03:14:10');
+INSERT INTO `issue` (repository_id, title, gh_issue_id, is_starred, is_read, state, created_at)
+VALUES (3, 'issue-b1-1', 2000, 0, 0, 'open', '2024-06-04 08:29:55');
 
 -- Inserting labels
 INSERT INTO `label` (name, color)
