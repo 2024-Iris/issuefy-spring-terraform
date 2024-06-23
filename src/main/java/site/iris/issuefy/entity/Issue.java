@@ -44,19 +44,13 @@ public class Issue {
 	private Date closedAt;
 
 	@Column
-	private long ghIssueNumber;
+	private long ghIssueId;
 
 	@OneToMany(mappedBy = "issue")
 	private List<IssueLabel> issueLabels = new ArrayList<>();
 
-	// private Issue(Repository repository, String title, long ghIssueNumber) {
-	// 	this.repository = repository;
-	// 	this.title = title;
-	// 	this.ghIssueNumber = ghIssueNumber;
-	// }
-
 	private Issue(Repository repository, String title, boolean isStarred, boolean isRead, String state, Date createdAt,
-		Date updatedAt, Date closedAt, long ghIssueNumber, List<IssueLabel> issueLabels) {
+		Date updatedAt, Date closedAt, long ghIssueId, List<IssueLabel> issueLabels) {
 		this.repository = repository;
 		this.title = title;
 		this.isStarred = isStarred;
@@ -65,7 +59,7 @@ public class Issue {
 		this.createdAt = createdAt;
 		this.updatedAt = updatedAt;
 		this.closedAt = closedAt;
-		this.ghIssueNumber = ghIssueNumber;
+		this.ghIssueId = ghIssueId;
 		this.issueLabels = issueLabels;
 	}
 

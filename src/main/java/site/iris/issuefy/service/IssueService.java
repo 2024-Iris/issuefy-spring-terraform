@@ -64,7 +64,7 @@ public class IssueService {
 
 		issueDtos.forEach(dto -> {
 			Issue issue = Issue.of(repository, dto.getTitle(), dto.isStarred(), dto.isRead(), dto.getState(),
-				dto.getCreatedAt(), dto.getUpdatedAt(), dto.getClosedAt(), dto.getGhIssueNumber(),
+				dto.getCreatedAt(), dto.getUpdatedAt(), dto.getClosedAt(), dto.getGhIssueId(),
 				issueLabels);
 			issues.add(issue);
 
@@ -99,7 +99,7 @@ public class IssueService {
 			// 이슈 DTO 생성
 			return IssueResponse.builder()
 				.id(issue.getId())
-				.githubIssueId(issue.getGhIssueNumber())
+				.githubIssueId(issue.getGhIssueId())
 				.state(issue.getState())
 				.title(issue.getTitle())
 				.isStarred(issue.isStarred())
