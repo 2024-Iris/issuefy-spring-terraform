@@ -19,29 +19,30 @@ import org.springframework.web.reactive.function.client.WebClientException;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import site.iris.issuefy.exception.RepositoryNotFoundException;
+import site.iris.issuefy.exception.code.ErrorCode;
 import site.iris.issuefy.model.dto.RepositoryUrlDto;
 import site.iris.issuefy.model.vo.RepositoryRecord;
-import site.iris.issuefy.response.SubscribeResponse;
+import site.iris.issuefy.response.SubscrptionResponse;
 import site.iris.issuefy.service.GithubTokenService;
-import site.iris.issuefy.service.SubscribeService;
+import site.iris.issuefy.service.SubscriptionService;
 
 @RestController
-@RequestMapping("/api/subscribe")
+@RequestMapping("/api/subscription")
 @RequiredArgsConstructor
 @Slf4j
-public class SubscribeController {
-	private static final String NOT_EXIST_REPOSITORY_MESSAGE = "Repository does not exist";
+public class SubscriptionController {
 
-	private final SubscribeService subscribeService;
+	private final SubscriptionService subscriptionService;
 	private final GithubTokenService githubTokenService;
 
 	@GetMapping
-	public ResponseEntity<List<SubscribeResponse>> getSubscribedRepositories(
+	public ResponseEntity<List<SubscrptionResponse>> getSubscribedRepositories(
 		@RequestAttribute("githubId") String githubId) {
 		logRequest(githubId, "Request SubscribedRepositories");
-		List<SubscribeResponse> subscribeResponse = subscribeService.getSubscribedRepositories(githubId);
-		logResponse(githubId, subscribeResponse);
-		return ResponseEntity.ok(subscribeResponse);
+		List<SubscrptionResponse> subscrptionResponse = subscriptionService.getSubscribedRepositories(githubId);
+		logResponse(githubId, subscrptionResponse);
+		return ResponseEntity.ok(subscrptionResponse);
 	}
 
 	@PostMapping
@@ -51,9 +52,9 @@ public class SubscribeController {
 		try {
 			checkRepositoryExistence(githubId, RepositoryRecord);
 			RepositoryUrlDto repositoryUrlDto = RepositoryUrlDto.of(RepositoryRecord.repositoryUrl(), githubId);
-			subscribeService.addSubscribeRepository(repositoryUrlDto, githubId);
+			subscriptionService.addSubscribeRepository(repositoryUrlDto, githubId);
 		} catch (WebClientException e) {
-			return handleWebClientException(e);
+			throw new RepositoryNotFoundException(ErrorCode.NOT_EXIST_REPOSITORY.getMessage());
 		}
 		logResponse(githubId, RepositoryRecord.repositoryUrl());
 		return ResponseEntity.created(URI.create(RepositoryRecord.repositoryUrl())).build();
@@ -63,7 +64,7 @@ public class SubscribeController {
 	public ResponseEntity<Void> unsubscribeRepository(@RequestAttribute String githubId,
 		@PathVariable("gh_repo_id") Long ghRepoId) {
 		logRequest(githubId, "Request UnsubscribeRepository for RepoId: " + ghRepoId);
-		subscribeService.unsubscribeRepository(ghRepoId);
+		subscriptionService.unsubscribeRepository(ghRepoId);
 		return ResponseEntity.noContent().build();
 	}
 
@@ -80,11 +81,6 @@ public class SubscribeController {
 			.retrieve()
 			.toBodilessEntity()
 			.block();
-	}
-
-	private ResponseEntity<String> handleWebClientException(WebClientException e) {
-		log.warn(NOT_EXIST_REPOSITORY_MESSAGE + ": {}", e.getMessage());
-		return ResponseEntity.notFound().build();
 	}
 
 	private void logRequest(String githubId, String message) {

@@ -1,17 +1,22 @@
 package site.iris.issuefy.response;
 
-import lombok.AllArgsConstructor;
+import java.util.Date;
+import java.util.List;
+
+import lombok.Builder;
 import lombok.Data;
 
 @Data
-@AllArgsConstructor
+@Builder
 public class IssueResponse {
 	private Long id;
-	private int githubIssueNumber;
+	private Long githubIssueId;
+	private String state;
 	private String title;
-	private String label;
-
-	public static IssueResponse of(Long id, int githubIssueNumber, String title, String label) {
-		return new IssueResponse(id, githubIssueNumber, title, label);
-	}
+	private List<LabelResponse> labels;
+	private boolean isRead;
+	private boolean isStarred;
+	private Date createdAt;
+	private Date updatedAt;
+	private Date closedAt;
 }
