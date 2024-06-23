@@ -10,5 +10,5 @@ import site.iris.issuefy.response.LabelResponse;
 public interface LabelMapper {
 	LabelMapper INSTANCE = Mappers.getMapper(LabelMapper.class);
 
-	LabelResponse labelEntityToLabelDto(Label Label);
+	LabelResponse labelEntityToLabelDto(Label label);
 }
