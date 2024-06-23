@@ -91,7 +91,6 @@ CREATE TABLE IF NOT EXISTS `issuefy`.`issue`
     `updated_at`      DATETIME                                 NULL,
     `closed_at`       DATETIME                                 NULL,
     PRIMARY KEY (`id`),
-    UNIQUE INDEX `gh_issue_number_UNIQUE` (`gh_issue_number` ASC) VISIBLE,
     INDEX `fk_issue_repository_idx` (`repository_id` ASC) VISIBLE,
     CONSTRAINT `fk_issue_repository`
         FOREIGN KEY (`repository_id`)
@@ -213,7 +212,6 @@ CREATE TABLE IF NOT EXISTS `issuefy`.`subscription`
 -- Table `issuefy`.`user_notification`
 -- -----------------------------------------------------
 DROP TABLE IF EXISTS `issuefy`.`user_notification`;
-
 CREATE TABLE IF NOT EXISTS `issuefy`.`user_notification`
 (
     `user_id`         BIGINT  NOT NULL,
@@ -230,11 +228,6 @@ CREATE TABLE IF NOT EXISTS `issuefy`.`user_notification`
     CONSTRAINT `fk_user_notification_user`
         FOREIGN KEY (`user_id`)
             REFERENCES `issuefy`.`user` (`id`)
-            ON DELETE CASCADE
-            ON UPDATE CASCADE,
-    CONSTRAINT `fk_user_notification_notification`
-        FOREIGN KEY (`notification_id`)
-            REFERENCES `issuefy`.`notification` (`id`)
             ON DELETE CASCADE
             ON UPDATE CASCADE
 )
