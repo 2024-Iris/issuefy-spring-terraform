@@ -30,7 +30,7 @@ public class LabelService {
 		return labelRepository.findByIssue_id(issueId);
 	}
 
-	public List<LabelResponse> convertToResponse(Optional<List<Label>> optionalLabels) {
+	public List<LabelResponse> convertLabelsResponse(Optional<List<Label>> optionalLabels) {
 		return optionalLabels
 			.map(labels -> labels.stream()
 				.map(LabelMapper.INSTANCE::labelEntityToLabelDto)

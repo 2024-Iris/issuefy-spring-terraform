@@ -47,13 +47,13 @@ public class IssueService {
 
 	public RepositoryIssuesResponse saveIssuesByRepository(String orgName, String repoName, String githubId) {
 		List<IssueDto> issueDtos = getOpenGoodFirstIssues(orgName, repoName, githubId);
-		Optional<Repository> repositoryOptional = repositoryRepository.findByName(repoName);
+		Optional<Repository> optionalRepository = repositoryRepository.findByName(repoName);
 
-		if (repositoryOptional.isEmpty()) {
+		if (optionalRepository.isEmpty()) {
 			throw new RepositoryNotFoundException(ErrorCode.NOT_EXIST_REPOSITORY.getMessage() + repoName);
 		}
 
-		Repository repository = repositoryOptional.get();
+		Repository repository = optionalRepository.get();
 		List<Issue> issues = new ArrayList<>();
 		List<Label> allLabels = new ArrayList<>();
 		List<IssueLabel> issueLabels = new ArrayList<>();
@@ -88,7 +88,7 @@ public class IssueService {
 				issue.getGhIssueId(),
 				issue.getState(),
 				issue.getTitle(),
-				labelService.convertToResponse(optionalLabels),
+				labelService.convertLabelsResponse(optionalLabels),
 				issue.isRead(),
 				issue.isStarred(),
 				issue.getCreatedAt(),
