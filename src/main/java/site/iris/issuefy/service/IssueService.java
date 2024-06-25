@@ -15,37 +15,33 @@ import site.iris.issuefy.entity.Label;
 import site.iris.issuefy.entity.Repository;
 import site.iris.issuefy.exception.RepositoryNotFoundException;
 import site.iris.issuefy.exception.code.ErrorCode;
-import site.iris.issuefy.mapper.LabelMapper;
 import site.iris.issuefy.model.dto.IssueDto;
 import site.iris.issuefy.repository.IssueLabelRepository;
 import site.iris.issuefy.repository.IssueRepository;
-import site.iris.issuefy.repository.LabelRepository;
 import site.iris.issuefy.repository.RepositoryRepository;
 import site.iris.issuefy.response.IssueResponse;
-import site.iris.issuefy.response.LabelResponse;
 import site.iris.issuefy.response.RepositoryIssuesResponse;
 
 @Service
 public class IssueService {
-
 	private final WebClient webClient;
 	private final GithubTokenService githubTokenService;
 	private final IssueRepository issueRepository;
 	private final RepositoryRepository repositoryRepository;
-	private final LabelRepository labelRepository;
+	private final LabelService labelService;
 	private final IssueLabelRepository issueLabelRepository;
 
 	public IssueService(@Qualifier("apiWebClient") WebClient webClient,
 		GithubTokenService githubTokenService,
 		IssueRepository issueRepository,
 		RepositoryRepository repositoryRepository,
-		LabelRepository labelRepository,
+		LabelService labelService,
 		IssueLabelRepository issueLabelRepository) {
 		this.webClient = webClient;
 		this.githubTokenService = githubTokenService;
 		this.issueRepository = issueRepository;
 		this.repositoryRepository = repositoryRepository;
-		this.labelRepository = labelRepository;
+		this.labelService = labelService;
 		this.issueLabelRepository = issueLabelRepository;
 	}
 
@@ -69,7 +65,7 @@ public class IssueService {
 			issues.add(issue);
 
 			dto.getLabels().forEach(labelDto -> {
-				Label label = findOrCreateLabel(labelDto.getName(), labelDto.getColor());
+				Label label = labelService.findOrCreateLabel(labelDto.getName(), labelDto.getColor());
 				allLabels.add(label);
 
 				IssueLabel issueLabel = IssueLabel.of(issue, label);
@@ -78,44 +74,27 @@ public class IssueService {
 		});
 
 		issueRepository.saveAll(issues);
-		labelRepository.saveAll(allLabels);
+		labelService.saveAllLabels(allLabels);
 		issueLabelRepository.saveAll(issueLabels);
 
-		return new RepositoryIssuesResponse(repository.getName(), convertToDto(issues));
+		return new RepositoryIssuesResponse(repository.getName(), convertToResponse(issues));
 	}
 
-	private List<IssueResponse> convertToDto(List<Issue> issues) {
+	private List<IssueResponse> convertToResponse(List<Issue> issues) {
 		return issues.stream().map(issue -> {
-			// 이슈에 대한 레이블 가져오기
-			Optional<List<Label>> optionalLabels = labelRepository.findByIssue_id(issue.getId());
+			Optional<List<Label>> optionalLabels = labelService.getLabelsByIssueId(issue.getId());
 
-			// 레이블 DTO 생성
-			List<LabelResponse> labelResponses = optionalLabels
-				.map(labels -> labels.stream()
-					.map(LabelMapper.INSTANCE::labelEntityToLabelDto)
-					.collect(Collectors.toList()))
-				.orElseGet(ArrayList::new);
-
-			// 이슈 DTO 생성
 			return IssueResponse.of(issue.getId(),
 				issue.getGhIssueId(),
 				issue.getState(),
 				issue.getTitle(),
-				labelResponses,
+				labelService.convertToResponse(optionalLabels),
 				issue.isRead(),
 				issue.isStarred(),
 				issue.getCreatedAt(),
 				issue.getUpdatedAt(),
 				issue.getClosedAt());
 		}).collect(Collectors.toList());
-	}
-
-	private Label findOrCreateLabel(String name, String color) {
-		return labelRepository.findByNameAndColor(name, color)
-			.orElseGet(() -> {
-				Label newLabel = Label.of(name, color);
-				return labelRepository.save(newLabel);
-			});
 	}
 
 	private List<IssueDto> getOpenGoodFirstIssues(String orgName, String repoName, String githubId) {
