@@ -16,7 +16,7 @@ import site.iris.issuefy.repository.LabelRepository;
 
 import java.util.Optional;
 
-public class LabelServiceTest {
+class LabelServiceTest {
 
 	@Mock
 	private LabelRepository labelRepository;
