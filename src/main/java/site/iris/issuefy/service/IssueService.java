@@ -45,7 +45,7 @@ public class IssueService {
 	}
 
 	public RepositoryIssuesResponse saveIssuesByRepository(String orgName, String repoName, String githubId) {
-		List<IssueDto> issueDtos = getOpenGoodFirstIssues(orgName, repoName, githubId);
+		Optional<List<IssueDto>> issueDtos = getOpenGoodFirstIssues(orgName, repoName, githubId);
 		Optional<Repository> optionalRepository = repositoryRepository.findByName(repoName);
 
 		if (optionalRepository.isEmpty()) {
@@ -57,7 +57,7 @@ public class IssueService {
 		List<Label> allLabels = new ArrayList<>();
 		List<IssueLabel> issueLabels = new ArrayList<>();
 
-		issueDtos.forEach(dto -> {
+		issueDtos.ifPresent(dtos -> dtos.forEach(dto -> {
 			Issue issue = Issue.of(repository, dto.getTitle(), dto.isStarred(), dto.isRead(), dto.getState(),
 				dto.getCreatedAt(), dto.getUpdatedAt(), dto.getClosedAt(), dto.getGhIssueId(),
 				issueLabels);
@@ -70,7 +70,7 @@ public class IssueService {
 				IssueLabel issueLabel = IssueLabel.of(issue, label);
 				issueLabels.add(issueLabel);
 			});
-		});
+		}));
 
 		issueRepository.saveAll(issues);
 		labelService.saveAllLabels(allLabels);
@@ -96,9 +96,9 @@ public class IssueService {
 		}).toList();
 	}
 
-	private List<IssueDto> getOpenGoodFirstIssues(String orgName, String repoName, String githubId) {
+	private Optional<List<IssueDto>> getOpenGoodFirstIssues(String orgName, String repoName, String githubId) {
 		String accessToken = githubTokenService.findAccessToken(githubId);
-		return webClient.get()
+		return Optional.ofNullable(webClient.get()
 			.uri(uriBuilder -> uriBuilder
 				.path("/repos/{owner}/{repo}/issues")
 				.queryParam("state", "open")
@@ -111,6 +111,6 @@ public class IssueService {
 			.retrieve()
 			.bodyToFlux(IssueDto.class)
 			.collectList()
-			.block();
+			.block());
 	}
 }
