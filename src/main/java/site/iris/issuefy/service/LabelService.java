@@ -3,7 +3,6 @@ package site.iris.issuefy.service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
@@ -34,7 +33,7 @@ public class LabelService {
 		return optionalLabels
 			.map(labels -> labels.stream()
 				.map(LabelMapper.INSTANCE::labelEntityToLabelDto)
-				.collect(Collectors.toList()))
+				.toList())
 			.orElseGet(ArrayList::new);
 	}
 
