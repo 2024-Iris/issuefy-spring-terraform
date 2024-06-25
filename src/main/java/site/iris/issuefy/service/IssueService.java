@@ -3,7 +3,6 @@ package site.iris.issuefy.service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
@@ -94,7 +93,7 @@ public class IssueService {
 				issue.getCreatedAt(),
 				issue.getUpdatedAt(),
 				issue.getClosedAt());
-		}).collect(Collectors.toList());
+		}).toList();
 	}
 
 	private List<IssueDto> getOpenGoodFirstIssues(String orgName, String repoName, String githubId) {
