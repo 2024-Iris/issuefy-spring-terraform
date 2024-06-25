@@ -10,17 +10,15 @@ VALUES ('lvalentine6', 'user3@example.com');
 
 -- Inserting organizations
 INSERT INTO `organization` (name, gh_org_id)
-VALUES ('organization1', 1);
-INSERT INTO `organization` (name, gh_org_id)
-VALUES ('organization2', 2);
+VALUES ('2024-Iris', 166014585);
 
 -- Inserting repositories
 INSERT INTO `repository` (org_id, name, gh_repo_id)
-VALUES (1, 'repo-a1', 1);
+VALUES (1, 'issuefy-test', 814324604);
 INSERT INTO `repository` (org_id, name, gh_repo_id)
-VALUES (1, 'repo-a2', 2);
+VALUES (1, 'issuefy-spring', 785651152);
 INSERT INTO `repository` (org_id, name, gh_repo_id)
-VALUES (2, 'repob-1', 3);
+VALUES (1, 'issuefy-vue', 783652373);
 
 -- Inserting issues
 INSERT INTO `issue` (repository_id, title, gh_issue_id, is_starred, is_read, state, created_at)
