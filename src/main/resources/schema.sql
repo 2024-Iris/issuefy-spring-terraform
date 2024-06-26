@@ -199,10 +199,11 @@ CREATE TABLE IF NOT EXISTS `issuefy`.`subscription`
 DROP TABLE IF EXISTS `issuefy`.`user_notification`;
 CREATE TABLE IF NOT EXISTS `issuefy`.`user_notification`
 (
+    `id` BIGINT NOT NULL AUTO_INCREMENT,
     `user_id`         BIGINT  NOT NULL,
     `notification_id` BIGINT  NOT NULL,
     `is_read`         TINYINT NOT NULL DEFAULT 0,
-    PRIMARY KEY (`user_id`, `notification_id`),
+    PRIMARY KEY (`id`),
     INDEX `fk_user_notification_user_idx` (`user_id` ASC) VISIBLE,
     INDEX `fk_user_notification_notification_idx` (`notification_id` ASC) VISIBLE,
     CONSTRAINT `fk_user_notification_notification`
