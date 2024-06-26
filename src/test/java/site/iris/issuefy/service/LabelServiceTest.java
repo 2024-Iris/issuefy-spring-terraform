@@ -134,4 +134,20 @@ class LabelServiceTest {
 		// then
 		assertEquals(0, result.size());
 	}
+
+	@DisplayName("이슈에 대한 모든 레이블을 저장한다")
+	@Test
+	void saveAllLabels() {
+		// given
+		List<Label> labels = List.of(
+			Label.of("test label name1", "000000"),
+			Label.of("test label name2", "111111")
+		);
+
+		// when
+		labelService.saveAllLabels(labels);
+
+		// then
+		verify(labelRepository, times(1)).saveAll(anyList());
+	}
 }
