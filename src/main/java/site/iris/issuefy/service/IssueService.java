@@ -44,7 +44,7 @@ public class IssueService {
 		this.issueLabelRepository = issueLabelRepository;
 	}
 
-	public RepositoryIssuesResponse saveIssuesByRepository(String orgName, String repoName, String githubId) {
+	public RepositoryIssuesResponse initializeIssueSubscription(String orgName, String repoName, String githubId) {
 		Repository repository = findRepositoryByName(repoName);
 		Optional<List<IssueDto>> issueDtos = getOpenGoodFirstIssues(orgName, repoName, githubId);
 

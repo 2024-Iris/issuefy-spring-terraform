@@ -41,7 +41,7 @@ class IssueControllerTest {
 		RepositoryIssuesResponse response = new RepositoryIssuesResponse(repoName, new ArrayList<>());
 
 		// when
-		when(issueService.saveIssuesByRepository(orgName, repoName, githubId))
+		when(issueService.initializeIssueSubscription(orgName, repoName, githubId))
 			.thenReturn(response);
 		ResultActions result = mockMvc.perform(
 			get("/api/subscriptions/{org_name}/{repo_name}/issues", orgName, repoName)
