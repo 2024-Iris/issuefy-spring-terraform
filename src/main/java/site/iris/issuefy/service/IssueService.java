@@ -53,19 +53,17 @@ public class IssueService {
 		List<IssueLabel> issueLabels = new ArrayList<>();
 
 		issueDtos.ifPresent(dtos -> dtos.forEach(dto -> {
-			Issue issue = createIssuesByDto(repository, dto, issueLabels, allLabels);
+			Issue issue = createIssuesByDto(repository, dto, allLabels, issueLabels);
 			issues.add(issue);
 		}));
 
-		issueRepository.saveAll(issues);
-		labelService.saveAllLabels(allLabels);
-		issueLabelRepository.saveAll(issueLabels);
+		saveAllEntities(issues, issueLabels, allLabels);
 
 		return new RepositoryIssuesResponse(repository.getName(), convertToResponse(issues));
 	}
 
-	private Issue createIssuesByDto(Repository repository, IssueDto issueDto, List<IssueLabel> issueLabels,
-		List<Label> allLabels) {
+	private Issue createIssuesByDto(Repository repository, IssueDto issueDto, List<Label> allLabels,
+		List<IssueLabel> issueLabels) {
 		Issue issue = Issue.of(
 			repository,
 			issueDto.getTitle(),
@@ -128,5 +126,11 @@ public class IssueService {
 			.bodyToFlux(IssueDto.class)
 			.collectList()
 			.block());
+	}
+
+	private void saveAllEntities(List<Issue> issues, List<IssueLabel> issueLabels, List<Label> allLabels) {
+		issueRepository.saveAll(issues);
+		labelService.saveAllLabels(allLabels);
+		issueLabelRepository.saveAll(issueLabels);
 	}
 }
