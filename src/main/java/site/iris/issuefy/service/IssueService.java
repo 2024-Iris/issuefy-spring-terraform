@@ -88,6 +88,7 @@ public class IssueService {
 	}
 
 	private Repository findRepositoryByName(String repositoryName) {
+		// TODO: 리포지토리 이름 변경 시 update 로직 구현 필요
 		return repositoryRepository.findByName(repositoryName)
 			.orElseThrow(
 				() -> new RepositoryNotFoundException(ErrorCode.NOT_EXIST_REPOSITORY.getMessage() + repositoryName));
