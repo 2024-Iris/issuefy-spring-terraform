@@ -15,6 +15,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import site.iris.issuefy.component.LambdaKey;
 import site.iris.issuefy.exception.UnauthenticatedException;
 import site.iris.issuefy.service.TokenProvider;
 
@@ -23,6 +24,7 @@ import site.iris.issuefy.service.TokenProvider;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 	public static final String BEARER_DELIMITER = "Bearer ";
 	private final TokenProvider tokenProvider;
+	private final LambdaKey lambdaKey;
 
 	@Override
 	protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response,
@@ -44,6 +46,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 		if (path.startsWith("/api/login") || path.equals("/api/docs")) {
 			filterChain.doFilter(request, response);
 			return;
+		}
+
+		if (path.startsWith("/api/receive")) {
+			String bearerToken = request.getHeader(AUTHORIZATION);
+			if (bearerToken.equals(BEARER_DELIMITER + lambdaKey.getLambdaKey())) {
+				filterChain.doFilter(request, response);
+				return;
+			}
 		}
 
 		String githubId = null;
