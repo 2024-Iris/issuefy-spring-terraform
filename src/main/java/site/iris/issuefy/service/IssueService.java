@@ -64,9 +64,18 @@ public class IssueService {
 		return new RepositoryIssuesResponse(repository.getName(), convertToResponse(issues));
 	}
 
-	private Issue createIssuesByDto(Repository repository, IssueDto issueDto, List<IssueLabel> issueLabels, List<Label> allLabels) {
-		Issue issue = Issue.of(repository, issueDto.getTitle(), issueDto.isStarred(), issueDto.isRead(), issueDto.getState(),
-			issueDto.getCreatedAt(), issueDto.getUpdatedAt(), issueDto.getClosedAt(), issueDto.getGhIssueId(),
+	private Issue createIssuesByDto(Repository repository, IssueDto issueDto, List<IssueLabel> issueLabels,
+		List<Label> allLabels) {
+		Issue issue = Issue.of(
+			repository,
+			issueDto.getTitle(),
+			issueDto.isStarred(),
+			issueDto.isRead(),
+			issueDto.getState(),
+			issueDto.getCreatedAt(),
+			issueDto.getUpdatedAt(),
+			issueDto.getClosedAt(),
+			issueDto.getGhIssueId(),
 			issueLabels);
 
 		issueDto.getLabels().forEach(labelDto -> {
@@ -81,7 +90,7 @@ public class IssueService {
 	}
 
 	private Repository findRepositoryByName(String repositoryName) {
-			return repositoryRepository.findByName(repositoryName)
+		return repositoryRepository.findByName(repositoryName)
 			.orElseThrow(
 				() -> new RepositoryNotFoundException(ErrorCode.NOT_EXIST_REPOSITORY.getMessage() + repositoryName));
 	}
