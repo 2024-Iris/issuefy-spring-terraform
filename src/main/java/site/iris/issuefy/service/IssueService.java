@@ -53,18 +53,8 @@ public class IssueService {
 		List<IssueLabel> issueLabels = new ArrayList<>();
 
 		issueDtos.ifPresent(dtos -> dtos.forEach(dto -> {
-			Issue issue = Issue.of(repository, dto.getTitle(), dto.isStarred(), dto.isRead(), dto.getState(),
-				dto.getCreatedAt(), dto.getUpdatedAt(), dto.getClosedAt(), dto.getGhIssueId(),
-				issueLabels);
+			Issue issue = createIssuesByDto(repository, dto, issueLabels, allLabels);
 			issues.add(issue);
-
-			dto.getLabels().forEach(labelDto -> {
-				Label label = labelService.findOrCreateLabel(labelDto.getName(), labelDto.getColor());
-				allLabels.add(label);
-
-				IssueLabel issueLabel = IssueLabel.of(issue, label);
-				issueLabels.add(issueLabel);
-			});
 		}));
 
 		issueRepository.saveAll(issues);
@@ -74,8 +64,24 @@ public class IssueService {
 		return new RepositoryIssuesResponse(repository.getName(), convertToResponse(issues));
 	}
 
+	private Issue createIssuesByDto(Repository repository, IssueDto issueDto, List<IssueLabel> issueLabels, List<Label> allLabels) {
+		Issue issue = Issue.of(repository, issueDto.getTitle(), issueDto.isStarred(), issueDto.isRead(), issueDto.getState(),
+			issueDto.getCreatedAt(), issueDto.getUpdatedAt(), issueDto.getClosedAt(), issueDto.getGhIssueId(),
+			issueLabels);
+
+		issueDto.getLabels().forEach(labelDto -> {
+			Label label = labelService.findOrCreateLabel(labelDto.getName(), labelDto.getColor());
+			allLabels.add(label);
+
+			IssueLabel issueLabel = IssueLabel.of(issue, label);
+			issueLabels.add(issueLabel);
+		});
+
+		return issue;
+	}
+
 	private Repository findRepositoryByName(String repositoryName) {
-		return repositoryRepository.findByName(repositoryName)
+			return repositoryRepository.findByName(repositoryName)
 			.orElseThrow(
 				() -> new RepositoryNotFoundException(ErrorCode.NOT_EXIST_REPOSITORY.getMessage() + repositoryName));
 	}
