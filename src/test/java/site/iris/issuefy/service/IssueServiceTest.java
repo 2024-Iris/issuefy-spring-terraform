@@ -19,13 +19,12 @@ import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 import site.iris.issuefy.entity.Org;
 import site.iris.issuefy.entity.Repository;
-import site.iris.issuefy.exception.RepositoryNotFoundException;
 import site.iris.issuefy.repository.IssueLabelRepository;
 import site.iris.issuefy.repository.IssueRepository;
 import site.iris.issuefy.repository.RepositoryRepository;
 import site.iris.issuefy.response.RepositoryIssuesResponse;
 
-public class IssueServiceTest {
+class IssueServiceTest {
 	MockWebServer mockWebServer;
 
 	@Mock
@@ -35,13 +34,13 @@ public class IssueServiceTest {
 	private RepositoryRepository repositoryRepository;
 
 	@Mock
-	GithubTokenService githubTokenService;
+	private GithubTokenService githubTokenService;
 
 	@Mock
 	private LabelService labelService;
 
 	@Mock
-	IssueLabelRepository issueLabelRepository;
+	private IssueLabelRepository issueLabelRepository;
 
 	@InjectMocks
 	private IssueService issueService;
@@ -54,7 +53,8 @@ public class IssueServiceTest {
 		mockWebServer = new MockWebServer();
 		mockWebServer.start();
 		mockWebServer.enqueue(new MockResponse()
-			.setBody("[{\"title\": \"testIssue\", \"state\": \"open\", \"ghIssueId\": 12345, \"labels\": [{\"name\": \"bug\", \"color\": \"f29513\"}]}]")
+			.setBody(
+				"[{\"title\": \"testIssue\", \"state\": \"open\", \"ghIssueId\": 12345, \"labels\": [{\"name\": \"bug\", \"color\": \"f29513\"}]}]")
 			.addHeader("Content-Type", "application/json")
 			.setResponseCode(200));
 
@@ -80,7 +80,8 @@ public class IssueServiceTest {
 		when(repositoryRepository.findByName(anyString())).thenReturn(Optional.of(repository));
 
 		// when
-		RepositoryIssuesResponse response = issueService.initializeIssueSubscription(repository.getOrg().getName(), repository.getName(), "dokkisan");
+		RepositoryIssuesResponse response = issueService.initializeIssueSubscription(repository.getOrg().getName(),
+			repository.getName(), "dokkisan");
 
 		// then
 		assertNotNull(response);
