@@ -12,7 +12,6 @@ import org.springframework.data.redis.listener.PatternTopic;
 import org.springframework.data.redis.listener.RedisMessageListenerContainer;
 import org.springframework.data.redis.listener.adapter.MessageListenerAdapter;
 
-import site.iris.issuefy.component.SseEmitters;
 import site.iris.issuefy.service.NotificationService;
 
 @Configuration
@@ -27,32 +26,32 @@ public class RedisConfig {
 
 	@Bean
 	public RedisMessageListenerContainer container(LettuceConnectionFactory connectionFactory,
-                                                   MessageListenerAdapter listenerAdapter) {
-        RedisMessageListenerContainer container = new RedisMessageListenerContainer();
-        container.setConnectionFactory(connectionFactory);
-        container.addMessageListener(listenerAdapter, topic());
-        return container;
-    }
+		MessageListenerAdapter listenerAdapter) {
+		RedisMessageListenerContainer container = new RedisMessageListenerContainer();
+		container.setConnectionFactory(connectionFactory);
+		container.addMessageListener(listenerAdapter, topic());
+		return container;
+	}
 
 	@Bean
 	public MessageListenerAdapter listenerAdapter(NotificationService notificationService) {
-        return new MessageListenerAdapter(notificationService, "handleRedisMessage");
-    }
+		return new MessageListenerAdapter(notificationService, "handleRedisMessage");
+	}
 
 	@Bean
 	public ChannelTopic topic() {
-        return new ChannelTopic("sse:messages");
-    }
+		return new ChannelTopic("sse:messages");
+	}
 
 	@Bean
-    public RedisMessageListenerContainer redisMessageListenerContainer(
-            RedisConnectionFactory connectionFactory,
-            MessageListenerAdapter listenerAdapter) {
-        RedisMessageListenerContainer container = new RedisMessageListenerContainer();
-        container.setConnectionFactory(connectionFactory);
-        container.addMessageListener(listenerAdapter, new PatternTopic("repository_updates"));
-        return container;
-    }
+	public RedisMessageListenerContainer redisMessageListenerContainer(
+		RedisConnectionFactory connectionFactory,
+		MessageListenerAdapter listenerAdapter) {
+		RedisMessageListenerContainer container = new RedisMessageListenerContainer();
+		container.setConnectionFactory(connectionFactory);
+		container.addMessageListener(listenerAdapter, new PatternTopic("repository_updates"));
+		return container;
+	}
 
 }
 

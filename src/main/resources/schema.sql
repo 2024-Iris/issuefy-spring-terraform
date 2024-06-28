@@ -199,7 +199,7 @@ CREATE TABLE IF NOT EXISTS `issuefy`.`subscription`
 DROP TABLE IF EXISTS `issuefy`.`user_notification`;
 CREATE TABLE IF NOT EXISTS `issuefy`.`user_notification`
 (
-    `id` BIGINT NOT NULL AUTO_INCREMENT,
+    `id`              BIGINT  NOT NULL AUTO_INCREMENT,
     `user_id`         BIGINT  NOT NULL,
     `notification_id` BIGINT  NOT NULL,
     `is_read`         TINYINT NOT NULL DEFAULT 0,

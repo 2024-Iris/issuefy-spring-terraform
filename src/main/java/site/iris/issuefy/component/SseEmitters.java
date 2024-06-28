@@ -32,17 +32,17 @@ public class SseEmitters {
 		return emitter;
 	}
 
-	 public void pushMessage(TestDto message) {
-        log.info("Received message: {}", message);
-        emitters.forEach(emitter -> {
-            try {
-                emitter.send(SseEmitter.event()
-                        .name("push")
-                        .data(message));
-            } catch (IOException e) {
-                log.error("Error sending SSE event", e);
-                emitter.completeWithError(e);
-            }
-        });
-    }
+	public void pushMessage(TestDto message) {
+		log.info("Received message: {}", message);
+		emitters.forEach(emitter -> {
+			try {
+				emitter.send(SseEmitter.event()
+					.name("push")
+					.data(message));
+			} catch (IOException e) {
+				log.error("Error sending SSE event", e);
+				emitter.completeWithError(e);
+			}
+		});
+	}
 }
