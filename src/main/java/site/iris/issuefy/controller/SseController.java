@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestAttribute;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
@@ -68,8 +69,9 @@ public class SseController {
 	}
 
 	@PostMapping("/api/receive")
-	public void receive(UpdateRepositoryDto updateRepositoryDto) {
+	public void receive(@RequestBody UpdateRepositoryDto updateRepositoryDto) {
 		log.info("lambda request receive");
+		log.info(updateRepositoryDto.toString());
 		notificationService.handleRedisMessage(updateRepositoryDto);
 	}
 }

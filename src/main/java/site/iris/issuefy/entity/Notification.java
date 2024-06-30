@@ -33,6 +33,12 @@ public class Notification {
 	@Column(name = "push_time", nullable = false)
 	private LocalDateTime pushTime;
 
+	public Notification(Repository repository, String message, LocalDateTime pushTime) {
+		this.repository = repository;
+		this.message = message;
+		this.pushTime = pushTime;
+	}
+
 	@Override
 	public String toString() {
 		return "Notification{" +

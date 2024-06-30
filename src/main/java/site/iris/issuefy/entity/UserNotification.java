@@ -30,4 +30,10 @@ public class UserNotification {
 
 	@Column(name = "is_read", nullable = false)
 	private Boolean isRead;
+
+	public UserNotification(User user, Notification notification) {
+		this.user = user;
+		this.notification = notification;
+		this.isRead = false;
+	}
 }

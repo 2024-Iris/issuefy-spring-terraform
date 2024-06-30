@@ -1,6 +1,7 @@
 package site.iris.issuefy.service;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -9,10 +10,13 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import site.iris.issuefy.entity.Notification;
 import site.iris.issuefy.entity.Subscription;
 import site.iris.issuefy.entity.User;
+import site.iris.issuefy.entity.UserNotification;
 import site.iris.issuefy.model.dto.NotificationDto;
 import site.iris.issuefy.model.dto.UpdateRepositoryDto;
+import site.iris.issuefy.repository.NotificationRepository;
 import site.iris.issuefy.repository.SseEmitterRepository;
 import site.iris.issuefy.repository.SubscriptionRepository;
 import site.iris.issuefy.repository.UserNotificationRepository;
@@ -27,9 +31,10 @@ public class NotificationService {
 	private final SseEmitterRepository sseEmitterRepository;
 	private final SubscriptionRepository subscriptionRepository;
 	private final UserRepository userRepository;
+	private final NotificationRepository notificationRepository;
 
 	public void handleRedisMessage(UpdateRepositoryDto updateRepositoryDto) {
-		for (String repository : updateRepositoryDto.getRepositoriesId()) {
+		for (String repository : updateRepositoryDto.getUpdatedRepositoryIds()) {
 			Long repositoryId = Long.parseLong(repository);
 			findSubscribeRepositoryUser(repositoryId);
 		}
@@ -68,6 +73,14 @@ public class NotificationService {
 		for (Subscription subscription : subscriptions) {
 			String githubId = subscription.getUser().getGithubId();
 			sendNotificationToUser(githubId);
+
+			//noti 코드
+			String message = subscription.getRepository().getName() + "에서 새로운 이슈가 올라왔어요!";
+			Notification notification = new Notification(subscription.getRepository(), message, LocalDateTime.now());
+			notificationRepository.save(notification);
+
+			UserNotification userNotification = new UserNotification(subscription.getUser(), notification);
+            userNotificationRepository.save(userNotification);
 		}
 	}
 
@@ -75,7 +88,6 @@ public class NotificationService {
 		if (!sseEmitterRepository.isUserConnected(githubId)) {
 			return;
 		}
-
 		try {
 			NotificationDto notificationDto = getNotification(githubId);
 			SseEmitter emitter = sseEmitterRepository.getEmitter(githubId);

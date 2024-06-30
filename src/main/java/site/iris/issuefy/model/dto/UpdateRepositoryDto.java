@@ -8,12 +8,12 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Getter
 public class UpdateRepositoryDto {
-	List<String> repositoriesId;
+	List<String> updatedRepositoryIds;
 
 	@Override
 	public String toString() {
 		return "UpdateRepositoryDto{" +
-			"repositoriesId=" + repositoriesId +
+			"updatedRepositoryIds=" + updatedRepositoryIds +
 			'}';
 	}
 }
