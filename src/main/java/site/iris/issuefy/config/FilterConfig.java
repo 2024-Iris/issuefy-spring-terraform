@@ -20,6 +20,7 @@ public class FilterConfig {
 	public FilterRegistrationBean<JwtAuthenticationFilter> jwtAuthenticationFilter() {
 		FilterRegistrationBean<JwtAuthenticationFilter> registrationBean = new FilterRegistrationBean<>();
 		registrationBean.setFilter(new JwtAuthenticationFilter(tokenProvider, lambdaKey));
+		registrationBean.addUrlPatterns("/*");
 		registrationBean.addUrlPatterns("/api/*");
 
 		return registrationBean;
