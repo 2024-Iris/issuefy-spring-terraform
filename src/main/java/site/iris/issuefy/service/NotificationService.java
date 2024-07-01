@@ -2,8 +2,8 @@ package site.iris.issuefy.service;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
@@ -15,6 +15,7 @@ import site.iris.issuefy.entity.Subscription;
 import site.iris.issuefy.entity.User;
 import site.iris.issuefy.entity.UserNotification;
 import site.iris.issuefy.model.dto.NotificationDto;
+import site.iris.issuefy.model.dto.UnreadNotificationDto;
 import site.iris.issuefy.model.dto.UpdateRepositoryDto;
 import site.iris.issuefy.repository.NotificationRepository;
 import site.iris.issuefy.repository.SseEmitterRepository;
@@ -54,25 +55,18 @@ public class NotificationService {
 		}
 	}
 
-	private NotificationDto getNotification(String githubId) {
+	private UnreadNotificationDto getNotification(String githubId) {
 		User user = userRepository.findByGithubId(githubId)
 			.orElseThrow(() -> new RuntimeException("User not found with githubId: " + githubId));
 
 		int unreadCount = userNotificationRepository.countByUserIdAndIsReadFalse(user.getId());
-		List<String> latestMessages = userNotificationRepository
-			.findTop5ByUserIdAndIsReadFalseOrderByNotificationPushTimeDesc(user.getId())
-			.stream()
-			.map(un -> un.getNotification().getMessage())
-			.collect(Collectors.toList());
-
-		return new NotificationDto(unreadCount, latestMessages);
+		return new UnreadNotificationDto(unreadCount);
 	}
 
 	public void findSubscribeRepositoryUser(Long repositoryId) {
 		List<Subscription> subscriptions = subscriptionRepository.findByRepositoryId(repositoryId);
 		for (Subscription subscription : subscriptions) {
 			String githubId = subscription.getUser().getGithubId();
-			sendNotificationToUser(githubId);
 
 			//noti 코드
 			String message = subscription.getRepository().getName() + "에서 새로운 이슈가 올라왔어요!";
@@ -80,7 +74,9 @@ public class NotificationService {
 			notificationRepository.save(notification);
 
 			UserNotification userNotification = new UserNotification(subscription.getUser(), notification);
-            userNotificationRepository.save(userNotification);
+			userNotificationRepository.save(userNotification);
+
+			sendNotificationToUser(githubId);
 		}
 	}
 
@@ -89,13 +85,13 @@ public class NotificationService {
 			return;
 		}
 		try {
-			NotificationDto notificationDto = getNotification(githubId);
+			UnreadNotificationDto unreadNotificationDto = getNotification(githubId);
 			SseEmitter emitter = sseEmitterRepository.getEmitter(githubId);
 			if (emitter != null) {
 				emitter.send(SseEmitter.event()
 					.id(String.valueOf(System.currentTimeMillis()))
 					.name("notification")
-					.data(notificationDto));
+					.data(unreadNotificationDto));
 			}
 		} catch (IOException e) {
 			log.error("Failed to send notification to user {}", githubId, e);
@@ -103,6 +99,23 @@ public class NotificationService {
 		} catch (Exception e) {
 			log.error("Unexpected error when sending notification to user {}", githubId, e);
 		}
+	}
+
+	public List<NotificationDto> findNotifications(String githubId) {
+		List<UserNotification> userNotificationList = userNotificationRepository.findUserNotificationsByUserGithubId(
+			githubId);
+		List<NotificationDto> notificationDtoList = new ArrayList<>();
+
+		for (UserNotification userNotification : userNotificationList) {
+			String orgName = userNotification.getNotification().getRepository().getOrg().getName();
+			String message = userNotification.getNotification().getMessage();
+			LocalDateTime localDateTime = userNotification.getNotification().getPushTime();
+			boolean isRead = userNotification.getIsRead();
+
+			notificationDtoList.add(NotificationDto.of(orgName, message, localDateTime, isRead));
+		}
+
+		return notificationDtoList;
 	}
 
 	public void addUserConnection(String githubId, SseEmitter emitter) {
