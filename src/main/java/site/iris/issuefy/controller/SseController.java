@@ -28,44 +28,24 @@ public class SseController {
 	@GetMapping(value = "/api/connect", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
 	public ResponseEntity<SseEmitter> connect(@RequestAttribute("githubId") String githubId) {
 		log.info("New connection for user: {}", githubId);
-		SseEmitter emitter = new SseEmitter(45000L);
+		SseEmitter emitter = new SseEmitter(60000L);
 		sseEmitterList.add(emitter);
 		notificationService.addUserConnection(githubId, emitter);
 
-		emitter.onCompletion(() -> {
-			log.info("SSE connection completed for user: {}", githubId);
-			notificationService.removeUserConnection(githubId);
-		});
-
 		emitter.onTimeout(() -> {
-			log.info("SSE connection timed out for user: {}", githubId);
-			notificationService.removeUserConnection(githubId);
-		});
-
-		emitter.onError((ex) -> {
-			log.error("SSE connection error for user: {}", githubId, ex);
-			notificationService.removeUserConnection(githubId);
-		});
+               log.info("SSE connection timed out for user: {}", githubId);
+               notificationService.removeUserConnection(githubId);
+               sseEmitterList.remove(emitter);
+               try {
+                   emitter.send(SseEmitter.event().name("error").data("Connection timed out"));
+               } catch (IOException e) {
+                   log.error("Error sending timeout message", e);
+               } finally {
+                   emitter.complete();
+               }
+           });
 
 		return ResponseEntity.ok(emitter);
-	}
-
-	@PostMapping("/api/push")
-	public ResponseEntity<Void> push() {
-		log.info("request test");
-		TestDto testDto = new TestDto(1L, "테스트 메시지");
-
-		sseEmitterList.forEach(emitter -> {
-			try {
-				emitter.send(SseEmitter.event()
-					.name("push")
-					.data(testDto));
-			} catch (IOException e) {
-				log.error("Error sending SSE event", e);
-				emitter.completeWithError(e);
-			}
-		});
-		return ResponseEntity.ok().build();
 	}
 
 	@PostMapping("/api/receive")
