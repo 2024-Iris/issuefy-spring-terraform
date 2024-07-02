@@ -8,19 +8,22 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public class NotificationDto {
+	private Long userNotificationId;
 	private String orgName;
 	private String message;
 	private LocalDateTime localDateTime;
 	private boolean isRead;
 
-	public static NotificationDto of(String orgName, String message, LocalDateTime localDateTime, boolean isRead) {
-		return new NotificationDto(orgName, message, localDateTime, isRead);
+	public static NotificationDto of(Long userNotificationId, String orgName, String message, LocalDateTime localDateTime,
+		boolean isRead) {
+		return new NotificationDto(userNotificationId, orgName, message, localDateTime, isRead);
 	}
 
 	@Override
 	public String toString() {
-		return "NotificationListDto{" +
-			"orgName='" + orgName + '\'' +
+		return "NotificationDto{" +
+			"userNotificationId=" + userNotificationId +
+			", orgName='" + orgName + '\'' +
 			", message='" + message + '\'' +
 			", localDateTime=" + localDateTime +
 			", isRead=" + isRead +
