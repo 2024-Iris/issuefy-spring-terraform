@@ -67,8 +67,6 @@ public class NotificationService {
 		List<Subscription> subscriptions = subscriptionRepository.findByRepositoryId(repositoryId);
 		for (Subscription subscription : subscriptions) {
 			String githubId = subscription.getUser().getGithubId();
-
-			//noti 코드
 			String message = subscription.getRepository().getName() + "에서 새로운 이슈가 올라왔어요!";
 			Notification notification = new Notification(subscription.getRepository(), message, LocalDateTime.now());
 			notificationRepository.save(notification);
@@ -111,8 +109,9 @@ public class NotificationService {
 			String message = userNotification.getNotification().getMessage();
 			LocalDateTime localDateTime = userNotification.getNotification().getPushTime();
 			boolean isRead = userNotification.getIsRead();
+			Long userNotificationId = userNotification.getId();
 
-			notificationDtoList.add(NotificationDto.of(orgName, message, localDateTime, isRead));
+			notificationDtoList.add(NotificationDto.of(userNotificationId, orgName, message, localDateTime, isRead));
 		}
 
 		return notificationDtoList;
