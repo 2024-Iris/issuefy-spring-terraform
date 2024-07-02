@@ -38,9 +38,16 @@ public class Issue {
 	@Column
 	private boolean isRead;
 
+	@Column
 	private String state;
+
+	@Column
 	private Date createdAt;
+
+	@Column
 	private Date updatedAt;
+
+	@Column
 	private Date closedAt;
 
 	@Column
