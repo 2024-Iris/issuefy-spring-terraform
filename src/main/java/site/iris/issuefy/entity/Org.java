@@ -10,7 +10,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "org")
+@Table(name = "organization")
 @Getter
 @NoArgsConstructor
 public class Org {
