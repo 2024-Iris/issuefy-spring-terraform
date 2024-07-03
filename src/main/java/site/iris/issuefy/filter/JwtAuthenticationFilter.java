@@ -38,7 +38,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
 		// 프리플라이트 요청 처리
 		if (request.getMethod().equals("OPTIONS")) {
-			handlePreflightRequest(response);
+			filterChain.doFilter(request, response);
 			return;
 		}
 
@@ -75,13 +75,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 				githubId, e.getMessage());
 			handleUnauthorizedException(response, e);
 		}
-	}
-
-	private void handlePreflightRequest(HttpServletResponse response) {
-		response.setHeader("Access-Control-Allow-Origin", "http://localhost:3000");
-		response.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
-		response.setHeader("Access-Control-Allow-Headers", "*");
-		response.setStatus(HttpServletResponse.SC_OK);
 	}
 
 	private void handleUnauthorizedException(HttpServletResponse response, UnauthenticatedException e)
