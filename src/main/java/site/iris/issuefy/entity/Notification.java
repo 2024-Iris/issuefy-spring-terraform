@@ -27,15 +27,15 @@ public class Notification {
 	@JoinColumn(name = "repository_id", nullable = false)
 	private Repository repository;
 
-	@Column(name = "message", nullable = false)
-	private String message;
+	@Column(name = "repository_name", nullable = false)
+	private String repositoryName;
 
 	@Column(name = "push_time", nullable = false)
 	private LocalDateTime pushTime;
 
-	public Notification(Repository repository, String message, LocalDateTime pushTime) {
+	public Notification(Repository repository, String repositoryName, LocalDateTime pushTime) {
 		this.repository = repository;
-		this.message = message;
+		this.repositoryName = repositoryName;
 		this.pushTime = pushTime;
 	}
 
@@ -44,7 +44,7 @@ public class Notification {
 		return "Notification{" +
 			"id=" + id +
 			", repository=" + repository +
-			", message='" + message + '\'' +
+			", message='" + repositoryName + '\'' +
 			", pushTime=" + pushTime +
 			'}';
 	}

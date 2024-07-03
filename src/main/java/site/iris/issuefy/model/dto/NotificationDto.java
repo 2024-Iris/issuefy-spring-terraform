@@ -10,13 +10,13 @@ import lombok.Getter;
 public class NotificationDto {
 	private Long userNotificationId;
 	private String orgName;
-	private String message;
+	private String repositoryName;
 	private LocalDateTime localDateTime;
 	private boolean isRead;
 
-	public static NotificationDto of(Long userNotificationId, String orgName, String message, LocalDateTime localDateTime,
+	public static NotificationDto of(Long userNotificationId, String orgName, String repositoryName, LocalDateTime localDateTime,
 		boolean isRead) {
-		return new NotificationDto(userNotificationId, orgName, message, localDateTime, isRead);
+		return new NotificationDto(userNotificationId, orgName, repositoryName, localDateTime, isRead);
 	}
 
 	@Override
@@ -24,7 +24,7 @@ public class NotificationDto {
 		return "NotificationDto{" +
 			"userNotificationId=" + userNotificationId +
 			", orgName='" + orgName + '\'' +
-			", message='" + message + '\'' +
+			", repositoryName='" + repositoryName + '\'' +
 			", localDateTime=" + localDateTime +
 			", isRead=" + isRead +
 			'}';

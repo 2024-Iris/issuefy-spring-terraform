@@ -152,7 +152,7 @@ CREATE TABLE IF NOT EXISTS `issuefy`.`notification`
 (
     `id`            BIGINT       NOT NULL AUTO_INCREMENT,
     `repository_id` BIGINT       NOT NULL,
-    `message`       VARCHAR(255) NOT NULL,
+    `repository_name`       VARCHAR(255) NOT NULL,
     `push_time`     DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
     `is_read`       TINYINT      NOT NULL DEFAULT 0,
     PRIMARY KEY (`id`),
