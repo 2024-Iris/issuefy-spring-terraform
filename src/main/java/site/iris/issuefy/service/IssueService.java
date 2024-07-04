@@ -8,6 +8,7 @@ import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import lombok.extern.slf4j.Slf4j;
@@ -48,41 +49,51 @@ public class IssueService {
 		this.issueLabelRepository = issueLabelRepository;
 	}
 
+	@Transactional
 	public RepositoryIssuesResponse getRepositoryIssuesResponse(String orgName, String repoName, String githubId) {
-		// 업데이트 로직
 		Optional<Repository> optionalRepository = repositoryRepository.findByName(repoName);
-		List<Issue> issues = new ArrayList<>();
+		Repository repository = new Repository();
 		if (optionalRepository.isPresent()) {
-
-			Repository repository = optionalRepository.get();
+			repository = optionalRepository.get();
 			LocalDateTime now = LocalDateTime.now();
 
-			// Repository가 저장된지 1분 이내면 기존 이슈 저장
+			// Repository가 저장된지 1분 이내면 오픈되어 있는 GFI 저장
 			if (repository.getUpdatedAt() != null && ChronoUnit.MINUTES.between(repository.getUpdatedAt(), now) < 1) {
+				log.info("시간 조건");
 				return initializeIssueSubscription(orgName, repoName, githubId);
 			}
-			Long repoId = repositoryRepository.findByName(repoName).get().getId();
-			issues = issueRepository.findAllByRepository_Id(repoId);
+			// Repository가 이미 존재하면 새로운 GFI fetch 수행
+			// 이 로직은 알림 발송 전 이슈 패치 로직으로 대체해도 될 것 같습니다.
 		}
-		return new RepositoryIssuesResponse(repoName, convertToResponse(issues));
+		log.info("fetchIssues 실행");
+		return fetchIssues(orgName, repoName, repository, githubId);
 	}
 
-	// private RepositoryIssuesResponse fetchIssues(String orgName, String repoName, String githubId) {
-	// 	Optional<List<IssueDto>> optionalIssueDtos = getOpenGoodFirstIssues(orgName, repoName, githubId);
-	// 	List<Issue> updatedIssues = new ArrayList<>();
-	//
-	// 	optionalIssueDtos.ifPresent(issueDtos -> issueDtos.forEach(dto -> {
-	// 		LocalDateTime latestCreatedAt = issueRepository.getLatestCreatedAt();
-	// 		LocalDateTime latestUpdatedAt = issueRepository.getLatestUpdatedAt();
-	//
-	// 		if (dto.getCreatedAt().isAfter(latestCreatedAt) || dto.getUpdatedAt().isAfter(latestUpdatedAt)) {
-	// 			updatedIssues.add(dto);
-	// 		}
-	// 		})
-	// 	);
-	// 	issueRepository.saveAll(updatedIssues);
-	// 	return new RepositoryIssuesResponse(updatedIssues);
-	// }
+	private RepositoryIssuesResponse fetchIssues(String orgName, String repoName, Repository repository,
+		String githubId) {
+		Optional<List<IssueDto>> optionalIssueDtos = getOpenGoodFirstIssues(orgName, repoName, githubId);
+		List<Issue> updatedIssues = new ArrayList<>();
+		List<Label> allLabels = new ArrayList<>();
+		List<IssueLabel> issueLabels = new ArrayList<>();
+
+		optionalIssueDtos.ifPresent(issueDtos -> {
+				LocalDateTime latestCreatedAt = issueRepository.getLatestCreatedAtByRepository_Id(
+					repository.getId()); // forEach 밖에 있어도 문제 없음
+
+				issueDtos.forEach(dto -> {
+					log.info("Processing issue: " + dto.getTitle());
+					if (dto.getCreatedAt().isAfter(latestCreatedAt)) {
+						log.info("Converting issue: " + dto.getTitle());
+						Issue issue = createIssuesByDto(repository, dto, allLabels, issueLabels);
+						updatedIssues.add(issue);
+					}
+				});
+			});
+		saveAllEntities(updatedIssues, allLabels, issueLabels);
+		List<IssueResponse> allIssueResponses = convertToResponse(
+			issueRepository.findAllByRepository_Id(repository.getId()));
+		return new RepositoryIssuesResponse(repoName, allIssueResponses);
+	}
 
 	private RepositoryIssuesResponse initializeIssueSubscription(String orgName, String repoName, String githubId) {
 		log.info("initializeIssueSubscription");
@@ -98,7 +109,7 @@ public class IssueService {
 			issues.add(issue);
 		}));
 
-		saveAllEntities(issues, issueLabels, allLabels);
+		saveAllEntities(issues, allLabels, issueLabels);
 
 		return new RepositoryIssuesResponse(repository.getName(), convertToResponse(issues));
 	}
@@ -171,7 +182,7 @@ public class IssueService {
 			.block());
 	}
 
-	private void saveAllEntities(List<Issue> issues, List<IssueLabel> issueLabels, List<Label> allLabels) {
+	private void saveAllEntities(List<Issue> issues, List<Label> allLabels, List<IssueLabel> issueLabels) {
 		log.debug("saveAllEntities");
 		issueRepository.saveAll(issues);
 		labelService.saveAllLabels(allLabels);
