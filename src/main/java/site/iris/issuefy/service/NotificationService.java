@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import lombok.RequiredArgsConstructor;
@@ -15,6 +16,7 @@ import site.iris.issuefy.entity.Subscription;
 import site.iris.issuefy.entity.User;
 import site.iris.issuefy.entity.UserNotification;
 import site.iris.issuefy.model.dto.NotificationDto;
+import site.iris.issuefy.model.dto.NotificationReadDto;
 import site.iris.issuefy.model.dto.UnreadNotificationDto;
 import site.iris.issuefy.model.dto.UpdateRepositoryDto;
 import site.iris.issuefy.repository.NotificationRepository;
@@ -68,7 +70,8 @@ public class NotificationService {
 		for (Subscription subscription : subscriptions) {
 			String githubId = subscription.getUser().getGithubId();
 			String repositoryName = subscription.getRepository().getName();
-			Notification notification = new Notification(subscription.getRepository(), repositoryName, LocalDateTime.now());
+			Notification notification = new Notification(subscription.getRepository(), repositoryName,
+				LocalDateTime.now());
 			notificationRepository.save(notification);
 
 			UserNotification userNotification = new UserNotification(subscription.getUser(), notification);
@@ -111,7 +114,8 @@ public class NotificationService {
 			boolean isRead = userNotification.getIsRead();
 			Long userNotificationId = userNotification.getId();
 
-			notificationDtoList.add(NotificationDto.of(userNotificationId, orgName, repositoryName, localDateTime, isRead));
+			notificationDtoList.add(
+				NotificationDto.of(userNotificationId, orgName, repositoryName, localDateTime, isRead));
 		}
 
 		return notificationDtoList;
@@ -126,5 +130,10 @@ public class NotificationService {
 	public void removeUserConnection(String githubId) {
 		log.debug("Removing user connection for githubId: {}", githubId);
 		sseEmitterRepository.removeEmitter(githubId);
+	}
+
+	@Transactional
+	public void updateUserNotificationsAsRead(NotificationReadDto notificationReadDto) {
+		userNotificationRepository.markAsRead(notificationReadDto.getUserNotificationIds());
 	}
 }
