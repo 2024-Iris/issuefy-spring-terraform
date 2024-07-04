@@ -62,10 +62,7 @@ public class IssueService {
 				log.info("시간 조건");
 				return initializeIssueSubscription(orgName, repoName, githubId);
 			}
-			// Repository가 이미 존재하면 새로운 GFI fetch 수행
-			// 이 로직은 알림 발송 전 이슈 패치 로직으로 대체해도 될 것 같습니다.
 		}
-		log.info("fetchIssues 실행");
 		return fetchIssues(orgName, repoName, repository, githubId);
 	}
 
@@ -77,18 +74,16 @@ public class IssueService {
 		List<IssueLabel> issueLabels = new ArrayList<>();
 
 		optionalIssueDtos.ifPresent(issueDtos -> {
-				LocalDateTime latestCreatedAt = issueRepository.getLatestCreatedAtByRepository_Id(
-					repository.getId()); // forEach 밖에 있어도 문제 없음
+			LocalDateTime latestCreatedAt = issueRepository.getLatestCreatedAtByRepository_Id(
+				repository.getId());
 
-				issueDtos.forEach(dto -> {
-					log.info("Processing issue: " + dto.getTitle());
-					if (dto.getCreatedAt().isAfter(latestCreatedAt)) {
-						log.info("Converting issue: " + dto.getTitle());
-						Issue issue = createIssuesByDto(repository, dto, allLabels, issueLabels);
-						updatedIssues.add(issue);
-					}
-				});
+			issueDtos.forEach(dto -> {
+				if (dto.getCreatedAt().isAfter(latestCreatedAt)) {
+					Issue issue = createIssuesByDto(repository, dto, allLabels, issueLabels);
+					updatedIssues.add(issue);
+				}
 			});
+		});
 		saveAllEntities(updatedIssues, allLabels, issueLabels);
 		List<IssueResponse> allIssueResponses = convertToResponse(
 			issueRepository.findAllByRepository_Id(repository.getId()));
@@ -183,7 +178,6 @@ public class IssueService {
 	}
 
 	private void saveAllEntities(List<Issue> issues, List<Label> allLabels, List<IssueLabel> issueLabels) {
-		log.debug("saveAllEntities");
 		issueRepository.saveAll(issues);
 		labelService.saveAllLabels(allLabels);
 		issueLabelRepository.saveAll(issueLabels);
