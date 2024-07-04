@@ -1,5 +1,7 @@
 package site.iris.issuefy.entity;
 
+import java.time.LocalDateTime;
+
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -34,11 +36,15 @@ public class Repository {
 	@Column
 	private long ghRepoId;
 
+	@Column(nullable = false)
+	private LocalDateTime updatedAt;
+
 	public Repository(Org org, String name, long ghRepoId) {
 		this.org = org;
 		this.name = name;
 		this.isStarred = false;
 		this.ghRepoId = ghRepoId;
+		this.updatedAt = LocalDateTime.now();
 	}
 
 	@Override

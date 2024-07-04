@@ -1,6 +1,6 @@
 package site.iris.issuefy.response;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import lombok.AllArgsConstructor;
@@ -16,9 +16,9 @@ public class IssueResponse {
 	private List<LabelResponse> labels;
 	private boolean isRead;
 	private boolean isStarred;
-	private Date createdAt;
-	private Date updatedAt;
-	private Date closedAt;
+	private LocalDateTime createdAt;
+	private LocalDateTime updatedAt;
+	private LocalDateTime closedAt;
 
 	public static IssueResponse of(
 		Long id,
@@ -28,9 +28,9 @@ public class IssueResponse {
 		List<LabelResponse> labels,
 		boolean isRead,
 		boolean isStarred,
-		Date createdAt,
-		Date updatedAt,
-		Date closedAt) {
+		LocalDateTime createdAt,
+		LocalDateTime updatedAt,
+		LocalDateTime closedAt) {
 		return new IssueResponse(
 			id,
 			githubIssueId,

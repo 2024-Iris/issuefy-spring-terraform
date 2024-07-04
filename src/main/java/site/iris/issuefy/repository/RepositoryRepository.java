@@ -10,4 +10,8 @@ public interface RepositoryRepository extends CrudRepository<Repository, Long> {
 	Optional<Repository> findByGhRepoId(Long ghRepoId);
 
 	Optional<Repository> findByName(String name);
+
+	Boolean existsByName(String name);
+
+	// Long findRepositoryIdByRepositoryName(String name);
 }

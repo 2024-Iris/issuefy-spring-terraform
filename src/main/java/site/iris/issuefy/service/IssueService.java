@@ -1,5 +1,7 @@
 package site.iris.issuefy.service;
 
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -8,6 +10,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
+import lombok.extern.slf4j.Slf4j;
 import site.iris.issuefy.entity.Issue;
 import site.iris.issuefy.entity.IssueLabel;
 import site.iris.issuefy.entity.Label;
@@ -21,6 +24,7 @@ import site.iris.issuefy.repository.RepositoryRepository;
 import site.iris.issuefy.response.IssueResponse;
 import site.iris.issuefy.response.RepositoryIssuesResponse;
 
+@Slf4j
 @Service
 public class IssueService {
 	private final WebClient webClient;
@@ -44,7 +48,44 @@ public class IssueService {
 		this.issueLabelRepository = issueLabelRepository;
 	}
 
-	public RepositoryIssuesResponse initializeIssueSubscription(String orgName, String repoName, String githubId) {
+	public RepositoryIssuesResponse getRepositoryIssuesResponse(String orgName, String repoName, String githubId) {
+		// 업데이트 로직
+		Optional<Repository> optionalRepository = repositoryRepository.findByName(repoName);
+		List<Issue> issues = new ArrayList<>();
+		if (optionalRepository.isPresent()) {
+
+			Repository repository = optionalRepository.get();
+			LocalDateTime now = LocalDateTime.now();
+
+			// Repository가 저장된지 1분 이내면 기존 이슈 저장
+			if (repository.getUpdatedAt() != null && ChronoUnit.MINUTES.between(repository.getUpdatedAt(), now) < 1) {
+				return initializeIssueSubscription(orgName, repoName, githubId);
+			}
+			Long repoId = repositoryRepository.findByName(repoName).get().getId();
+			issues = issueRepository.findAllByRepository_Id(repoId);
+		}
+		return new RepositoryIssuesResponse(repoName, convertToResponse(issues));
+	}
+
+	// private RepositoryIssuesResponse fetchIssues(String orgName, String repoName, String githubId) {
+	// 	Optional<List<IssueDto>> optionalIssueDtos = getOpenGoodFirstIssues(orgName, repoName, githubId);
+	// 	List<Issue> updatedIssues = new ArrayList<>();
+	//
+	// 	optionalIssueDtos.ifPresent(issueDtos -> issueDtos.forEach(dto -> {
+	// 		LocalDateTime latestCreatedAt = issueRepository.getLatestCreatedAt();
+	// 		LocalDateTime latestUpdatedAt = issueRepository.getLatestUpdatedAt();
+	//
+	// 		if (dto.getCreatedAt().isAfter(latestCreatedAt) || dto.getUpdatedAt().isAfter(latestUpdatedAt)) {
+	// 			updatedIssues.add(dto);
+	// 		}
+	// 		})
+	// 	);
+	// 	issueRepository.saveAll(updatedIssues);
+	// 	return new RepositoryIssuesResponse(updatedIssues);
+	// }
+
+	private RepositoryIssuesResponse initializeIssueSubscription(String orgName, String repoName, String githubId) {
+		log.info("initializeIssueSubscription");
 		Repository repository = findRepositoryByName(repoName);
 		Optional<List<IssueDto>> issueDtos = getOpenGoodFirstIssues(orgName, repoName, githubId);
 
@@ -89,6 +130,7 @@ public class IssueService {
 
 	private Repository findRepositoryByName(String repositoryName) {
 		// TODO: 리포지토리 이름 변경 시 update 로직 구현 필요
+		log.debug("findRepositoryByName");
 		return repositoryRepository.findByName(repositoryName)
 			.orElseThrow(
 				() -> new RepositoryNotFoundException(ErrorCode.NOT_EXIST_REPOSITORY.getMessage() + repositoryName));
@@ -130,6 +172,7 @@ public class IssueService {
 	}
 
 	private void saveAllEntities(List<Issue> issues, List<IssueLabel> issueLabels, List<Label> allLabels) {
+		log.debug("saveAllEntities");
 		issueRepository.saveAll(issues);
 		labelService.saveAllLabels(allLabels);
 		issueLabelRepository.saveAll(issueLabels);
