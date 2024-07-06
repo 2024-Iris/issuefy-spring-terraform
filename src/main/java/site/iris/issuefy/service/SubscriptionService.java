@@ -104,7 +104,7 @@ public class SubscriptionService {
 
 	private ResponseEntity<GithubRepositoryDto> getRepositoryInfo(RepositoryUrlDto repositoryUrlDto,
 		String accessToken) {
-		ResponseEntity<GithubRepositoryDto> responseEntity = WebClient.create()
+		return WebClient.create()
 			.get()
 			.uri(REPOSITORY_REQUEST_URL + repositoryUrlDto.getOrgName() + "/" + repositoryUrlDto.getRepositoryName())
 			.headers(headers -> {
@@ -114,12 +114,6 @@ public class SubscriptionService {
 			.retrieve()
 			.toEntity(GithubRepositoryDto.class)
 			.block();
-
-		// ETag 추출
-		String eTag = responseEntity.getHeaders().getETag();
-		log.info("ETag for Repository: {}", eTag);
-
-		return responseEntity;
 	}
 
 	private void saveSubscription(User user, Repository repository) {

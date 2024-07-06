@@ -3,7 +3,6 @@ package site.iris.issuefy.service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
@@ -15,114 +14,106 @@ import site.iris.issuefy.entity.Label;
 import site.iris.issuefy.entity.Repository;
 import site.iris.issuefy.exception.RepositoryNotFoundException;
 import site.iris.issuefy.exception.code.ErrorCode;
-import site.iris.issuefy.mapper.LabelMapper;
 import site.iris.issuefy.model.dto.IssueDto;
 import site.iris.issuefy.repository.IssueLabelRepository;
 import site.iris.issuefy.repository.IssueRepository;
-import site.iris.issuefy.repository.LabelRepository;
 import site.iris.issuefy.repository.RepositoryRepository;
 import site.iris.issuefy.response.IssueResponse;
-import site.iris.issuefy.response.LabelResponse;
 import site.iris.issuefy.response.RepositoryIssuesResponse;
 
 @Service
 public class IssueService {
-
 	private final WebClient webClient;
 	private final GithubTokenService githubTokenService;
 	private final IssueRepository issueRepository;
 	private final RepositoryRepository repositoryRepository;
-	private final LabelRepository labelRepository;
+	private final LabelService labelService;
 	private final IssueLabelRepository issueLabelRepository;
 
 	public IssueService(@Qualifier("apiWebClient") WebClient webClient,
 		GithubTokenService githubTokenService,
 		IssueRepository issueRepository,
 		RepositoryRepository repositoryRepository,
-		LabelRepository labelRepository,
+		LabelService labelService,
 		IssueLabelRepository issueLabelRepository) {
 		this.webClient = webClient;
 		this.githubTokenService = githubTokenService;
 		this.issueRepository = issueRepository;
 		this.repositoryRepository = repositoryRepository;
-		this.labelRepository = labelRepository;
+		this.labelService = labelService;
 		this.issueLabelRepository = issueLabelRepository;
 	}
 
-	public RepositoryIssuesResponse saveIssuesByRepository(String orgName, String repoName, String githubId) {
-		List<IssueDto> issueDtos = getOpenGoodFirstIssues(orgName, repoName, githubId);
-		Optional<Repository> repositoryOptional = repositoryRepository.findByName(repoName);
+	public RepositoryIssuesResponse initializeIssueSubscription(String orgName, String repoName, String githubId) {
+		Repository repository = findRepositoryByName(repoName);
+		Optional<List<IssueDto>> issueDtos = getOpenGoodFirstIssues(orgName, repoName, githubId);
 
-		if (repositoryOptional.isEmpty()) {
-			throw new RepositoryNotFoundException(ErrorCode.NOT_EXIST_REPOSITORY.getMessage() + repoName);
-		}
-
-		Repository repository = repositoryOptional.get();
 		List<Issue> issues = new ArrayList<>();
 		List<Label> allLabels = new ArrayList<>();
 		List<IssueLabel> issueLabels = new ArrayList<>();
 
-		issueDtos.forEach(dto -> {
-			Issue issue = Issue.of(repository, dto.getTitle(), dto.isStarred(), dto.isRead(), dto.getState(),
-				dto.getCreatedAt(), dto.getUpdatedAt(), dto.getClosedAt(), dto.getGhIssueNumber(),
-				issueLabels);
+		issueDtos.ifPresent(dtos -> dtos.forEach(dto -> {
+			Issue issue = createIssuesByDto(repository, dto, allLabels, issueLabels);
 			issues.add(issue);
+		}));
 
-			dto.getLabels().forEach(labelDto -> {
-				Label label = findOrCreateLabel(labelDto.getName(), labelDto.getColor());
-				allLabels.add(label);
+		saveAllEntities(issues, issueLabels, allLabels);
 
-				IssueLabel issueLabel = IssueLabel.of(issue, label);
-				issueLabels.add(issueLabel);
-			});
+		return new RepositoryIssuesResponse(repository.getName(), convertToResponse(issues));
+	}
+
+	private Issue createIssuesByDto(Repository repository, IssueDto issueDto, List<Label> allLabels,
+		List<IssueLabel> issueLabels) {
+		Issue issue = Issue.of(
+			repository,
+			issueDto.getTitle(),
+			issueDto.isStarred(),
+			issueDto.isRead(),
+			issueDto.getState(),
+			issueDto.getCreatedAt(),
+			issueDto.getUpdatedAt(),
+			issueDto.getClosedAt(),
+			issueDto.getGhIssueId(),
+			issueLabels);
+
+		issueDto.getLabels().forEach(labelDto -> {
+			Label label = labelService.findOrCreateLabel(labelDto.getName(), labelDto.getColor());
+			allLabels.add(label);
+
+			IssueLabel issueLabel = IssueLabel.of(issue, label);
+			issueLabels.add(issueLabel);
 		});
 
-		issueRepository.saveAll(issues);
-		labelRepository.saveAll(allLabels);
-		issueLabelRepository.saveAll(issueLabels);
-
-		return new RepositoryIssuesResponse(repository.getName(), convertToDto(issues));
+		return issue;
 	}
 
-	private List<IssueResponse> convertToDto(List<Issue> issues) {
+	private Repository findRepositoryByName(String repositoryName) {
+		// TODO: 리포지토리 이름 변경 시 update 로직 구현 필요
+		return repositoryRepository.findByName(repositoryName)
+			.orElseThrow(
+				() -> new RepositoryNotFoundException(ErrorCode.NOT_EXIST_REPOSITORY.getMessage() + repositoryName));
+	}
+
+	private List<IssueResponse> convertToResponse(List<Issue> issues) {
 		return issues.stream().map(issue -> {
-			// 이슈에 대한 레이블 가져오기
-			Optional<List<Label>> optionalLabels = labelRepository.findByIssue_id(issue.getId());
+			Optional<List<Label>> optionalLabels = labelService.getLabelsByIssueId(issue.getId());
 
-			// 레이블 DTO 생성
-			List<LabelResponse> labelResponses = optionalLabels
-				.map(labels -> labels.stream()
-					.map(LabelMapper.INSTANCE::labelEntityToLabelDto)
-					.collect(Collectors.toList()))
-				.orElseGet(ArrayList::new);
-
-			// 이슈 DTO 생성
-			return IssueResponse.builder()
-				.id(issue.getId())
-				.githubIssueId(issue.getGhIssueNumber())
-				.state(issue.getState())
-				.title(issue.getTitle())
-				.isStarred(issue.isStarred())
-				.isRead(issue.isRead())
-				.createdAt(issue.getCreatedAt())
-				.updatedAt(issue.getUpdatedAt())
-				.closedAt(issue.getClosedAt())
-				.labels(labelResponses)
-				.build();
-		}).collect(Collectors.toList());
+			return IssueResponse.of(issue.getId(),
+				issue.getGhIssueId(),
+				issue.getState(),
+				issue.getTitle(),
+				labelService.convertLabelsResponse(optionalLabels),
+				issue.isRead(),
+				issue.isStarred(),
+				issue.getCreatedAt(),
+				issue.getUpdatedAt(),
+				issue.getClosedAt());
+		}).toList();
 	}
 
-	private Label findOrCreateLabel(String name, String color) {
-		return labelRepository.findByNameAndColor(name, color)
-			.orElseGet(() -> {
-				Label newLabel = Label.of(name, color);
-				return labelRepository.save(newLabel);
-			});
-	}
-
-	private List<IssueDto> getOpenGoodFirstIssues(String orgName, String repoName, String githubId) {
+	private Optional<List<IssueDto>> getOpenGoodFirstIssues(String orgName, String repoName, String githubId) {
 		String accessToken = githubTokenService.findAccessToken(githubId);
-		return webClient.get()
+		return Optional.ofNullable(webClient.get()
 			.uri(uriBuilder -> uriBuilder
 				.path("/repos/{owner}/{repo}/issues")
 				.queryParam("state", "open")
@@ -135,6 +126,12 @@ public class IssueService {
 			.retrieve()
 			.bodyToFlux(IssueDto.class)
 			.collectList()
-			.block();
+			.block());
+	}
+
+	private void saveAllEntities(List<Issue> issues, List<IssueLabel> issueLabels, List<Label> allLabels) {
+		issueRepository.saveAll(issues);
+		labelService.saveAllLabels(allLabels);
+		issueLabelRepository.saveAll(issueLabels);
 	}
 }

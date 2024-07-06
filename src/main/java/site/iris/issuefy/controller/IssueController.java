@@ -23,7 +23,7 @@ public class IssueController {
 		@PathVariable("repo_name") String repoName,
 		@RequestAttribute String githubId) {
 		log.info("getIssuesByRepoName: {}", repoName);
-		RepositoryIssuesResponse response = issueService.saveIssuesByRepository(orgName, repoName, githubId);
+		RepositoryIssuesResponse response = issueService.initializeIssueSubscription(orgName, repoName, githubId);
 		log.info(repoName);
 		return ResponseEntity.status(HttpStatus.OK).body(response);
 	}

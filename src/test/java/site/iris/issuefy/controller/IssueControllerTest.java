@@ -1,12 +1,13 @@
 package site.iris.issuefy.controller;
 
-import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.*;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.*;
 import static org.springframework.restdocs.request.RequestDocumentation.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 import static site.iris.issuefy.ApiDocumentUtils.*;
+
+import java.util.ArrayList;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -17,6 +18,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 
+import site.iris.issuefy.response.RepositoryIssuesResponse;
 import site.iris.issuefy.service.IssueService;
 
 @WebMvcTest(IssueController.class)
@@ -33,11 +35,17 @@ class IssueControllerTest {
 	@Test
 	void getIssuesByRepoName() throws Exception {
 		// given
-		String repoName = "iris";
+		String orgName = "iris";
+		String repoName = "issuefy";
+		String githubId = "dokkisan";
+		RepositoryIssuesResponse response = new RepositoryIssuesResponse(repoName, new ArrayList<>());
 
 		// when
-		when(issueService.getIssuesByRepoName(anyString())).thenReturn("done");
-		ResultActions result = mockMvc.perform(get("/api/{repoName}/issues", repoName));
+		when(issueService.initializeIssueSubscription(orgName, repoName, githubId))
+			.thenReturn(response);
+		ResultActions result = mockMvc.perform(
+			get("/api/subscriptions/{org_name}/{repo_name}/issues", orgName, repoName)
+				.requestAttr("githubId", githubId));
 
 		// then
 		result.andExpect(status().isOk())
@@ -45,7 +53,8 @@ class IssueControllerTest {
 				getDocumentRequest(),
 				getDocumentResponse(),
 				pathParameters(
-					parameterWithName("repoName").description("리포지토리 이름"))
+					parameterWithName("org_name").description("조직 이름"),
+					parameterWithName("repo_name").description("리포지토리 이름"))
 			));
 	}
 }
