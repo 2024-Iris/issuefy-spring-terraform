@@ -8,6 +8,7 @@ import java.io.IOException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 import org.springframework.http.HttpStatus;
 import org.springframework.mock.web.MockFilterChain;
 import org.springframework.mock.web.MockHttpServletRequest;
@@ -20,6 +21,7 @@ import site.iris.issuefy.entity.Jwt;
 import site.iris.issuefy.exception.UnauthenticatedException;
 import site.iris.issuefy.service.TokenProvider;
 
+@EnabledIfEnvironmentVariable(named = "sonarCloud", matches = "false")
 class JwtAuthenticationFilterTest {
 	private JwtAuthenticationFilter jwtAuthenticationFilter;
 	private TokenProvider tokenProvider;
