@@ -14,7 +14,6 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import site.iris.issuefy.model.dto.TestDto;
 import site.iris.issuefy.model.dto.UpdateRepositoryDto;
 import site.iris.issuefy.service.NotificationService;
 
@@ -33,17 +32,17 @@ public class SseController {
 		notificationService.addUserConnection(githubId, emitter);
 
 		emitter.onTimeout(() -> {
-               log.info("SSE connection timed out for user: {}", githubId);
-               notificationService.removeUserConnection(githubId);
-               sseEmitterList.remove(emitter);
-               try {
-                   emitter.send(SseEmitter.event().name("error").data("Connection timed out"));
-               } catch (IOException e) {
-                   log.error("Error sending timeout message", e);
-               } finally {
-                   emitter.complete();
-               }
-           });
+			log.info("SSE connection timed out for user: {}", githubId);
+			notificationService.removeUserConnection(githubId);
+			sseEmitterList.remove(emitter);
+			try {
+				emitter.send(SseEmitter.event().name("error").data("Connection timed out"));
+			} catch (IOException e) {
+				log.error("Error sending timeout message", e);
+			} finally {
+				emitter.complete();
+			}
+		});
 
 		return ResponseEntity.ok(emitter);
 	}

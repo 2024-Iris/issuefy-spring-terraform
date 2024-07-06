@@ -18,7 +18,7 @@ public interface UserNotificationRepository extends JpaRepository<UserNotificati
 	List<UserNotification> findUserNotificationsByUserGithubId(String userId);
 
 	@Modifying(clearAutomatically = true)
-    @Query("UPDATE UserNotification un SET un.isRead = true WHERE un.id IN :ids")
-    void markAsRead(@Param("ids") List<Long> ids);
+	@Query("UPDATE UserNotification un SET un.isRead = true WHERE un.id IN :ids")
+	void markAsRead(@Param("ids") List<Long> ids);
 
 }

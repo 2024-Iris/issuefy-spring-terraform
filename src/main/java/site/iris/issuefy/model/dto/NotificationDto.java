@@ -14,7 +14,8 @@ public class NotificationDto {
 	private LocalDateTime localDateTime;
 	private boolean isRead;
 
-	public static NotificationDto of(Long userNotificationId, String orgName, String repositoryName, LocalDateTime localDateTime,
+	public static NotificationDto of(Long userNotificationId, String orgName, String repositoryName,
+		LocalDateTime localDateTime,
 		boolean isRead) {
 		return new NotificationDto(userNotificationId, orgName, repositoryName, localDateTime, isRead);
 	}
