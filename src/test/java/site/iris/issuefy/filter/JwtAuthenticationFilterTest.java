@@ -21,7 +21,7 @@ import site.iris.issuefy.entity.Jwt;
 import site.iris.issuefy.exception.UnauthenticatedException;
 import site.iris.issuefy.service.TokenProvider;
 
-@EnabledIfEnvironmentVariable(named = "sonarCloud", matches = "false")
+@EnabledIfEnvironmentVariable(named = "sonarCloud", matches = "true")
 class JwtAuthenticationFilterTest {
 	private JwtAuthenticationFilter jwtAuthenticationFilter;
 	private TokenProvider tokenProvider;
