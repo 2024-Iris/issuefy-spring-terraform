@@ -4,6 +4,7 @@ github:
 
 jwt:
   secretKey: testSecretKeytestSecretKeytestSecretKey
+  lambdaKey: test
 
 spring:
   datasource:
@@ -13,16 +14,8 @@ spring:
     url: jdbc:tc:mysql:8://issuefy
     username: root
     password: root
-#  jpa:
-#    show-sql: false
-#    hibernate:
-#      ddl-auto: create
-#    open-in-view: false
-#    properties:
-#      hibernate:
-#        format_sql: true
-#  sql:
-#    init:
-#      schema-locations: ../../../src/test/resources/
-#      data-locations: classpath:data.sql
-#      mode: always
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      password: roy1227

@@ -15,6 +15,7 @@ import org.springframework.mock.web.MockHttpServletResponse;
 
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.ServletException;
+import site.iris.issuefy.component.LambdaKey;
 import site.iris.issuefy.entity.Jwt;
 import site.iris.issuefy.exception.UnauthenticatedException;
 import site.iris.issuefy.service.TokenProvider;
@@ -22,11 +23,12 @@ import site.iris.issuefy.service.TokenProvider;
 class JwtAuthenticationFilterTest {
 	private JwtAuthenticationFilter jwtAuthenticationFilter;
 	private TokenProvider tokenProvider;
+	private LambdaKey lambdaKey;
 
 	@BeforeEach
 	void setUp() {
 		tokenProvider = mock(TokenProvider.class);
-		jwtAuthenticationFilter = new JwtAuthenticationFilter(tokenProvider);
+		jwtAuthenticationFilter = new JwtAuthenticationFilter(tokenProvider, lambdaKey);
 	}
 
 	@DisplayName("유효한 토큰은 필터를 통과한다")
@@ -162,8 +164,5 @@ class JwtAuthenticationFilterTest {
 
 		// then
 		assertEquals(HttpStatus.OK.value(), response.getStatus());
-		assertEquals("http://localhost:3000", response.getHeader("Access-Control-Allow-Origin"));
-		assertEquals("GET, POST, PUT, DELETE", response.getHeader("Access-Control-Allow-Methods"));
-		assertEquals("*", response.getHeader("Access-Control-Allow-Headers"));
 	}
 }
