@@ -1,7 +1,6 @@
 package site.iris.issuefy.controller;
 
 import java.io.IOException;
-import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -22,19 +21,17 @@ import site.iris.issuefy.service.NotificationService;
 @Slf4j
 public class SseController {
 	private final NotificationService notificationService;
-	private final CopyOnWriteArrayList<SseEmitter> sseEmitterList = new CopyOnWriteArrayList<>();
 
 	@GetMapping(value = "/api/connect", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
 	public ResponseEntity<SseEmitter> connect(@RequestAttribute("githubId") String githubId) {
 		log.info("New connection for user: {}", githubId);
 		SseEmitter emitter = new SseEmitter(60000L);
-		sseEmitterList.add(emitter);
-		notificationService.addUserConnection(githubId, emitter);
+		notificationService.addEmitter(githubId, emitter);
+		notificationService.sendInitialNotification(githubId, emitter);
 
 		emitter.onTimeout(() -> {
 			log.info("SSE connection timed out for user: {}", githubId);
-			notificationService.removeUserConnection(githubId);
-			sseEmitterList.remove(emitter);
+			notificationService.removeEmitter(githubId);
 			try {
 				emitter.send(SseEmitter.event().name("error").data("Connection timed out"));
 			} catch (IOException e) {
@@ -50,7 +47,6 @@ public class SseController {
 	@PostMapping("/api/receive")
 	public void receive(@RequestBody UpdateRepositoryDto updateRepositoryDto) {
 		log.info("lambda request receive");
-		log.info(updateRepositoryDto.toString());
 		notificationService.handleRedisMessage(updateRepositoryDto);
 	}
 }

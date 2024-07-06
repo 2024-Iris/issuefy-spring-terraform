@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,7 +21,6 @@ import site.iris.issuefy.model.dto.NotificationReadDto;
 import site.iris.issuefy.model.dto.UnreadNotificationDto;
 import site.iris.issuefy.model.dto.UpdateRepositoryDto;
 import site.iris.issuefy.repository.NotificationRepository;
-import site.iris.issuefy.repository.SseEmitterRepository;
 import site.iris.issuefy.repository.SubscriptionRepository;
 import site.iris.issuefy.repository.UserNotificationRepository;
 import site.iris.issuefy.repository.UserRepository;
@@ -31,10 +31,10 @@ import site.iris.issuefy.repository.UserRepository;
 public class NotificationService {
 
 	private final UserNotificationRepository userNotificationRepository;
-	private final SseEmitterRepository sseEmitterRepository;
 	private final SubscriptionRepository subscriptionRepository;
 	private final UserRepository userRepository;
 	private final NotificationRepository notificationRepository;
+	private final ConcurrentHashMap<String, SseEmitter> sseEmitters = new ConcurrentHashMap<>();
 
 	public void handleRedisMessage(UpdateRepositoryDto updateRepositoryDto) {
 		for (String repository : updateRepositoryDto.getUpdatedRepositoryIds()) {
@@ -53,7 +53,6 @@ public class NotificationService {
 			log.debug("Initial notification sent successfully to user {}", githubId);
 		} catch (IOException e) {
 			log.error("Failed to send initial notification to user {}", githubId, e);
-			sseEmitterRepository.removeEmitter(githubId);
 		}
 	}
 
@@ -82,12 +81,9 @@ public class NotificationService {
 	}
 
 	private void sendNotificationToUser(String githubId) {
-		if (!sseEmitterRepository.isUserConnected(githubId)) {
-			return;
-		}
 		try {
 			UnreadNotificationDto unreadNotificationDto = getNotification(githubId);
-			SseEmitter emitter = sseEmitterRepository.getEmitter(githubId);
+			SseEmitter emitter = getEmitter(githubId);
 			if (emitter != null) {
 				emitter.send(SseEmitter.event()
 					.id(String.valueOf(System.currentTimeMillis()))
@@ -96,7 +92,6 @@ public class NotificationService {
 			}
 		} catch (IOException e) {
 			log.error("Failed to send notification to user {}", githubId, e);
-			sseEmitterRepository.removeEmitter(githubId);
 		} catch (Exception e) {
 			log.error("Unexpected error when sending notification to user {}", githubId, e);
 		}
@@ -121,15 +116,16 @@ public class NotificationService {
 		return notificationDtoList;
 	}
 
-	public void addUserConnection(String githubId, SseEmitter emitter) {
-		log.debug("Adding user connection for githubId: {}", githubId);
-		sseEmitterRepository.addEmitter(githubId, emitter);
-		sendInitialNotification(githubId, emitter);
+	public void addEmitter(String githubId, SseEmitter emitter) {
+		sseEmitters.put(githubId, emitter);
 	}
 
-	public void removeUserConnection(String githubId) {
-		log.debug("Removing user connection for githubId: {}", githubId);
-		sseEmitterRepository.removeEmitter(githubId);
+	public void removeEmitter(String githubId) {
+		sseEmitters.remove(githubId);
+	}
+
+	public SseEmitter getEmitter(String githubId) {
+		return sseEmitters.get(githubId);
 	}
 
 	@Transactional
