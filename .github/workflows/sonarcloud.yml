@@ -28,7 +28,7 @@ jobs:
 
       - name: Replace application.yml with submodules/application.yml
         run: |
-          rm src/main/resources/application.yml
+          mkdir -p src/main/resources
           cp submodules/application.yml src/main/resources/application.yml
 
       - name: Cache SonarCloud packages
