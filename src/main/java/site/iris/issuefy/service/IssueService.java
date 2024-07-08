@@ -59,7 +59,6 @@ public class IssueService {
 
 			// Repository가 저장된지 1분 이내면 오픈되어 있는 GFI 저장
 			if (repository.getUpdatedAt() != null && ChronoUnit.MINUTES.between(repository.getUpdatedAt(), now) < 1) {
-				log.info("시간 조건");
 				return initializeIssueSubscription(orgName, repoName, githubId);
 			}
 		}
@@ -90,8 +89,8 @@ public class IssueService {
 		return new RepositoryIssuesResponse(repoName, allIssueResponses);
 	}
 
+	// TODO: 네이밍 의논 fetchInitialIssue ...
 	private RepositoryIssuesResponse initializeIssueSubscription(String orgName, String repoName, String githubId) {
-		log.info("initializeIssueSubscription");
 		Repository repository = findRepositoryByName(repoName);
 		Optional<List<IssueDto>> issueDtos = getOpenGoodFirstIssues(orgName, repoName, githubId);
 
@@ -136,7 +135,6 @@ public class IssueService {
 
 	private Repository findRepositoryByName(String repositoryName) {
 		// TODO: 리포지토리 이름 변경 시 update 로직 구현 필요
-		log.debug("findRepositoryByName");
 		return repositoryRepository.findByName(repositoryName)
 			.orElseThrow(
 				() -> new RepositoryNotFoundException(ErrorCode.NOT_EXIST_REPOSITORY.getMessage() + repositoryName));
