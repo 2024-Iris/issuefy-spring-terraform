@@ -113,7 +113,8 @@ jacocoTestReport {
                             '**/vo/**',
                             '**/dto/**',
                             '**/entity/**',
-                            '**/response/**'
+                            '**/response/**',
+                            '**/component/LambdaKey'
                     ])
                 })
         )
