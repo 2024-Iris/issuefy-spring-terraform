@@ -11,6 +11,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import java.util.Arrays;
 
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.restdocs.AutoConfigureRestDocs;
@@ -38,6 +39,7 @@ class SseControllerTest {
 	private NotificationService notificationService;
 
 	@Test
+	@DisplayName("SSE 커넥션을 생성하고 연결한다.")
 	void connect() throws Exception {
 		String githubId = "testUser";
 
@@ -50,6 +52,7 @@ class SseControllerTest {
 	}
 
 	@Test
+	@DisplayName("업데이트 된 리포지토리를 구독하는 유저에게 알림을 보낸다.")
 	void receive() throws Exception {
 		UpdateRepositoryDto dto = new UpdateRepositoryDto(Arrays.asList("1", "2"));
 
