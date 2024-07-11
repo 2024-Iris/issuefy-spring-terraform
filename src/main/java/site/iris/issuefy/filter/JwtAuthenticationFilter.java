@@ -50,7 +50,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
 		if (path.startsWith("/api/receive")) {
 			String bearerToken = request.getHeader(AUTHORIZATION);
-			if (bearerToken.equals(BEARER_DELIMITER + lambdaKey.getLambdaKey())) {
+			if (bearerToken.equals(BEARER_DELIMITER + lambdaKey.getKey())) {
 				filterChain.doFilter(request, response);
 				return;
 			}

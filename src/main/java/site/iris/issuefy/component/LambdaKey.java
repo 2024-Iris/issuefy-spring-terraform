@@ -11,9 +11,9 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class LambdaKey {
 	@Value("${jwt.lambdaKey}")
-	private String lambdaKey;
+	private String Key;
 
-	public LambdaKey(String lambdaKey) {
-		this.lambdaKey = lambdaKey;
+	public LambdaKey(String Key) {
+		this.Key = Key;
 	}
 }
