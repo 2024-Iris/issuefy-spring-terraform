@@ -34,7 +34,7 @@ public class NotificationService {
 	private final SubscriptionRepository subscriptionRepository;
 	private final UserRepository userRepository;
 	private final NotificationRepository notificationRepository;
-	private final ConcurrentHashMap<String, SseEmitter> sseEmitters = new ConcurrentHashMap<>();
+	private final ConcurrentHashMap<String, SseEmitter> sseEmitters;
 
 	public void handleRedisMessage(UpdateRepositoryDto updateRepositoryDto) {
 		for (String repository : updateRepositoryDto.getUpdatedRepositoryIds()) {
@@ -116,20 +116,20 @@ public class NotificationService {
 		return notificationDtoList;
 	}
 
-	public void addEmitter(String githubId, SseEmitter emitter) {
-		sseEmitters.put(githubId, emitter);
+	@Transactional
+	public void updateUserNotificationsAsRead(NotificationReadDto notificationReadDto) {
+		userNotificationRepository.markAsRead(notificationReadDto.getUserNotificationIds());
 	}
 
-	public void removeEmitter(String githubId) {
-		sseEmitters.remove(githubId);
+	public void addEmitter(String githubId, SseEmitter emitter) {
+		sseEmitters.put(githubId, emitter);
 	}
 
 	public SseEmitter getEmitter(String githubId) {
 		return sseEmitters.get(githubId);
 	}
 
-	@Transactional
-	public void updateUserNotificationsAsRead(NotificationReadDto notificationReadDto) {
-		userNotificationRepository.markAsRead(notificationReadDto.getUserNotificationIds());
+	public void removeEmitter(String githubId) {
+		sseEmitters.remove(githubId);
 	}
 }
