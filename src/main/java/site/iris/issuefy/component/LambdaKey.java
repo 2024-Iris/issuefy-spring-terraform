@@ -13,7 +13,7 @@ public class LambdaKey {
 	@Value("${jwt.lambdaKey}")
 	private String key;
 
-	public LambdaKey(String Key) {
-		this.key = Key;
+	public LambdaKey(String key) {
+		this.key = key;
 	}
 }
