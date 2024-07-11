@@ -43,6 +43,9 @@ class SubscriptionControllerTest {
 	@MockBean
 	private SubscriptionService subscriptionService;
 
+	@MockBean
+	private GithubTokenService githubTokenService;
+
 	@DisplayName("구독 중인 repository 목록을 조회한다.")
 	@Test
 	void getSubscribedRepositories() throws Exception {
