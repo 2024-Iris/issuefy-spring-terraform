@@ -3,6 +3,7 @@ package site.iris.issuefy.controller;
 import static org.mockito.Mockito.*;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.*;
 import static org.springframework.restdocs.payload.PayloadDocumentation.*;
+import static org.springframework.restdocs.request.RequestDocumentation.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 import static site.iris.issuefy.ApiDocumentUtils.*;
@@ -17,6 +18,7 @@ import org.springframework.boot.test.autoconfigure.restdocs.AutoConfigureRestDoc
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders;
 import org.springframework.restdocs.payload.JsonFieldType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
@@ -89,5 +91,26 @@ class SubscriptionControllerTest {
 					fieldWithPath("repositoryUrl").type(JsonFieldType.STRING).description("리포지토리 URL")
 				)
 			));
+	}
+
+	@Test
+	@DisplayName("구독하고 있는 리포지토리를 삭제한다.")
+	void unsubscribeRepository() throws Exception {
+		// given
+		String githubId = "testUser";
+		Long ghRepoId = 1L;
+
+		doNothing().when(subscriptionService).unsubscribeRepository(ghRepoId);
+
+        mockMvc.perform(RestDocumentationRequestBuilders.delete("/api/subscription/{gh_repo_id}", ghRepoId)
+                .requestAttr("githubId", githubId))
+                .andExpect(status().isNoContent())
+                .andDo(document("unsubscribe-repository",
+                    pathParameters(
+                        parameterWithName("gh_repo_id").description("GitHub 저장소 ID")
+                    )
+                ));
+
+        verify(subscriptionService).unsubscribeRepository(ghRepoId);
 	}
 }
