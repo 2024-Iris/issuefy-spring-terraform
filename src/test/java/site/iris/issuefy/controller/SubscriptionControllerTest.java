@@ -102,15 +102,15 @@ class SubscriptionControllerTest {
 
 		doNothing().when(subscriptionService).unsubscribeRepository(ghRepoId);
 
-        mockMvc.perform(RestDocumentationRequestBuilders.delete("/api/subscription/{gh_repo_id}", ghRepoId)
-                .requestAttr("githubId", githubId))
-                .andExpect(status().isNoContent())
-                .andDo(document("unsubscribe-repository",
-                    pathParameters(
-                        parameterWithName("gh_repo_id").description("GitHub 저장소 ID")
-                    )
-                ));
+		mockMvc.perform(RestDocumentationRequestBuilders.delete("/api/subscription/{gh_repo_id}", ghRepoId)
+				.requestAttr("githubId", githubId))
+			.andExpect(status().isNoContent())
+			.andDo(document("unsubscribe-repository",
+				pathParameters(
+					parameterWithName("gh_repo_id").description("GitHub 저장소 ID")
+				)
+			));
 
-        verify(subscriptionService).unsubscribeRepository(ghRepoId);
+		verify(subscriptionService).unsubscribeRepository(ghRepoId);
 	}
 }

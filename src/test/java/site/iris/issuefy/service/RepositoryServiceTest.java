@@ -38,7 +38,8 @@ class RepositoryServiceTest {
 		ResponseEntity<GithubRepositoryDto> repositoryInfo = ResponseEntity.ok(null);
 		Org org = new Org(1L, "testOrg", 123L);
 
-		NullPointerException exception = assertThrows(NullPointerException.class, () -> repositoryService.saveRepository(repositoryInfo, org));
+		NullPointerException exception = assertThrows(NullPointerException.class,
+			() -> repositoryService.saveRepository(repositoryInfo, org));
 
 		assertEquals("Repository info body is null", exception.getMessage());
 	}
