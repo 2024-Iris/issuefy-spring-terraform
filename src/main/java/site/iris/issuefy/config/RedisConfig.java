@@ -2,7 +2,6 @@ package site.iris.issuefy.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.data.redis.listener.ChannelTopic;
 import org.springframework.data.redis.listener.PatternTopic;
@@ -19,7 +18,8 @@ public class RedisConfig {
 		MessageListenerAdapter listenerAdapter) {
 		RedisMessageListenerContainer container = new RedisMessageListenerContainer();
 		container.setConnectionFactory(connectionFactory);
-		container.addMessageListener(listenerAdapter, topic());
+		container.addMessageListener(listenerAdapter, sseMessagesTopic());
+		container.addMessageListener(listenerAdapter, repositoryUpdatesTopic());
 		return container;
 	}
 
@@ -29,18 +29,13 @@ public class RedisConfig {
 	}
 
 	@Bean
-	public ChannelTopic topic() {
+	public ChannelTopic sseMessagesTopic() {
 		return new ChannelTopic("sse:messages");
 	}
 
 	@Bean
-	public RedisMessageListenerContainer redisMessageListenerContainer(
-		RedisConnectionFactory connectionFactory,
-		MessageListenerAdapter listenerAdapter) {
-		RedisMessageListenerContainer container = new RedisMessageListenerContainer();
-		container.setConnectionFactory(connectionFactory);
-		container.addMessageListener(listenerAdapter, new PatternTopic("repository_updates"));
-		return container;
+	public PatternTopic repositoryUpdatesTopic() {
+		return new PatternTopic("repository_updates");
 	}
 
 }
