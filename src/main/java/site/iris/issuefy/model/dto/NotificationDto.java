@@ -11,7 +11,7 @@ public class NotificationDto {
 	private Long userNotificationId;
 	private String orgName;
 	private String repositoryName;
-	private LocalDateTime localDateTime;
+	private LocalDateTime notificationCreatedAt;
 	private boolean isRead;
 
 	public static NotificationDto of(Long userNotificationId, String orgName, String repositoryName,
@@ -26,7 +26,7 @@ public class NotificationDto {
 			"userNotificationId=" + userNotificationId +
 			", orgName='" + orgName + '\'' +
 			", repositoryName='" + repositoryName + '\'' +
-			", localDateTime=" + localDateTime +
+			", notificationCreatedAt=" + notificationCreatedAt +
 			", isRead=" + isRead +
 			'}';
 	}
