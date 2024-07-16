@@ -23,7 +23,7 @@ public class SseController {
 	private final NotificationService notificationService;
 
 	@GetMapping(value = "/api/connect", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-	public ResponseEntity<SseEmitter> connect(@RequestAttribute("githubId") String githubId) {
+	public ResponseEntity<SseEmitter> connect(@RequestAttribute String githubId) {
 		log.info("New connection for user: {}", githubId);
 		SseEmitter emitter = new SseEmitter(60000L);
 		notificationService.addEmitter(githubId, emitter);
