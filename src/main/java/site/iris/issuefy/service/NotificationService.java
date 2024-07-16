@@ -37,8 +37,8 @@ public class NotificationService {
 	private final ConcurrentHashMap<String, SseEmitter> sseEmitters;
 
 	public void handleRedisMessage(UpdateRepositoryDto updateRepositoryDto) {
-		for (String repository : updateRepositoryDto.getUpdatedRepositoryIds()) {
-			Long repositoryId = Long.parseLong(repository);
+		for (String repositoryIds : updateRepositoryDto.getUpdatedRepositoryIds()) {
+			Long repositoryId = Long.parseLong(repositoryIds);
 			findSubscribeRepositoryUser(repositoryId);
 		}
 	}
