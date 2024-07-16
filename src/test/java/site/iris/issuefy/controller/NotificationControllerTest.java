@@ -59,7 +59,7 @@ class NotificationControllerTest {
 					fieldWithPath("[].userNotificationId").description("알림 ID"),
 					fieldWithPath("[].orgName").description("조직 이름"),
 					fieldWithPath("[].repositoryName").description("저장소 이름"),
-					fieldWithPath("[].localDateTime").description("생성 시간"),
+					fieldWithPath("[].notificationCreatedAt").description("생성 시간"),
 					fieldWithPath("[].read").description("읽음 여부")
 				)
 			));
