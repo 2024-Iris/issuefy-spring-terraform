@@ -61,7 +61,7 @@ CREATE TABLE IF NOT EXISTS `issuefy`.`repository`
     `name`       VARCHAR(45) NOT NULL,
     `is_starred` TINYINT     NOT NULL DEFAULT 0,
     `gh_repo_id` BIGINT      NOT NULL,
-    `updated_at` DATETIME    NOT NULL DEFAULT NOW(),
+    `updated_at` DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (`id`),
     INDEX `fk_repository_org_idx` (`org_id` ASC) VISIBLE,
     UNIQUE INDEX `gh_repo_id_UNIQUE` (`gh_repo_id` ASC) VISIBLE,
