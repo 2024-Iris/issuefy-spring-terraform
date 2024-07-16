@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import lombok.RequiredArgsConstructor;
@@ -17,19 +18,20 @@ import site.iris.issuefy.service.NotificationService;
 
 @RestController
 @RequiredArgsConstructor
+@RequestMapping("api/notifications")
 @Slf4j
 public class NotificationController {
 
 	private final NotificationService notificationService;
 
-	@GetMapping("api/notifications")
+	@GetMapping
 	public ResponseEntity<List<NotificationDto>> getNotifications(@RequestAttribute String githubId) {
 		List<NotificationDto> notificationDtos = notificationService.findNotifications(githubId);
 		log.info(notificationDtos.toString());
-		return ResponseEntity.ok(notificationService.findNotifications(githubId));
+		return ResponseEntity.ok(notificationDtos);
 	}
 
-	@PatchMapping("api/notifications")
+	@PatchMapping
 	public ResponseEntity<Void> updateNotification(@RequestBody NotificationReadDto notificationReadDto) {
 		notificationService.updateUserNotificationsAsRead(notificationReadDto);
 		return ResponseEntity.ok().build();
