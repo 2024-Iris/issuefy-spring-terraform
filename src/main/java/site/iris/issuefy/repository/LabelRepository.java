@@ -9,5 +9,6 @@ import site.iris.issuefy.entity.Label;
 
 public interface LabelRepository extends CrudRepository<Label, Long> {
 	Optional<Label> findByNameAndColor(String name, String color);
+
 	Optional<List<Label>> findByIssue_id(Long issueId);
 }

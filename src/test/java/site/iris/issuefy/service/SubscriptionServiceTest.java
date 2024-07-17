@@ -98,7 +98,8 @@ class SubscriptionServiceTest {
 	@Test
 	void addSubscribeRepository() {
 		// given
-		RepositoryUrlDto repositoryUrlDto = new RepositoryUrlDto("https://github.com/testOrg/testRepo", "testId", "testOrg", "testRepo");
+		RepositoryUrlDto repositoryUrlDto = new RepositoryUrlDto("https://github.com/testOrg/testRepo", "testId",
+			"testOrg", "testRepo");
 		String githubId = "githubuser1";
 		Org org = new Org("organization1", 1L);
 		Repository repository = new Repository(org, "repo-a1", 1L);

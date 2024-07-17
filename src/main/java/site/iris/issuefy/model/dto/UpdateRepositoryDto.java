@@ -1,21 +1,21 @@
 package site.iris.issuefy.model.dto;
 
+import java.util.List;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-@Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class GithubOrgDto {
-	private long id;
-	private String login;
+@Getter
+public class UpdateRepositoryDto {
+	List<String> updatedRepositoryIds;
 
 	@Override
 	public String toString() {
-		return "GithubOrgDto{" +
-			"id=" + id +
-			", name='" + login + '\'' +
+		return "UpdateRepositoryDto{" +
+			"updatedRepositoryIds=" + updatedRepositoryIds +
 			'}';
 	}
 }

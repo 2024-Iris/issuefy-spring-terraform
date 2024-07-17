@@ -5,6 +5,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import lombok.RequiredArgsConstructor;
+import site.iris.issuefy.component.LambdaKey;
 import site.iris.issuefy.filter.JwtAuthenticationFilter;
 import site.iris.issuefy.service.TokenProvider;
 
@@ -13,13 +14,13 @@ import site.iris.issuefy.service.TokenProvider;
 public class FilterConfig {
 
 	private final TokenProvider tokenProvider;
+	private final LambdaKey lambdaKey;
 
 	@Bean
 	public FilterRegistrationBean<JwtAuthenticationFilter> jwtAuthenticationFilter() {
 		FilterRegistrationBean<JwtAuthenticationFilter> registrationBean = new FilterRegistrationBean<>();
-		registrationBean.setFilter(new JwtAuthenticationFilter(tokenProvider));
-		registrationBean.addUrlPatterns("/api/*");
-
+		registrationBean.setFilter(new JwtAuthenticationFilter(tokenProvider, lambdaKey));
+		registrationBean.addUrlPatterns("/*");
 		return registrationBean;
 	}
 }

@@ -2246,7 +2246,7 @@ Content-Length: 3
                     <h4 id="_http_요청_3"><a class="link" href="#_http_요청_3">HTTP 요청</a></h4>
                     <div class="listingblock">
                         <div class="content">
-<pre class="highlightjs highlight nowrap"><code class="language-http hljs" data-lang="http">GET /api/iris/issues HTTP/1.1
+<pre class="highlightjs highlight nowrap"><code class="language-http hljs" data-lang="http">GET /api/subscriptions/iris/issuefy/issues HTTP/1.1
 Host: issuefy.site</code></pre>
                         </div>
                     </div>
@@ -2254,7 +2254,7 @@ Host: issuefy.site</code></pre>
                 <div class="sect3">
                     <h4 id="_path_파라미터"><a class="link" href="#_path_파라미터">Path 파라미터</a></h4>
                     <table class="tableblock frame-all grid-all stretch">
-                        <caption class="title">Table 1. /api/{repoName}/issues</caption>
+                        <caption class="title">Table 1. /api/subscriptions/{org_name}/{repo_name}/issues</caption>
                         <colgroup>
                             <col style="width: 50%;">
                             <col style="width: 50%;">
@@ -2267,7 +2267,12 @@ Host: issuefy.site</code></pre>
                         </thead>
                         <tbody>
                         <tr>
-                            <td class="tableblock halign-left valign-top"><p class="tableblock"><code>repoName</code>
+                            <td class="tableblock halign-left valign-top"><p class="tableblock"><code>org_name</code>
+                            </p></td>
+                            <td class="tableblock halign-left valign-top"><p class="tableblock">조직 이름</p></td>
+                        </tr>
+                        <tr>
+                            <td class="tableblock halign-left valign-top"><p class="tableblock"><code>repo_name</code>
                             </p></td>
                             <td class="tableblock halign-left valign-top"><p class="tableblock">리포지토리 이름</p></td>
                         </tr>
@@ -2282,10 +2287,13 @@ Host: issuefy.site</code></pre>
 Vary: Origin
 Vary: Access-Control-Request-Method
 Vary: Access-Control-Request-Headers
-Content-Type: text/plain;charset=UTF-8
-Content-Length: 4
+Content-Type: application/json
+Content-Length: 55
 
-done</code></pre>
+{
+  "repositoryName" : "issuefy",
+  "issues" : [ ]
+}</code></pre>
                         </div>
                     </div>
                 </div>
@@ -2326,7 +2334,7 @@ Content-Length: 156
 <div id="footer">
     <div id="footer-text">
         Version 0.0.1-SNAPSHOT<br>
-        Last updated 2024-06-01 01:12:02 +0900
+        Last updated 2024-06-25 22:30:54 +0900
     </div>
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.3/highlight.min.js"></script>

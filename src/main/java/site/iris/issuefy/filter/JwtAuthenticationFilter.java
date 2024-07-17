@@ -15,6 +15,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import site.iris.issuefy.component.LambdaKey;
 import site.iris.issuefy.exception.UnauthenticatedException;
 import site.iris.issuefy.service.TokenProvider;
 
@@ -23,6 +24,7 @@ import site.iris.issuefy.service.TokenProvider;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 	public static final String BEARER_DELIMITER = "Bearer ";
 	private final TokenProvider tokenProvider;
+	private final LambdaKey lambdaKey;
 
 	@Override
 	protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response,
@@ -36,7 +38,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
 		// 프리플라이트 요청 처리
 		if (request.getMethod().equals("OPTIONS")) {
-			handlePreflightRequest(response);
+			filterChain.doFilter(request, response);
 			return;
 		}
 
@@ -44,6 +46,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 		if (path.startsWith("/api/login") || path.equals("/api/docs")) {
 			filterChain.doFilter(request, response);
 			return;
+		}
+
+		if (path.startsWith("/api/receive")) {
+			String bearerToken = request.getHeader(AUTHORIZATION);
+			if (bearerToken.equals(BEARER_DELIMITER + lambdaKey.getKey())) {
+				filterChain.doFilter(request, response);
+				return;
+			}
 		}
 
 		String githubId = null;
@@ -65,13 +75,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 				githubId, e.getMessage());
 			handleUnauthorizedException(response, e);
 		}
-	}
-
-	private void handlePreflightRequest(HttpServletResponse response) {
-		response.setHeader("Access-Control-Allow-Origin", "http://localhost:3000");
-		response.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
-		response.setHeader("Access-Control-Allow-Headers", "*");
-		response.setStatus(HttpServletResponse.SC_OK);
 	}
 
 	private void handleUnauthorizedException(HttpServletResponse response, UnauthenticatedException e)

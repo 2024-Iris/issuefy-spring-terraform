@@ -13,4 +13,6 @@ public interface SubscriptionRepository extends CrudRepository<Subscription, Lon
 	Optional<Subscription> findByUserIdAndRepository_GhRepoId(Long userId, Long ghRepoId);
 
 	void deleteByRepository_GhRepoId(Long ghRepoId);
+
+	List<Subscription> findByRepositoryId(Long repositoryId);
 }
