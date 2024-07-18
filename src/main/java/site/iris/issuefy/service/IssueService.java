@@ -2,7 +2,6 @@ package site.iris.issuefy.service;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -19,6 +18,7 @@ import site.iris.issuefy.entity.Repository;
 import site.iris.issuefy.exception.RepositoryNotFoundException;
 import site.iris.issuefy.exception.code.ErrorCode;
 import site.iris.issuefy.model.dto.IssueDto;
+import site.iris.issuefy.model.vo.IssueVo;
 import site.iris.issuefy.repository.IssueLabelRepository;
 import site.iris.issuefy.repository.IssueRepository;
 import site.iris.issuefy.repository.RepositoryRepository;
@@ -59,7 +59,7 @@ public class IssueService {
 
 			// Repository가 저장된지 1분 이내면 오픈되어 있는 GFI 저장
 			if (repository.getUpdatedAt() != null && ChronoUnit.MINUTES.between(repository.getUpdatedAt(), now) < 1) {
-				return initializeIssueSubscription(orgName, repoName, githubId);
+				return getInitialIssues(githubId, orgName, repoName);
 			}
 		}
 		return fetchIssues(orgName, repoName, repository, githubId);
@@ -67,10 +67,16 @@ public class IssueService {
 
 	private RepositoryIssuesResponse fetchIssues(String orgName, String repoName, Repository repository,
 		String githubId) {
-		Optional<List<IssueDto>> optionalIssueDtos = getOpenGoodFirstIssues(orgName, repoName, githubId);
-		List<Issue> updatedIssues = new ArrayList<>();
-		List<Label> allLabels = new ArrayList<>();
-		List<IssueLabel> issueLabels = new ArrayList<>();
+		IssueVo issueVo = getIssueData(orgName, repository, repoName, githubId);
+		log.info("fetchIssues의 IssueVo: {}", issueVo);
+		// Optional<List<IssueDto>> optionalIssueDtos = getOpenGoodFirstIssues(orgName, repoName, githubId);
+		Optional<List<IssueDto>> optionalIssueDtos = issueVo.getOptionalIssueDtos();
+		// List<Issue> updatedIssues = new ArrayList<>();
+		List<Issue> updatedIssues = issueVo.getUpdatedIssues();
+		// List<Label> allLabels = new ArrayList<>();
+		List<Label> allLabels = issueVo.getAllLabels();
+		// List<IssueLabel> issueLabels = new ArrayList<>();
+		List<IssueLabel> issueLabels = issueVo.getIssueLabels();
 
 		optionalIssueDtos.ifPresent(issueDtos -> {
 			LocalDateTime latestCreatedAt = issueRepository.getLatestCreatedAtByRepository_Id(
@@ -89,23 +95,29 @@ public class IssueService {
 		return new RepositoryIssuesResponse(repoName, allIssueResponses);
 	}
 
-	// TODO: 네이밍 의논 fetchInitialIssue ...
-	private RepositoryIssuesResponse initializeIssueSubscription(String orgName, String repoName, String githubId) {
+	private RepositoryIssuesResponse getInitialIssues(String githubId, String orgName, String repoName) {
 		Repository repository = findRepositoryByName(repoName);
-		Optional<List<IssueDto>> issueDtos = getOpenGoodFirstIssues(orgName, repoName, githubId);
+		IssueVo issueVo = getIssueData(orgName, repository, repoName, githubId);
+		log.info("getInitialIssues의 IssueVo: {}", issueVo);
+		// List<Issue> issues = new ArrayList<>();
+		List<Issue> updatedIssues = issueVo.getUpdatedIssues();
+		// List<Label> allLabels = new ArrayList<>();
+		List<Label> allLabels = issueVo.getAllLabels();
+		// List<IssueLabel> issueLabels = new ArrayList<>();
+		List<IssueLabel> issueLabels = issueVo.getIssueLabels();
 
-		List<Issue> issues = new ArrayList<>();
-		List<Label> allLabels = new ArrayList<>();
-		List<IssueLabel> issueLabels = new ArrayList<>();
-
-		issueDtos.ifPresent(dtos -> dtos.forEach(dto -> {
+		issueVo.getOptionalIssueDtos().ifPresent(dtos -> dtos.forEach(dto -> {
 			Issue issue = createIssuesByDto(repository, dto, allLabels, issueLabels);
-			issues.add(issue);
+			updatedIssues.add(issue);
 		}));
+		saveAllEntities(updatedIssues, allLabels, issueLabels);
 
-		saveAllEntities(issues, allLabels, issueLabels);
+		return new RepositoryIssuesResponse(repository.getName(), convertToResponse(updatedIssues));
+	}
 
-		return new RepositoryIssuesResponse(repository.getName(), convertToResponse(issues));
+	private IssueVo getIssueData(String orgName, Repository repository, String repoName, String githubId) {
+		Optional<List<IssueDto>> issueDtos = getOpenGoodFirstIssues(orgName, repoName, githubId);
+		return new IssueVo(repository, issueDtos);
 	}
 
 	private Issue createIssuesByDto(Repository repository, IssueDto issueDto, List<Label> allLabels,

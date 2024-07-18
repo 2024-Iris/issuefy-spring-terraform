@@ -19,12 +19,13 @@ public class IssueController {
 	private final IssueService issueService;
 
 	@GetMapping("/api/subscriptions/{org_name}/{repo_name}/issues")
-	public ResponseEntity<RepositoryIssuesResponse> getIssuesByRepoName(@PathVariable("org_name") String orgName,
+	public ResponseEntity<RepositoryIssuesResponse> getIssuesByRepoName(
+		@PathVariable("org_name") String orgName,
 		@PathVariable("repo_name") String repoName,
 		@RequestAttribute String githubId) {
+
 		log.info("getIssuesByRepoName: {}", repoName);
 		RepositoryIssuesResponse response = issueService.getRepositoryIssuesResponse(orgName, repoName, githubId);
-		log.info(repoName);
 		return ResponseEntity.status(HttpStatus.OK).body(response);
 	}
 }
