@@ -115,7 +115,8 @@ class JwtAuthenticationFilterTest {
 			response.getContentAsString());
 	}
 
-	@DisplayName("API 명세서 url 접속시 필터링을 하지 않는다")
+	// @DisplayName("API 명세서 url 접속시 필터링을 하지 않는다")
+	@DisplayName("API 명세서 url 접속시 필터링한다.")
 	@Test
 	void doFilter_shouldPassThroughForDocsPath() throws ServletException, IOException {
 
@@ -129,7 +130,7 @@ class JwtAuthenticationFilterTest {
 		jwtAuthenticationFilter.doFilterInternal(request, response, filterChain);
 
 		// then
-		assertEquals(200, response.getStatus());
+		assertEquals(401, response.getStatus());
 	}
 
 	@DisplayName("로그인 url 접속시 필터링을 하지 않는다")
