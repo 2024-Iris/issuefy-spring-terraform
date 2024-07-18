@@ -61,7 +61,7 @@ CREATE TABLE IF NOT EXISTS `issuefy`.`repository`
     `name`       VARCHAR(45) NOT NULL,
     `is_starred` TINYINT     NOT NULL DEFAULT 0,
     `gh_repo_id` BIGINT      NOT NULL,
-    `updated_at` DATETIME    NOT NULL DEFAULT NOW(),
+    `updated_at` DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (`id`),
     INDEX `fk_repository_org_idx` (`org_id` ASC) VISIBLE,
     UNIQUE INDEX `gh_repo_id_UNIQUE` (`gh_repo_id` ASC) VISIBLE,
@@ -150,11 +150,11 @@ CREATE TABLE IF NOT EXISTS `issuefy`.`issue_label`
 DROP TABLE IF EXISTS `issuefy`.`notification`;
 CREATE TABLE IF NOT EXISTS `issuefy`.`notification`
 (
-    `id`            BIGINT       NOT NULL AUTO_INCREMENT,
-    `repository_id` BIGINT       NOT NULL,
-    `message`       VARCHAR(255) NOT NULL,
-    `push_time`     DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    `is_read`       TINYINT      NOT NULL DEFAULT 0,
+    `id`              BIGINT       NOT NULL AUTO_INCREMENT,
+    `repository_id`   BIGINT       NOT NULL,
+    `repository_name` VARCHAR(255) NOT NULL,
+    `push_time`       DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `is_read`         TINYINT      NOT NULL DEFAULT 0,
     PRIMARY KEY (`id`),
     INDEX `fk_notification_repository1_idx` (`repository_id` ASC) VISIBLE,
     CONSTRAINT `fk_notification_repository1`
@@ -199,10 +199,11 @@ CREATE TABLE IF NOT EXISTS `issuefy`.`subscription`
 DROP TABLE IF EXISTS `issuefy`.`user_notification`;
 CREATE TABLE IF NOT EXISTS `issuefy`.`user_notification`
 (
+    `id`              BIGINT  NOT NULL AUTO_INCREMENT,
     `user_id`         BIGINT  NOT NULL,
     `notification_id` BIGINT  NOT NULL,
     `is_read`         TINYINT NOT NULL DEFAULT 0,
-    PRIMARY KEY (`user_id`, `notification_id`),
+    PRIMARY KEY (`id`),
     INDEX `fk_user_notification_user_idx` (`user_id` ASC) VISIBLE,
     INDEX `fk_user_notification_notification_idx` (`notification_id` ASC) VISIBLE,
     CONSTRAINT `fk_user_notification_notification`

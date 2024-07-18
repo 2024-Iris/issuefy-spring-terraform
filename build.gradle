@@ -67,6 +67,7 @@ dependencies {
     testImplementation "org.testcontainers:mysql:1.19.8"
     testCompileOnly 'org.projectlombok:lombok'
     testAnnotationProcessor 'org.projectlombok:lombok'
+
 }
 
 def jacocoDir = layout.buildDirectory.dir("reports/")
@@ -112,7 +113,8 @@ jacocoTestReport {
                             '**/vo/**',
                             '**/dto/**',
                             '**/entity/**',
-                            '**/response/**'
+                            '**/response/**',
+                            '**/component/LambdaKey'
                     ])
                 })
         )

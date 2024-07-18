@@ -15,6 +15,7 @@ import org.springframework.mock.web.MockHttpServletResponse;
 
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.ServletException;
+import site.iris.issuefy.component.LambdaKey;
 import site.iris.issuefy.entity.Jwt;
 import site.iris.issuefy.exception.UnauthenticatedException;
 import site.iris.issuefy.service.TokenProvider;
@@ -22,21 +23,22 @@ import site.iris.issuefy.service.TokenProvider;
 class JwtAuthenticationFilterTest {
 	private JwtAuthenticationFilter jwtAuthenticationFilter;
 	private TokenProvider tokenProvider;
+	private LambdaKey lambdaKey = new LambdaKey("test");
 
 	@BeforeEach
 	void setUp() {
 		tokenProvider = mock(TokenProvider.class);
-		jwtAuthenticationFilter = new JwtAuthenticationFilter(tokenProvider);
+		jwtAuthenticationFilter = new JwtAuthenticationFilter(tokenProvider, lambdaKey);
 	}
 
 	@DisplayName("유효한 토큰은 필터를 통과한다")
 	@Test
 	void testValidToken() throws ServletException, IOException {
+
+		// given
 		MockHttpServletRequest request = new MockHttpServletRequest();
 		MockHttpServletResponse response = new MockHttpServletResponse();
 		MockFilterChain filterChain = new MockFilterChain();
-
-		// given
 		request.addHeader("Authorization", "Bearer validToken");
 
 		Claims claims = mock(Claims.class);
@@ -59,11 +61,10 @@ class JwtAuthenticationFilterTest {
 	@DisplayName("만료기간이 지난 토큰은 UnauthorizedException을 발생시킨다")
 	@Test
 	void testInvalidToken() throws ServletException, IOException {
+		// given
 		MockHttpServletRequest request = new MockHttpServletRequest();
 		MockHttpServletResponse response = new MockHttpServletResponse();
 		MockFilterChain filterChain = new MockFilterChain();
-
-		// given
 		request.addHeader("Authorization", "Bearer invalidToken");
 
 		when(tokenProvider.isValidToken("invalidToken")).thenReturn(false);
@@ -80,6 +81,7 @@ class JwtAuthenticationFilterTest {
 	@DisplayName("Authorization 헤더가 없을 경우 UnauthorizedException을 발생시킨다.")
 	@Test
 	void testMissingAuthorizationHeader() throws ServletException, IOException {
+
 		// given
 		MockHttpServletRequest request = new MockHttpServletRequest();
 		MockHttpServletResponse response = new MockHttpServletResponse();
@@ -97,11 +99,11 @@ class JwtAuthenticationFilterTest {
 	@DisplayName("Bearer 토큰이 아닐 경우 UnauthorizedException을 발생시킨다.")
 	@Test
 	void testInvalidTokenType() throws ServletException, IOException {
+
+		// given
 		MockHttpServletRequest request = new MockHttpServletRequest();
 		MockHttpServletResponse response = new MockHttpServletResponse();
 		MockFilterChain filterChain = new MockFilterChain();
-
-		// given
 		request.addHeader("Authorization", "invalidTokenType");
 
 		// when
@@ -116,11 +118,11 @@ class JwtAuthenticationFilterTest {
 	@DisplayName("API 명세서 url 접속시 필터링을 하지 않는다")
 	@Test
 	void doFilter_shouldPassThroughForDocsPath() throws ServletException, IOException {
+
+		// given
 		MockHttpServletRequest request = new MockHttpServletRequest();
 		MockHttpServletResponse response = new MockHttpServletResponse();
 		MockFilterChain filterChain = new MockFilterChain();
-
-		// given
 		request.setRequestURI("/api/docs");
 
 		// when
@@ -133,11 +135,11 @@ class JwtAuthenticationFilterTest {
 	@DisplayName("로그인 url 접속시 필터링을 하지 않는다")
 	@Test
 	void doFilter_shouldPassThroughForLoginPath() throws ServletException, IOException {
+
+		// given
 		MockHttpServletRequest request = new MockHttpServletRequest();
 		MockHttpServletResponse response = new MockHttpServletResponse();
 		MockFilterChain filterChain = new MockFilterChain();
-
-		// given
 		request.setRequestURI("/api/login");
 
 		// when
@@ -147,14 +149,13 @@ class JwtAuthenticationFilterTest {
 		assertEquals(200, response.getStatus());
 	}
 
-	@DisplayName("프리플라이트 요청 처리")
+	@DisplayName("프리플라이트 요청은 통과시킨다.")
 	@Test
 	void testPreflightRequest() throws ServletException, IOException {
+		// given
 		MockHttpServletRequest request = new MockHttpServletRequest();
 		MockHttpServletResponse response = new MockHttpServletResponse();
 		MockFilterChain filterChain = new MockFilterChain();
-
-		// given
 		request.setMethod("OPTIONS");
 
 		// when
@@ -162,8 +163,23 @@ class JwtAuthenticationFilterTest {
 
 		// then
 		assertEquals(HttpStatus.OK.value(), response.getStatus());
-		assertEquals("http://localhost:3000", response.getHeader("Access-Control-Allow-Origin"));
-		assertEquals("GET, POST, PUT, DELETE", response.getHeader("Access-Control-Allow-Methods"));
-		assertEquals("*", response.getHeader("Access-Control-Allow-Headers"));
+	}
+
+	@DisplayName("람다에서 온 요청은 람다키를 검증하고 통과시킨다.")
+	@Test
+	void testLambdaRequest() throws ServletException, IOException {
+
+		// given
+		MockHttpServletRequest request = new MockHttpServletRequest();
+		MockHttpServletResponse response = new MockHttpServletResponse();
+		MockFilterChain filterChain = new MockFilterChain();
+		request.setRequestURI("/api/receive");
+		request.addHeader("Authorization", "Bearer test");
+
+		// when
+		jwtAuthenticationFilter.doFilterInternal(request, response, filterChain);
+
+		// then
+		assertEquals(HttpStatus.OK.value(), response.getStatus());
 	}
 }

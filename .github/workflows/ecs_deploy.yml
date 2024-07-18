@@ -20,6 +20,11 @@ jobs:
     name: Deploy
     runs-on: ubuntu-latest
     environment: production
+    services:
+      redis:
+        image: redis:latest
+        ports:
+          - 6379:6379
 
     steps:
       - name: Checkout
