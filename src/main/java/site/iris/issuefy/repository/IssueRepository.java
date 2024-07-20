@@ -14,7 +14,4 @@ public interface IssueRepository extends CrudRepository<Issue, Long> {
 
 	@Query("SELECT MAX(i.createdAt) FROM Issue i WHERE i.repository.id = :repoId")
 	LocalDateTime getLatestCreatedAtByRepository_Id(@Param("repoId") Long repoId);
-
-	// @Query("SELECT MAX(i.updatedAt) FROM Issue i")
-	// LocalDateTime getLatestUpdatedAt();
 }
