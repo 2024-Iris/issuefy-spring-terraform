@@ -17,8 +17,10 @@ import site.iris.issuefy.entity.Label;
 import site.iris.issuefy.entity.Repository;
 import site.iris.issuefy.exception.RepositoryNotFoundException;
 import site.iris.issuefy.exception.code.ErrorCode;
+import site.iris.issuefy.mapper.IssueMapper;
 import site.iris.issuefy.model.dto.IssueDto;
-import site.iris.issuefy.model.vo.IssueVo;
+import site.iris.issuefy.model.dto.IssueSubscriptionDto;
+import site.iris.issuefy.model.vo.IssueSubscriptionVo;
 import site.iris.issuefy.repository.IssueLabelRepository;
 import site.iris.issuefy.repository.IssueRepository;
 import site.iris.issuefy.repository.RepositoryRepository;
@@ -35,11 +37,8 @@ public class IssueService {
 	private final LabelService labelService;
 	private final IssueLabelRepository issueLabelRepository;
 
-	public IssueService(@Qualifier("apiWebClient") WebClient webClient,
-		GithubTokenService githubTokenService,
-		IssueRepository issueRepository,
-		RepositoryRepository repositoryRepository,
-		LabelService labelService,
+	public IssueService(@Qualifier("apiWebClient") WebClient webClient, GithubTokenService githubTokenService,
+		IssueRepository issueRepository, RepositoryRepository repositoryRepository, LabelService labelService,
 		IssueLabelRepository issueLabelRepository) {
 		this.webClient = webClient;
 		this.githubTokenService = githubTokenService;
@@ -67,29 +66,20 @@ public class IssueService {
 
 	private RepositoryIssuesResponse fetchIssues(String orgName, String repoName, Repository repository,
 		String githubId) {
-		IssueVo issueVo = getIssueData(orgName, repository, repoName, githubId);
-		log.info("fetchIssues의 IssueVo: {}", issueVo);
-		// Optional<List<IssueDto>> optionalIssueDtos = getOpenGoodFirstIssues(orgName, repoName, githubId);
-		Optional<List<IssueDto>> optionalIssueDtos = issueVo.getOptionalIssueDtos();
-		// List<Issue> updatedIssues = new ArrayList<>();
-		List<Issue> updatedIssues = issueVo.getUpdatedIssues();
-		// List<Label> allLabels = new ArrayList<>();
-		List<Label> allLabels = issueVo.getAllLabels();
-		// List<IssueLabel> issueLabels = new ArrayList<>();
-		List<IssueLabel> issueLabels = issueVo.getIssueLabels();
+		IssueSubscriptionVo issueSubscriptionVo = getIssueSubscriptionData(orgName, repository, repoName, githubId);
 
-		optionalIssueDtos.ifPresent(issueDtos -> {
-			LocalDateTime latestCreatedAt = issueRepository.getLatestCreatedAtByRepository_Id(
-				repository.getId());
+		issueSubscriptionVo.getOptionalIssueDtos().ifPresent(issueDtos -> {
+			LocalDateTime latestCreatedAt = issueRepository.getLatestCreatedAtByRepository_Id(repository.getId());
 
 			issueDtos.forEach(dto -> {
 				if (dto.getCreatedAt().isAfter(latestCreatedAt)) {
-					Issue issue = createIssuesByDto(repository, dto, allLabels, issueLabels);
-					updatedIssues.add(issue);
+					Issue issue = createIssuesByDto(repository, dto, issueSubscriptionVo.getAllLabels(),
+						issueSubscriptionVo.getIssueLabels());
+					issueSubscriptionVo.getUpdatedIssues().add(issue);
 				}
 			});
 		});
-		saveAllEntities(updatedIssues, allLabels, issueLabels);
+		saveAllEntities(IssueMapper.INSTANCE.issueVoToIssueDto(issueSubscriptionVo));
 		List<IssueResponse> allIssueResponses = convertToResponse(
 			issueRepository.findAllByRepository_Id(repository.getId()));
 		return new RepositoryIssuesResponse(repoName, allIssueResponses);
@@ -97,42 +87,30 @@ public class IssueService {
 
 	private RepositoryIssuesResponse getInitialIssues(String githubId, String orgName, String repoName) {
 		Repository repository = findRepositoryByName(repoName);
-		IssueVo issueVo = getIssueData(orgName, repository, repoName, githubId);
-		log.info("getInitialIssues의 IssueVo: {}", issueVo);
-		// List<Issue> issues = new ArrayList<>();
-		List<Issue> updatedIssues = issueVo.getUpdatedIssues();
-		// List<Label> allLabels = new ArrayList<>();
-		List<Label> allLabels = issueVo.getAllLabels();
-		// List<IssueLabel> issueLabels = new ArrayList<>();
-		List<IssueLabel> issueLabels = issueVo.getIssueLabels();
+		IssueSubscriptionVo issueSubscriptionVo = getIssueSubscriptionData(orgName, repository, repoName, githubId);
 
-		issueVo.getOptionalIssueDtos().ifPresent(dtos -> dtos.forEach(dto -> {
-			Issue issue = createIssuesByDto(repository, dto, allLabels, issueLabels);
-			updatedIssues.add(issue);
+		issueSubscriptionVo.getOptionalIssueDtos().ifPresent(dtos -> dtos.forEach(dto -> {
+			Issue issue = createIssuesByDto(repository, dto, issueSubscriptionVo.getAllLabels(),
+				issueSubscriptionVo.getIssueLabels());
+			issueSubscriptionVo.getUpdatedIssues().add(issue);
 		}));
-		saveAllEntities(updatedIssues, allLabels, issueLabels);
+		saveAllEntities(IssueMapper.INSTANCE.issueVoToIssueDto(issueSubscriptionVo));
 
-		return new RepositoryIssuesResponse(repository.getName(), convertToResponse(updatedIssues));
+		return new RepositoryIssuesResponse(repository.getName(),
+			convertToResponse(issueSubscriptionVo.getUpdatedIssues()));
 	}
 
-	private IssueVo getIssueData(String orgName, Repository repository, String repoName, String githubId) {
+	private IssueSubscriptionVo getIssueSubscriptionData(String orgName, Repository repository, String repoName,
+		String githubId) {
 		Optional<List<IssueDto>> issueDtos = getOpenGoodFirstIssues(orgName, repoName, githubId);
-		return new IssueVo(repository, issueDtos);
+		return new IssueSubscriptionVo(repository, issueDtos);
 	}
 
 	private Issue createIssuesByDto(Repository repository, IssueDto issueDto, List<Label> allLabels,
 		List<IssueLabel> issueLabels) {
-		Issue issue = Issue.of(
-			repository,
-			issueDto.getTitle(),
-			issueDto.isStarred(),
-			issueDto.isRead(),
-			issueDto.getState(),
-			issueDto.getCreatedAt(),
-			issueDto.getUpdatedAt(),
-			issueDto.getClosedAt(),
-			issueDto.getGhIssueId(),
-			issueLabels);
+		Issue issue = Issue.of(repository, issueDto.getTitle(), issueDto.isStarred(), issueDto.isRead(),
+			issueDto.getState(), issueDto.getCreatedAt(), issueDto.getUpdatedAt(), issueDto.getClosedAt(),
+			issueDto.getGhIssueId(), issueLabels);
 
 		issueDto.getLabels().forEach(labelDto -> {
 			Label label = labelService.findOrCreateLabel(labelDto.getName(), labelDto.getColor());
@@ -156,24 +134,16 @@ public class IssueService {
 		return issues.stream().map(issue -> {
 			Optional<List<Label>> optionalLabels = labelService.getLabelsByIssueId(issue.getId());
 
-			return IssueResponse.of(issue.getId(),
-				issue.getGhIssueId(),
-				issue.getState(),
-				issue.getTitle(),
-				labelService.convertLabelsResponse(optionalLabels),
-				issue.isRead(),
-				issue.isStarred(),
-				issue.getCreatedAt(),
-				issue.getUpdatedAt(),
-				issue.getClosedAt());
+			return IssueResponse.of(issue.getId(), issue.getGhIssueId(), issue.getState(), issue.getTitle(),
+				labelService.convertLabelsResponse(optionalLabels), issue.isRead(), issue.isStarred(),
+				issue.getCreatedAt(), issue.getUpdatedAt(), issue.getClosedAt());
 		}).toList();
 	}
 
 	private Optional<List<IssueDto>> getOpenGoodFirstIssues(String orgName, String repoName, String githubId) {
 		String accessToken = githubTokenService.findAccessToken(githubId);
 		return Optional.ofNullable(webClient.get()
-			.uri(uriBuilder -> uriBuilder
-				.path("/repos/{owner}/{repo}/issues")
+			.uri(uriBuilder -> uriBuilder.path("/repos/{owner}/{repo}/issues")
 				.queryParam("state", "open")
 				.queryParam("sort", "created")
 				.queryParam("direction", "desc")
@@ -187,9 +157,9 @@ public class IssueService {
 			.block());
 	}
 
-	private void saveAllEntities(List<Issue> issues, List<Label> allLabels, List<IssueLabel> issueLabels) {
-		issueRepository.saveAll(issues);
-		labelService.saveAllLabels(allLabels);
-		issueLabelRepository.saveAll(issueLabels);
+	private void saveAllEntities(IssueSubscriptionDto issueSubscriptionDto) {
+		issueRepository.saveAll(issueSubscriptionDto.getUpdatedIssues());
+		labelService.saveAllLabels(issueSubscriptionDto.getAllLabels());
+		issueLabelRepository.saveAll(issueSubscriptionDto.getIssueLabels());
 	}
 }

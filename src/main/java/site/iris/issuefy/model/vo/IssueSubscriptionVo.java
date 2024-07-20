@@ -12,14 +12,14 @@ import site.iris.issuefy.entity.Repository;
 import site.iris.issuefy.model.dto.IssueDto;
 
 @Data
-public class IssueVo {
-	Repository repository;
-	Optional<List<IssueDto>> optionalIssueDtos;
-	List<Issue> updatedIssues;
-	List<Label> allLabels;
-	List<IssueLabel> issueLabels;
+public class IssueSubscriptionVo {
+	private final Repository repository;
+	private final Optional<List<IssueDto>> optionalIssueDtos;
+	private List<Issue> updatedIssues;
+	private List<Label> allLabels;
+	private List<IssueLabel> issueLabels;
 
-	public IssueVo(Repository repository, Optional<List<IssueDto>> optionalIssueDtos) {
+	public IssueSubscriptionVo(Repository repository, Optional<List<IssueDto>> optionalIssueDtos) {
 		this.repository = repository;
 		this.optionalIssueDtos = optionalIssueDtos;
 		this.updatedIssues = new ArrayList<>();
