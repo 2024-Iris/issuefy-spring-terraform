@@ -80,7 +80,7 @@ class IssueServiceTest {
 		when(repositoryRepository.findByName(anyString())).thenReturn(Optional.of(repository));
 
 		// when
-		RepositoryIssuesResponse response = issueService.initializeIssueSubscription(repository.getOrg().getName(),
+		RepositoryIssuesResponse response = issueService.getRepositoryIssuesResponse(repository.getOrg().getName(),
 			repository.getName(), "dokkisan");
 
 		// then
