@@ -2,6 +2,7 @@ package site.iris.issuefy.controller;
 
 import static org.hamcrest.Matchers.*;
 import static org.mockito.Mockito.*;
+import static org.springframework.restdocs.headers.HeaderDocumentation.*;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.*;
 import static org.springframework.restdocs.payload.PayloadDocumentation.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -41,7 +42,6 @@ class AuthenticationControllerTest {
 	@DisplayName("GitHub 엑세스 토큰을 가져오고 사용자 정보와 JWT를 반환한다.")
 	@Test
 	void login_after_return_userInfoAndJWT() throws Exception {
-
 		// given
 		String code = "test-auth-code";
 		String userName = "testUser";
@@ -76,5 +76,28 @@ class AuthenticationControllerTest {
 					fieldWithPath("jwt.accessToken").description("JWT 액세스 토큰"),
 					fieldWithPath("jwt.refreshToken").description("JWT 리프레시 토큰")
 				)));
+	}
+
+	@DisplayName("로그아웃 요청을 받으면 Jwt를 무효화한다.")
+	@Test
+	void logout() throws Exception {
+		// given
+		String githubId = "testUser";
+		String token = "Bearer test-jwt-token";
+		when(tokenProvider.isValidToken(anyString())).thenReturn(true);
+
+		// when
+		ResultActions result = mockMvc.perform(post("/api/logout")
+			.header("Authorization", token)
+			.requestAttr("githubId", githubId));
+
+		// then
+		result.andExpect(status().isOk())
+			.andDo(document("issuefy/oauth/logout",
+				requestHeaders(
+					headerWithName("Authorization").description("JWT 토큰")
+				)));
+
+		verify(tokenProvider).invalidateToken("test-jwt-token");
 	}
 }
