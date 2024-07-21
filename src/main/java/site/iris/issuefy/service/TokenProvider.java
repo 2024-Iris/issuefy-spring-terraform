@@ -1,7 +1,6 @@
 package site.iris.issuefy.service;
 
 import java.security.Key;
-import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
@@ -15,9 +14,6 @@ import javax.crypto.SecretKey;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
@@ -68,30 +64,32 @@ public class TokenProvider {
 
 	public boolean isValidToken(String token) {
 		BlacklistedJwtDto blacklistedJwtDto = redisTemplate.opsForValue().get(token);
-        if (blacklistedJwtDto != null) {
-            return false;
-        }
-        try {
-            Jws<Claims> claims = Jwts.parser()
-                .verifyWith((SecretKey)key)
-                .build()
-                .parseSignedClaims(token);
-            return claims.getPayload().getExpiration().after(Date.from(LocalDateTime.now().atZone(ZoneId.systemDefault()).toInstant()));
-        } catch (JwtException | IllegalArgumentException e) {
-            return false;
-        }
+		if (blacklistedJwtDto != null) {
+			return false;
+		}
+		try {
+			Jws<Claims> claims = Jwts.parser()
+				.verifyWith((SecretKey)key)
+				.build()
+				.parseSignedClaims(token);
+			return claims.getPayload()
+				.getExpiration()
+				.after(Date.from(LocalDateTime.now().atZone(ZoneId.systemDefault()).toInstant()));
+		} catch (JwtException | IllegalArgumentException e) {
+			return false;
+		}
 	}
 
 	public void invalidateToken(String token) {
 		Claims claims = getClaims(token);
-        LocalDateTime expiresAt = claims.getExpiration().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
-        LocalDateTime now = LocalDateTime.now();
+		LocalDateTime expiresAt = claims.getExpiration().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+		LocalDateTime now = LocalDateTime.now();
 
-        BlacklistedJwtDto blacklistedJwtDto = new BlacklistedJwtDto(token, now, expiresAt);
+		BlacklistedJwtDto blacklistedJwtDto = new BlacklistedJwtDto(token, now, expiresAt);
 
-        LocalDateTime redisExpirationTime = expiresAt.plusHours(1);
-        long redisExpirationSeconds = ChronoUnit.SECONDS.between(LocalDateTime.now(), redisExpirationTime);
-        redisTemplate.opsForValue().set(token, blacklistedJwtDto, redisExpirationSeconds, TimeUnit.SECONDS);
+		LocalDateTime redisExpirationTime = expiresAt.plusHours(1);
+		long redisExpirationSeconds = ChronoUnit.SECONDS.between(LocalDateTime.now(), redisExpirationTime);
+		redisTemplate.opsForValue().set(token, blacklistedJwtDto, redisExpirationSeconds, TimeUnit.SECONDS);
 	}
 
 	private Date getExpireDateAccessToken() {
