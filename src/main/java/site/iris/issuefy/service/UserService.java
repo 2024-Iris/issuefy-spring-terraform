@@ -22,6 +22,10 @@ public class UserService {
 		}
 	}
 
+	public void withdraw(String githubId) {
+		userRepository.deleteByGithubId(githubId);
+	}
+
 	private UserVerifyDto verifyUser(UserDto userDto) {
 		boolean exists = userRepository.existsByGithubId(userDto.getGithubId());
 		return UserVerifyDto.from(exists);
