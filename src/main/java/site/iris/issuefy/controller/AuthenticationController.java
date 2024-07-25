@@ -42,12 +42,13 @@ public class AuthenticationController {
 		log.info("user login : {}, authorization code : {}", userDto.getGithubId(), code);
 		log.info("response : {}", jwt.toString());
 		return ResponseEntity.ok()
-			.body(OauthResponse.of(userDto.getGithubId(), userDto.getGithubProfileImage(), jwt
+			.body(OauthResponse.of(userDto.getGithubId(), userDto.getEmail(), userDto.getGithubProfileImage(), jwt
 			));
 	}
 
 	@PostMapping("/logout")
-	public ResponseEntity<String> logout(@RequestAttribute String githubId, @RequestHeader("Authorization") String token) {
+	public ResponseEntity<String> logout(@RequestAttribute String githubId,
+		@RequestHeader("Authorization") String token) {
 		log.info("user logout : {}", githubId);
 		String jwtToken = token.replace("Bearer ", "");
 		tokenProvider.invalidateToken(jwtToken);
