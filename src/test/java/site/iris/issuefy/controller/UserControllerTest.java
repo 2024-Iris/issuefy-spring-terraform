@@ -38,7 +38,7 @@ class UserControllerTest {
 		when(userService.getUserInfo(githubId)).thenReturn(userDto);
 
 		// when
-		ResultActions result = mockMvc.perform(get("/api/user")
+		ResultActions result = mockMvc.perform(get("/api/user/info")
 			.requestAttr("githubId", githubId)
 			.accept(MediaType.APPLICATION_JSON));
 
@@ -106,4 +106,18 @@ class UserControllerTest {
 
 		verify(userService).updateAlert(githubId, newAlertStatus);
 	}
+
+	@DisplayName("사용자의 탈퇴가 정상적으로 이루어진다.")
+	@Test
+    public void testWithdraw() throws Exception {
+        String githubId = "testUser";
+
+        doNothing().when(userService).withdraw(githubId);
+
+        mockMvc.perform(delete("/api/user/withdraw")
+                .requestAttr("githubId", githubId))
+                .andExpect(status().isOk());
+
+        verify(userService).withdraw(githubId);
+    }
 }
