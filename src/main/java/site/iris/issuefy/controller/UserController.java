@@ -17,19 +17,19 @@ import site.iris.issuefy.service.UserService;
 @Slf4j
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api")
+@RequestMapping("/api/user")
 public class UserController {
 
 	private final UserService userService;
 
-	@GetMapping("/user")
+	@GetMapping("/info")
 	public ResponseEntity<UserDto> getUserInfo(@RequestAttribute String githubId) {
 		UserDto userDto = userService.getUserInfo(githubId);
 		log.info("{} : User information request occurs", githubId);
 		return ResponseEntity.ok().body(userDto);
 	}
 
-	@PatchMapping("/user/email")
+	@PatchMapping("/email")
 	public ResponseEntity<String> updateEmail(@RequestAttribute String githubId,
 		@RequestBody UserUpdateDto userUpdateDto) {
 		userService.updateEmail(githubId, userUpdateDto.getEmail());
@@ -38,7 +38,7 @@ public class UserController {
 		return ResponseEntity.noContent().build();
 	}
 
-	@PatchMapping("/user/alert")
+	@PatchMapping("/alert")
 	public ResponseEntity<String> updateAlert(@RequestAttribute String githubId,
 		@RequestBody UserUpdateDto userUpdateDto) {
 		userService.updateAlert(githubId, userUpdateDto.isAlertStatus());
