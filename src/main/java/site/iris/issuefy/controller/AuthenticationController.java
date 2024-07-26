@@ -42,7 +42,8 @@ public class AuthenticationController {
 		log.info("user login : {}, authorization code : {}", userDto.getGithubId(), code);
 		log.info("response : {}", jwt.toString());
 		return ResponseEntity.ok()
-			.body(OauthResponse.of(userDto.getGithubId(), userDto.getEmail(), userDto.getGithubProfileImage(), jwt
+			.body(OauthResponse.of(userDto.getGithubId(), userDto.getEmail(), userDto.getGithubProfileImage(),
+				userDto.isAlertStatus(), jwt
 			));
 	}
 
