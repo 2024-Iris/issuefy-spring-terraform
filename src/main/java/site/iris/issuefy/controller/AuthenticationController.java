@@ -4,7 +4,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestAttribute;
@@ -20,7 +19,6 @@ import site.iris.issuefy.model.dto.UserDto;
 import site.iris.issuefy.response.OauthResponse;
 import site.iris.issuefy.service.AuthenticationService;
 import site.iris.issuefy.service.TokenProvider;
-import site.iris.issuefy.service.UserService;
 
 @Slf4j
 @RestController
@@ -29,7 +27,6 @@ import site.iris.issuefy.service.UserService;
 public class AuthenticationController {
 	private final AuthenticationService authenticationService;
 	private final TokenProvider tokenProvider;
-	private final UserService userService;
 
 	@GetMapping("/login")
 	public ResponseEntity<OauthResponse> login(@RequestParam String code) {
@@ -53,13 +50,6 @@ public class AuthenticationController {
 		log.info("user logout : {}", githubId);
 		String jwtToken = token.replace("Bearer ", "");
 		tokenProvider.invalidateToken(jwtToken);
-		return ResponseEntity.ok().build();
-	}
-
-	@DeleteMapping("/withdraw")
-	public ResponseEntity<String> withdraw(@RequestAttribute String githubId) {
-		log.info("user withdraw : {}", githubId);
-		userService.withdraw(githubId);
 		return ResponseEntity.ok().build();
 	}
 }

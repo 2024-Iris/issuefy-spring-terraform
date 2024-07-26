@@ -1,6 +1,7 @@
 package site.iris.issuefy.controller;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.RequestAttribute;
@@ -34,7 +35,6 @@ public class UserController {
 		@RequestBody UserUpdateDto userUpdateDto) {
 		userService.updateEmail(githubId, userUpdateDto.getEmail());
 		log.info("{} : User email update request occurs", githubId);
-		log.info(userUpdateDto.toString());
 		return ResponseEntity.noContent().build();
 	}
 
@@ -43,8 +43,13 @@ public class UserController {
 		@RequestBody UserUpdateDto userUpdateDto) {
 		userService.updateAlert(githubId, userUpdateDto.isAlertStatus());
 		log.info("{} : User alert update request occurs", githubId);
-		log.info(userUpdateDto.toString());
 		return ResponseEntity.noContent().build();
 	}
 
+	@DeleteMapping("/withdraw")
+	public ResponseEntity<String> withdraw(@RequestAttribute String githubId) {
+		log.info("{} : user withdraw occurs", githubId);
+		userService.withdraw(githubId);
+		return ResponseEntity.ok().build();
+	}
 }
