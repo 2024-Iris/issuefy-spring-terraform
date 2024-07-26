@@ -39,7 +39,7 @@ class AuthenticationServiceTest {
 	void githubLogin() {
 		// given
 		String authenticationCode = "testCode";
-		UserDto userDto = UserDto.of("testUser", "testUserUrl", "test@email.com");
+		UserDto userDto = UserDto.of("testUser", "testUserUrl", "test@email.com", false);
 
 		GithubAccessTokenService githubAccessTokenService = mock(GithubAccessTokenService.class);
 		when(githubAccessTokenService.getToken(authenticationCode)).thenReturn(

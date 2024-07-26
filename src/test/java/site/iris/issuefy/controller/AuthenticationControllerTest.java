@@ -25,6 +25,7 @@ import site.iris.issuefy.entity.Jwt;
 import site.iris.issuefy.model.dto.UserDto;
 import site.iris.issuefy.service.AuthenticationService;
 import site.iris.issuefy.service.TokenProvider;
+import site.iris.issuefy.service.UserService;
 
 @WebMvcTest(AuthenticationController.class)
 @AutoConfigureRestDocs
@@ -35,6 +36,9 @@ class AuthenticationControllerTest {
 
 	@MockBean
 	private AuthenticationService authenticationService;
+
+	@MockBean
+	private UserService userService;
 
 	@MockBean
 	private TokenProvider tokenProvider;
@@ -48,7 +52,7 @@ class AuthenticationControllerTest {
 		String avatarURL = "https://avatars.githubusercontent.com/12345";
 		String email = "test@gmail.com";
 
-		UserDto userDto = UserDto.of(userName, avatarURL, email);
+		UserDto userDto = UserDto.of(userName, avatarURL, email, false);
 		when(authenticationService.githubLogin(code)).thenReturn(userDto);
 
 		Map<String, Object> claims = new HashMap<>();
@@ -67,12 +71,15 @@ class AuthenticationControllerTest {
 		result.andExpect(status().isOk())
 			.andExpect(jsonPath("$.userName", is(userName)))
 			.andExpect(jsonPath("$.avatarURL", is(avatarURL)))
+			.andExpect(jsonPath("$.alertStatus", is(false)))
 			.andExpect(jsonPath("$.jwt.accessToken", is(accessToken)))
 			.andExpect(jsonPath("$.jwt.refreshToken", is(refreshToken)))
 			.andDo(document("issuefy/oauth/login",
 				responseFields(
 					fieldWithPath("userName").description("사용자 로그인 이름"),
+					fieldWithPath("userEmail").description("사용자 이메일 주소"),
 					fieldWithPath("avatarURL").description("사용자 아바타 URL"),
+					fieldWithPath("alertStatus").description("알림 상태"),
 					fieldWithPath("jwt.accessToken").description("JWT 액세스 토큰"),
 					fieldWithPath("jwt.refreshToken").description("JWT 리프레시 토큰")
 				)));
