@@ -22,6 +22,23 @@ public class UserService {
 		}
 	}
 
+	public UserDto getUserInfo(String githubId) {
+		User user = userRepository.findByGithubId(githubId).orElseThrow();
+		return UserDto.of(user.getGithubId(), user.getEmail(), user.isAlertStatus());
+	}
+
+	public void updateEmail(String githubId, String email) {
+		User user = userRepository.findByGithubId(githubId).orElseThrow();
+		user.updateEmail(email);
+		userRepository.save(user);
+	}
+
+	public void updateAlert(String githubId, boolean alertStatus) {
+		User user = userRepository.findByGithubId(githubId).orElseThrow();
+		user.updateAlertStatus(alertStatus);
+		userRepository.save(user);
+	}
+
 	public void withdraw(String githubId) {
 		userRepository.deleteByGithubId(githubId);
 	}
