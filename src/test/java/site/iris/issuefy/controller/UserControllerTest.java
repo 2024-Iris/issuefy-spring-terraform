@@ -109,15 +109,15 @@ class UserControllerTest {
 
 	@DisplayName("사용자의 탈퇴가 정상적으로 이루어진다.")
 	@Test
-    public void testWithdraw() throws Exception {
-        String githubId = "testUser";
+	void testWithdraw() throws Exception {
+		String githubId = "testUser";
 
-        doNothing().when(userService).withdraw(githubId);
+		doNothing().when(userService).withdraw(githubId);
 
-        mockMvc.perform(delete("/api/user/withdraw")
-                .requestAttr("githubId", githubId))
-                .andExpect(status().isOk());
+		mockMvc.perform(delete("/api/user/withdraw")
+				.requestAttr("githubId", githubId))
+			.andExpect(status().isOk());
 
-        verify(userService).withdraw(githubId);
-    }
+		verify(userService).withdraw(githubId);
+	}
 }

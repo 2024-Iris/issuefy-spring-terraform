@@ -14,14 +14,14 @@ import org.springframework.test.web.servlet.MockMvc;
 
 @WebMvcTest(HealthCheckController.class)
 @AutoConfigureRestDocs
-public class HealthCheckControllerTest {
+class HealthCheckControllerTest {
 
 	@Autowired
 	private MockMvc mockMvc;
 
 	@DisplayName("서버가 현재 정상적인지 확인한다.")
 	@Test
-	public void testHealthCheck() throws Exception {
+	void testHealthCheck() throws Exception {
 		mockMvc.perform(get("/api/health"))
 			.andExpect(status().isOk())
 			.andDo(document("health-check",
