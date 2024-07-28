@@ -11,12 +11,14 @@ import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
 @Table(name = "subscription")
+@ToString
 public class Subscription {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -33,14 +35,5 @@ public class Subscription {
 	public Subscription(User user, Repository repository) {
 		this.user = user;
 		this.repository = repository;
-	}
-
-	@Override
-	public String toString() {
-		return "Subscription{" +
-			"id=" + id +
-			", user=" + user +
-			", repository=" + repository +
-			'}';
 	}
 }
