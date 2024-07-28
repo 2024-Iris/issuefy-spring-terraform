@@ -153,4 +153,17 @@ class SubscriptionServiceTest {
 		// then
 		verify(subscriptionRepository, times(1)).deleteByRepository_GhRepoId(ghRepoId);
 	}
+
+	@Test
+	@DisplayName("리포지토리의 즐겨찾기 상태를 토글한다.")
+	void testStarRepository() {
+		// given
+		Long ghRepoId = 1L;
+
+		// when
+		subscriptionService.starRepository(ghRepoId);
+
+		// then
+		verify(repositoryService, times(1)).updateRepositoryStar(ghRepoId);
+	}
 }

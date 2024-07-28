@@ -9,12 +9,14 @@ import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 @Entity
 @Table(name = "organization")
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
+@ToString
 public class Org {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -29,13 +31,5 @@ public class Org {
 	public Org(String name, long ghOrgId) {
 		this.name = name;
 		this.ghOrgId = ghOrgId;
-	}
-
-	@Override
-	public String toString() {
-		return "Org{" +
-			"id=" + id +
-			", name='" + name + '\'' +
-			'}';
 	}
 }

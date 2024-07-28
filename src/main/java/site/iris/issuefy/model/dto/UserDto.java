@@ -4,9 +4,11 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.ToString;
 
 @AllArgsConstructor
 @Getter
+@ToString
 public class UserDto {
 	@JsonProperty("login")
 	private String githubId;
@@ -16,16 +18,13 @@ public class UserDto {
 
 	private String email;
 
-	public static UserDto of(String login, String avatar_url, String email) {
-		return new UserDto(login, avatar_url, email);
+	private boolean alertStatus;
+
+	public static UserDto of(String login, String avatar_url, String email, boolean alertStatus) {
+		return new UserDto(login, avatar_url, email, alertStatus);
 	}
 
-	@Override
-	public String toString() {
-		return "UserDto{" +
-			"githubId='" + githubId + '\'' +
-			", githubProfileImage='" + githubProfileImage + '\'' +
-			", email='" + email + '\'' +
-			'}';
+	public static UserDto of(String login, String email, boolean alertStatus) {
+		return new UserDto(login, "", email, alertStatus);
 	}
 }

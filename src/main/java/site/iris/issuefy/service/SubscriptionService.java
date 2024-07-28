@@ -89,6 +89,11 @@ public class SubscriptionService {
 		subscriptionRepository.deleteByRepository_GhRepoId(ghRepoId);
 	}
 
+	@Transactional
+	public void starRepository(Long ghRepoId) {
+		repositoryService.updateRepositoryStar(ghRepoId);
+	}
+
 	private ResponseEntity<GithubOrgDto> getOrgInfo(RepositoryUrlDto repositoryUrlDto, String accessToken) {
 		return WebClient.create()
 			.get()

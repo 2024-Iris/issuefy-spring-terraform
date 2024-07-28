@@ -2,9 +2,11 @@ package site.iris.issuefy.model.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.ToString;
 
 @AllArgsConstructor
 @Getter
+@ToString
 public class RepositoryDto {
 	private Long id;
 	private String name;
@@ -12,13 +14,5 @@ public class RepositoryDto {
 
 	public static RepositoryDto of(Long id, String name, boolean isStarred) {
 		return new RepositoryDto(id, name, isStarred);
-	}
-
-	@Override
-	public String toString() {
-		return "RepositoryDto{" +
-			"id=" + id +
-			", name='" + name + '\'' +
-			'}';
 	}
 }

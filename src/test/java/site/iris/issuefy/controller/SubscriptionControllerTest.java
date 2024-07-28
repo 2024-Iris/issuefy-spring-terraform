@@ -113,4 +113,31 @@ class SubscriptionControllerTest {
 
 		verify(subscriptionService).unsubscribeRepository(ghRepoId);
 	}
+
+	@Test
+	@DisplayName("리포지토리 즐겨찾기를 토글한다.")
+	void toggleStarRepository() throws Exception {
+		// given
+		String githubId = "testUser";
+		Long ghRepoId = 1L;
+
+		doNothing().when(subscriptionService).starRepository(ghRepoId);
+
+		// when
+		ResultActions result = mockMvc.perform(
+			RestDocumentationRequestBuilders.put("/api/subscription/star/{gh_repo_id}", ghRepoId)
+				.requestAttr("githubId", githubId));
+
+		// then
+		result.andExpect(status().isNoContent())
+			.andDo(document("issuefy/subscription/star",
+				getDocumentRequest(),
+				getDocumentResponse(),
+				pathParameters(
+					parameterWithName("gh_repo_id").description("GitHub 저장소 ID")
+				)
+			));
+
+		verify(subscriptionService).starRepository(ghRepoId);
+	}
 }

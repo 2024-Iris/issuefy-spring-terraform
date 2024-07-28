@@ -10,12 +10,14 @@ import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 @Entity
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 @Table(name = "user")
+@ToString
 public class User {
 
 	@Id
@@ -37,12 +39,11 @@ public class User {
 		this.alertStatus = false;
 	}
 
-	@Override
-	public String toString() {
-		return "User{" +
-			"id=" + id +
-			", githubId='" + githubId + '\'' +
-			", email='" + email + '\'' +
-			'}';
+	public void updateEmail(String email) {
+		this.email = email;
+	}
+
+	public void updateAlertStatus(boolean alertStatus) {
+		this.alertStatus = alertStatus;
 	}
 }

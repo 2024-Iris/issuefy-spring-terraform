@@ -81,4 +81,36 @@ class RepositoryServiceTest {
 		verify(repositoryRepository, times(1)).findByGhRepoId(1L);
 		verify(repositoryRepository, times(1)).save(any(Repository.class));
 	}
+
+	@Test
+	@DisplayName("리포지토리의 즐겨찾기 상태를 업데이트한다.")
+	void testUpdateRepositoryStar() {
+		// given
+		Long ghRepoId = 1L;
+		Repository repository = new Repository(1L, new Org(), "testRepo", false, ghRepoId);
+		Repository updatedRepository = new Repository(1L, new Org(), "testRepo", true, ghRepoId);
+
+		when(repositoryRepository.findByGhRepoId(ghRepoId)).thenReturn(Optional.of(repository));
+		when(repositoryRepository.save(any(Repository.class))).thenReturn(updatedRepository);
+
+		// when
+		repositoryService.updateRepositoryStar(ghRepoId);
+
+		// then
+		verify(repositoryRepository, times(1)).findByGhRepoId(ghRepoId);
+		verify(repositoryRepository, times(1)).save(any(Repository.class));
+	}
+
+	@Test
+	@DisplayName("존재하지 않는 리포지토리의 즐겨찾기 상태를 업데이트하려고 하면 예외가 발생한다.")
+	void testUpdateRepositoryStar_WithNonExistentRepository() {
+		// given
+		Long ghRepoId = 1L;
+		when(repositoryRepository.findByGhRepoId(ghRepoId)).thenReturn(Optional.empty());
+
+		// when & then
+		assertThrows(NullPointerException.class, () -> repositoryService.updateRepositoryStar(ghRepoId));
+		verify(repositoryRepository, times(1)).findByGhRepoId(ghRepoId);
+		verify(repositoryRepository, never()).save(any(Repository.class));
+	}
 }
