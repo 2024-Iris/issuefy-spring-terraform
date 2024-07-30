@@ -84,6 +84,7 @@ public class SubscriptionService {
 		saveSubscription(user, repository);
 	}
 
+	// TODO: 연관된 리포지토리를 아무도 구독하고 있지 않다면 리포지토리 삭제 로직 추가
 	@Transactional
 	public void unsubscribeRepository(Long ghRepoId) {
 		subscriptionRepository.deleteByRepository_GhRepoId(ghRepoId);
