@@ -66,7 +66,7 @@ public class SubscriptionController {
 	public ResponseEntity<Void> starRepository(@RequestAttribute String githubId,
 		@PathVariable("gh_repo_id") Long ghRepoId) {
 		logRequest(githubId, "Request StarRepository for RepoId: " + ghRepoId);
-		subscriptionService.starRepository(ghRepoId);
+		subscriptionService.toggleRepositoryStar(githubId, ghRepoId);
 		return ResponseEntity.noContent().build();
 	}
 

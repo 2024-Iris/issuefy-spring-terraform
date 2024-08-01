@@ -28,14 +28,4 @@ public class RepositoryService {
 			)
 			.orElseThrow(() -> new NullPointerException("Repository info body is null"));
 	}
-
-	@Transactional
-	public void updateRepositoryStar(Long ghRepoId) {
-		Repository repository = repositoryRepository.findByGhRepoId(ghRepoId)
-			.orElseThrow(() -> new NullPointerException("Repository not found"));
-		boolean newStarredStatus = !repository.isStarred();
-		Repository updatedRepository = repository.updateStarred(newStarredStatus);
-
-		repositoryRepository.save(updatedRepository);
-	}
 }

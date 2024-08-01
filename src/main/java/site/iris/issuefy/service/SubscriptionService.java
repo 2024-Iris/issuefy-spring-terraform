@@ -51,7 +51,7 @@ public class SubscriptionService {
 			Long orgId = subscription.getRepository().getOrg().getGhOrgId();
 			String orgName = subscription.getRepository().getOrg().getName();
 			RepositoryDto repositoryDto = RepositoryDto.of(subscription.getRepository().getGhRepoId(),
-				subscription.getRepository().getName(), subscription.getRepository().isStarred());
+				subscription.getRepository().getName(), subscription.isRepoStarred());
 
 			OrgRecord orgRecord = OrgRecord.from(orgId, orgName, new ArrayList<>());
 
@@ -91,8 +91,15 @@ public class SubscriptionService {
 	}
 
 	@Transactional
-	public void starRepository(Long ghRepoId) {
-		repositoryService.updateRepositoryStar(ghRepoId);
+	public void toggleRepositoryStar(String githubId, Long ghRepoId) {
+		 User user = userRepository.findByGithubId(githubId)
+        .orElseThrow(() -> new UserNotFoundException(UserNotFoundException.USER_NOT_FOUND));
+
+    Subscription subscription = subscriptionRepository.findByUserIdAndRepository_GhRepoId(user.getId(), ghRepoId)
+        .orElseThrow();
+
+    subscription.toggleStar();
+    subscriptionRepository.save(subscription);
 	}
 
 	private ResponseEntity<GithubOrgDto> getOrgInfo(RepositoryUrlDto repositoryUrlDto, String accessToken) {
