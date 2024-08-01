@@ -33,15 +33,11 @@ public class Repository {
 	private String name;
 
 	@Column
-	private boolean isStarred;
-
-	@Column
 	private long ghRepoId;
 
 	public Repository(Org org, String name, long ghRepoId) {
 		this.org = org;
 		this.name = name;
-		this.isStarred = false;
 		this.ghRepoId = ghRepoId;
 	}
 
@@ -50,7 +46,6 @@ public class Repository {
 			this.getId(),
 			this.getOrg(),
 			this.getName(),
-			newStarredStatus,
 			this.getGhRepoId()
 		);
 	}
