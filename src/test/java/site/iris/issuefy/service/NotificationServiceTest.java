@@ -82,8 +82,8 @@ class NotificationServiceTest {
 	void findSubscribeRepositoryUser() {
 		User user = new User(1L, "testId", "test@email.com", false);
 		Org org = new Org(1L, "test", 1L);
-		Repository repository = new Repository(1L, org, "testRepo", false, 1L);
-		Subscription subscription = new Subscription(1L, user, repository);
+		Repository repository = new Repository(1L, org, "testRepo",  1L);
+		Subscription subscription = new Subscription(1L, user, repository, false);
 
 		when(subscriptionRepository.findByRepositoryId(1L)).thenReturn(List.of(subscription));
 
@@ -98,7 +98,7 @@ class NotificationServiceTest {
 	void findNotifications() {
 		User user = new User(1L, "testId", "test@email.com", false);
 		Org org = new Org(1L, "testOrg", 1L);
-		Repository repository = new Repository(1L, org, "testRepo", false, 1L);
+		Repository repository = new Repository(1L, org, "testRepo", 1L);
 		Notification notification = new Notification(1L, repository, "testRepo", LocalDateTime.now());
 		UserNotification userNotification = new UserNotification(1L, user, notification, false);
 

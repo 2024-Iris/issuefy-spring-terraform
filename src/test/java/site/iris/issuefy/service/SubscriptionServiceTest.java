@@ -26,6 +26,7 @@ import site.iris.issuefy.entity.Org;
 import site.iris.issuefy.entity.Repository;
 import site.iris.issuefy.entity.Subscription;
 import site.iris.issuefy.entity.User;
+import site.iris.issuefy.exception.UserNotFoundException;
 import site.iris.issuefy.model.dto.RepositoryUrlDto;
 import site.iris.issuefy.repository.SubscriptionRepository;
 import site.iris.issuefy.repository.UserRepository;
@@ -47,11 +48,11 @@ class SubscriptionServiceTest {
 	@Mock
 	private RepositoryService repositoryService;
 
-	@InjectMocks
-	private SubscriptionService subscriptionService;
-
 	@Mock
 	private GithubTokenService githubTokenService;
+
+	@InjectMocks
+	private SubscriptionService subscriptionService;
 
 	private MockWebServer mockWebServer;
 
@@ -59,10 +60,6 @@ class SubscriptionServiceTest {
 	void setup() throws IOException {
 		mockWebServer = new MockWebServer();
 		mockWebServer.start();
-		mockWebServer.enqueue(new MockResponse()
-			.setBody("{\"login\": \"testUser\", \"avatar_url\": \"testUserUrl\"}")
-			.addHeader("Content-Type", "application/json")
-			.setResponseCode(200));
 	}
 
 	@AfterEach
@@ -105,7 +102,6 @@ class SubscriptionServiceTest {
 		Repository repository = new Repository(org, "repo-a1", 1L);
 		User user = new User(githubId, "user1@example.com");
 
-		// Mock 서버 설정
 		mockWebServer.enqueue(new MockResponse()
 			.setResponseCode(200)
 			.setHeader("Content-Type", "application/json")
@@ -117,22 +113,16 @@ class SubscriptionServiceTest {
 			.setBody("{\"id\":123,\"name\":\"testRepo\"}"));
 
 		String baseUrl = mockWebServer.url("/").toString();
-		String orgRequestUrl = baseUrl + "orgs/";
-		String repoRequestUrl = baseUrl + "repos/";
+		ReflectionTestUtils.setField(subscriptionService, "ORG_REQUEST_URL", baseUrl + "orgs/");
+		ReflectionTestUtils.setField(subscriptionService, "REPOSITORY_REQUEST_URL", baseUrl + "repos/");
 
 		when(githubTokenService.findAccessToken(githubId)).thenReturn("testAccessToken");
 		when(orgService.saveOrg(any(ResponseEntity.class))).thenReturn(org);
-
-		when(repositoryService.saveRepository(any(ResponseEntity.class), eq(org)))
-			.thenReturn(repository);
-
+		when(repositoryService.saveRepository(any(ResponseEntity.class), eq(org))).thenReturn(repository);
 		when(userRepository.findByGithubId(githubId)).thenReturn(Optional.of(user));
-		when(subscriptionRepository.findByUserIdAndRepository_GhRepoId(user.getId(), repository.getGhRepoId()))
-			.thenReturn(Optional.empty());
+		when(subscriptionRepository.findByUserIdAndRepository_GhRepoId(user.getId(),
+			repository.getGhRepoId())).thenReturn(Optional.empty());
 		when(subscriptionRepository.save(any(Subscription.class))).thenAnswer(invocation -> invocation.getArgument(0));
-
-		ReflectionTestUtils.setField(subscriptionService, "ORG_REQUEST_URL", orgRequestUrl);
-		ReflectionTestUtils.setField(subscriptionService, "REPOSITORY_REQUEST_URL", repoRequestUrl);
 
 		// when
 		subscriptionService.addSubscribeRepository(repositoryUrlDto, githubId);
@@ -148,22 +138,45 @@ class SubscriptionServiceTest {
 		Long ghRepoId = 123L;
 
 		// when
-		subscriptionRepository.deleteByRepository_GhRepoId(ghRepoId);
+		subscriptionService.unsubscribeRepository(ghRepoId);
 
 		// then
 		verify(subscriptionRepository, times(1)).deleteByRepository_GhRepoId(ghRepoId);
 	}
 
 	@Test
-	@DisplayName("리포지토리의 즐겨찾기 상태를 토글한다.")
-	void testStarRepository() {
+	@DisplayName("리포지토리의 즐겨찾기 상태를 토글한다")
+	void toggleRepositoryStar() {
 		// given
+		String githubId = "testUser";
 		Long ghRepoId = 1L;
+		User user = new User(githubId, "testuser@example.com");
+		Repository repository = new Repository(1L, new Org(), "testRepo", ghRepoId);
+		Subscription subscription = new Subscription(user, repository);
+
+		when(userRepository.findByGithubId(githubId)).thenReturn(Optional.of(user));
+		when(subscriptionRepository.findByUserIdAndRepository_GhRepoId(user.getId(), ghRepoId)).thenReturn(
+			Optional.of(subscription));
 
 		// when
-		subscriptionService.starRepository(ghRepoId);
+		subscriptionService.toggleRepositoryStar(githubId, ghRepoId);
 
 		// then
-		verify(repositoryService, times(1)).updateRepositoryStar(ghRepoId);
+		assertTrue(subscription.isRepoStarred());
+		verify(subscriptionRepository, times(1)).save(subscription);
+	}
+
+	@Test
+	@DisplayName("존재하지 않는 사용자의 리포지토리 즐겨찾기 상태를 토글하려고 하면 예외가 발생한다")
+	void toggleRepositoryStar_WithNonExistentUser() {
+		// given
+		String githubId = "nonExistentUser";
+		Long ghRepoId = 1L;
+
+		when(userRepository.findByGithubId(githubId)).thenReturn(Optional.empty());
+
+		// when & then
+		assertThrows(UserNotFoundException.class, () -> subscriptionService.toggleRepositoryStar(githubId, ghRepoId));
+		verify(subscriptionRepository, never()).save(any(Subscription.class));
 	}
 }

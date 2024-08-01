@@ -121,7 +121,7 @@ class SubscriptionControllerTest {
 		String githubId = "testUser";
 		Long ghRepoId = 1L;
 
-		doNothing().when(subscriptionService).starRepository(ghRepoId);
+		doNothing().when(subscriptionService).toggleRepositoryStar(githubId, ghRepoId);
 
 		// when
 		ResultActions result = mockMvc.perform(
@@ -138,6 +138,6 @@ class SubscriptionControllerTest {
 				)
 			));
 
-		verify(subscriptionService).starRepository(ghRepoId);
+		verify(subscriptionService).toggleRepositoryStar(githubId, ghRepoId);
 	}
 }

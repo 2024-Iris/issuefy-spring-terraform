@@ -50,7 +50,7 @@ class RepositoryServiceTest {
 		GithubRepositoryDto githubRepositoryDto = new GithubRepositoryDto(1L, "existingRepo", LocalDateTime.now());
 
 		Org org = new Org(1L, "testOrg", 123L);
-		Repository existingRepository = new Repository(1L, org, "existingRepo", false, 1L);
+		Repository existingRepository = new Repository(1L, org, "existingRepo", 1L);
 
 		when(repositoryRepository.findByGhRepoId(1L)).thenReturn(Optional.of(existingRepository));
 
@@ -71,7 +71,7 @@ class RepositoryServiceTest {
 
 		when(repositoryRepository.findByGhRepoId(1L)).thenReturn(Optional.empty());
 
-		Repository newRepository = new Repository(1L, org, "newRepo", false, 1L);
+		Repository newRepository = new Repository(1L, org, "newRepo", 1L);
 		when(repositoryRepository.save(any(Repository.class))).thenReturn(newRepository);
 
 		ResponseEntity<GithubRepositoryDto> repositoryInfo = ResponseEntity.ok(githubRepositoryDto);
@@ -80,37 +80,5 @@ class RepositoryServiceTest {
 		assertEquals(newRepository, result);
 		verify(repositoryRepository, times(1)).findByGhRepoId(1L);
 		verify(repositoryRepository, times(1)).save(any(Repository.class));
-	}
-
-	@Test
-	@DisplayName("리포지토리의 즐겨찾기 상태를 업데이트한다.")
-	void testUpdateRepositoryStar() {
-		// given
-		Long ghRepoId = 1L;
-		Repository repository = new Repository(1L, new Org(), "testRepo", false, ghRepoId);
-		Repository updatedRepository = new Repository(1L, new Org(), "testRepo", true, ghRepoId);
-
-		when(repositoryRepository.findByGhRepoId(ghRepoId)).thenReturn(Optional.of(repository));
-		when(repositoryRepository.save(any(Repository.class))).thenReturn(updatedRepository);
-
-		// when
-		repositoryService.updateRepositoryStar(ghRepoId);
-
-		// then
-		verify(repositoryRepository, times(1)).findByGhRepoId(ghRepoId);
-		verify(repositoryRepository, times(1)).save(any(Repository.class));
-	}
-
-	@Test
-	@DisplayName("존재하지 않는 리포지토리의 즐겨찾기 상태를 업데이트하려고 하면 예외가 발생한다.")
-	void testUpdateRepositoryStar_WithNonExistentRepository() {
-		// given
-		Long ghRepoId = 1L;
-		when(repositoryRepository.findByGhRepoId(ghRepoId)).thenReturn(Optional.empty());
-
-		// when & then
-		assertThrows(NullPointerException.class, () -> repositoryService.updateRepositoryStar(ghRepoId));
-		verify(repositoryRepository, times(1)).findByGhRepoId(ghRepoId);
-		verify(repositoryRepository, never()).save(any(Repository.class));
 	}
 }
