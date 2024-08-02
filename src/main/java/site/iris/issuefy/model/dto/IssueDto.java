@@ -1,5 +1,6 @@
 package site.iris.issuefy.model.dto;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 
@@ -21,19 +22,19 @@ public class IssueDto {
 	private String state;
 
 	@JsonProperty("created_at")
-	private Date createdAt;
+	private LocalDateTime createdAt;
 
 	@JsonProperty("updated_at")
-	private Date updatedAt;
+	private LocalDateTime updatedAt;
 
 	@JsonProperty("closed_at")
-	private Date closedAt;
+	private LocalDateTime closedAt;
 
 	private List<Label> labels;
 
 	public static IssueDto of(Long ghIssueId, String title, boolean isStarred, boolean isRead, String state,
-		Date createdAt,
-		Date updatedAt, Date closedAt, List<Label> labels) {
+		LocalDateTime createdAt,
+		LocalDateTime updatedAt, LocalDateTime closedAt, List<Label> labels) {
 		return new IssueDto(ghIssueId, title, isStarred, isRead, state, createdAt, updatedAt, closedAt,
 			labels);
 	}
