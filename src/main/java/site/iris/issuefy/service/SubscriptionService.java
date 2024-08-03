@@ -51,7 +51,7 @@ public class SubscriptionService {
 			Long orgId = subscription.getRepository().getOrg().getGhOrgId();
 			String orgName = subscription.getRepository().getOrg().getName();
 			RepositoryDto repositoryDto = RepositoryDto.of(subscription.getRepository().getGhRepoId(),
-				subscription.getRepository().getName(), subscription.isRepoStarred());
+				subscription.getRepository().getName(), subscription.isRepoStarred(), subscription.getRepository().getLatestUpdateAt());
 
 			OrgRecord orgRecord = OrgRecord.from(orgId, orgName, new ArrayList<>());
 

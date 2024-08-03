@@ -1,5 +1,7 @@
 package site.iris.issuefy.entity;
 
+import java.time.LocalDateTime;
+
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -35,18 +37,12 @@ public class Repository {
 	@Column
 	private long ghRepoId;
 
+	@Column(name = "latest_update_at")
+	private LocalDateTime latestUpdateAt;
+
 	public Repository(Org org, String name, long ghRepoId) {
 		this.org = org;
 		this.name = name;
 		this.ghRepoId = ghRepoId;
-	}
-
-	public Repository updateStarred(boolean newStarredStatus) {
-		return new Repository(
-			this.getId(),
-			this.getOrg(),
-			this.getName(),
-			this.getGhRepoId()
-		);
 	}
 }
