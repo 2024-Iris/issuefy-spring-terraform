@@ -50,7 +50,7 @@ class RepositoryServiceTest {
 		GithubRepositoryDto githubRepositoryDto = new GithubRepositoryDto(1L, "existingRepo", LocalDateTime.now());
 
 		Org org = new Org(1L, "testOrg", 123L);
-		Repository existingRepository = new Repository(1L, org, "existingRepo", 1L);
+		Repository existingRepository = new Repository(1L, org, "existingRepo", 1L, LocalDateTime.now());
 
 		when(repositoryRepository.findByGhRepoId(1L)).thenReturn(Optional.of(existingRepository));
 
@@ -71,7 +71,7 @@ class RepositoryServiceTest {
 
 		when(repositoryRepository.findByGhRepoId(1L)).thenReturn(Optional.empty());
 
-		Repository newRepository = new Repository(1L, org, "newRepo", 1L);
+		Repository newRepository = new Repository(1L, org, "newRepo", 1L, LocalDateTime.now());
 		when(repositoryRepository.save(any(Repository.class))).thenReturn(newRepository);
 
 		ResponseEntity<GithubRepositoryDto> repositoryInfo = ResponseEntity.ok(githubRepositoryDto);

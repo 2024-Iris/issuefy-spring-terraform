@@ -5,6 +5,8 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 import java.io.IOException;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -151,7 +153,7 @@ class SubscriptionServiceTest {
 		String githubId = "testUser";
 		Long ghRepoId = 1L;
 		User user = new User(githubId, "testuser@example.com");
-		Repository repository = new Repository(1L, new Org(), "testRepo", ghRepoId);
+		Repository repository = new Repository(1L, new Org(), "testRepo", ghRepoId, LocalDateTime.now());
 		Subscription subscription = new Subscription(user, repository);
 
 		when(userRepository.findByGithubId(githubId)).thenReturn(Optional.of(user));
