@@ -13,7 +13,7 @@ VALUES ('2024-Iris', 166014585),
        ('Org3', 166014587);
 
 -- Inserting repositories
-INSERT INTO `repository` (org_id, name, gh_repo_id, updated_at)
+INSERT INTO `repository` (org_id, name, gh_repo_id, latest_update_at)
 VALUES (1, 'issuefy-test', 814324604, CURRENT_TIMESTAMP),
        (1, 'issuefy-spring', 785651152, CURRENT_TIMESTAMP),
        (1, 'issuefy-vue', 783652373, CURRENT_TIMESTAMP),

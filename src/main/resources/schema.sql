@@ -16,7 +16,8 @@ CREATE TABLE IF NOT EXISTS `issuefy`.`user`
     PRIMARY KEY (`id`),
     UNIQUE INDEX `github_id_UNIQUE` (`github_id` ASC) VISIBLE,
     UNIQUE INDEX `email_UNIQUE` (`email` ASC) VISIBLE
-) ENGINE = InnoDB DEFAULT CHARACTER SET = utf8mb4;
+) ENGINE = InnoDB
+  DEFAULT CHARACTER SET = utf8mb4;
 
 CREATE TABLE IF NOT EXISTS `issuefy`.`organization`
 (
@@ -25,15 +26,16 @@ CREATE TABLE IF NOT EXISTS `issuefy`.`organization`
     `gh_org_id` BIGINT       NOT NULL,
     PRIMARY KEY (`id`),
     UNIQUE INDEX `gh_org_id_UNIQUE` (`gh_org_id` ASC) VISIBLE
-) ENGINE = InnoDB DEFAULT CHARACTER SET = utf8mb4;
+) ENGINE = InnoDB
+  DEFAULT CHARACTER SET = utf8mb4;
 
 CREATE TABLE IF NOT EXISTS `issuefy`.`repository`
 (
-    `id`         BIGINT      NOT NULL AUTO_INCREMENT,
-    `org_id`     BIGINT      NOT NULL,
-    `name`       VARCHAR(45) NOT NULL,
-    `gh_repo_id` BIGINT      NOT NULL,
-    `updated_at` DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `id`             BIGINT      NOT NULL AUTO_INCREMENT,
+    `org_id`         BIGINT      NOT NULL,
+    `name`           VARCHAR(45) NOT NULL,
+    `gh_repo_id`     BIGINT      NOT NULL,
+    `latest_update_at` DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (`id`),
     INDEX `fk_repository_org_idx` (`org_id` ASC) VISIBLE,
     UNIQUE INDEX `gh_repo_id_UNIQUE` (`gh_repo_id` ASC) VISIBLE,
@@ -42,7 +44,8 @@ CREATE TABLE IF NOT EXISTS `issuefy`.`repository`
             REFERENCES `issuefy`.`organization` (`id`)
             ON DELETE CASCADE
             ON UPDATE CASCADE
-) ENGINE = InnoDB DEFAULT CHARACTER SET = utf8mb4;
+) ENGINE = InnoDB
+  DEFAULT CHARACTER SET = utf8mb4;
 
 CREATE TABLE IF NOT EXISTS `issuefy`.`issue`
 (
@@ -71,7 +74,8 @@ CREATE TABLE IF NOT EXISTS `issuefy`.`label`
     `name`  VARCHAR(45) CHARACTER SET 'utf8mb4' NOT NULL,
     `color` VARCHAR(45)                         NOT NULL,
     PRIMARY KEY (`id`)
-) ENGINE = InnoDB DEFAULT CHARACTER SET = utf8mb4;
+) ENGINE = InnoDB
+  DEFAULT CHARACTER SET = utf8mb4;
 
 CREATE TABLE IF NOT EXISTS `issuefy`.`issue_label`
 (
@@ -91,7 +95,8 @@ CREATE TABLE IF NOT EXISTS `issuefy`.`issue_label`
             REFERENCES `issuefy`.`label` (`id`)
             ON DELETE CASCADE
             ON UPDATE CASCADE
-) ENGINE = InnoDB DEFAULT CHARACTER SET = utf8mb4;
+) ENGINE = InnoDB
+  DEFAULT CHARACTER SET = utf8mb4;
 
 CREATE TABLE IF NOT EXISTS `issuefy`.`notification`
 (
@@ -107,13 +112,14 @@ CREATE TABLE IF NOT EXISTS `issuefy`.`notification`
             REFERENCES `issuefy`.`repository` (`id`)
             ON DELETE NO ACTION
             ON UPDATE NO ACTION
-) ENGINE = InnoDB DEFAULT CHARACTER SET = utf8mb4;
+) ENGINE = InnoDB
+  DEFAULT CHARACTER SET = utf8mb4;
 
 CREATE TABLE IF NOT EXISTS `issuefy`.`subscription`
 (
-    `id`              BIGINT NOT NULL AUTO_INCREMENT,
-    `user_id`         BIGINT NOT NULL,
-    `repository_id`   BIGINT NOT NULL,
+    `id`              BIGINT  NOT NULL AUTO_INCREMENT,
+    `user_id`         BIGINT  NOT NULL,
+    `repository_id`   BIGINT  NOT NULL,
     `is_repo_starred` TINYINT NOT NULL DEFAULT 0,
     INDEX `fk_subscription_repository_idx` (`repository_id` ASC) VISIBLE,
     INDEX `fk_subscription_user_idx` (`user_id` ASC) VISIBLE,
@@ -128,7 +134,8 @@ CREATE TABLE IF NOT EXISTS `issuefy`.`subscription`
             REFERENCES `issuefy`.`user` (`id`)
             ON DELETE CASCADE
             ON UPDATE CASCADE
-) ENGINE = InnoDB DEFAULT CHARACTER SET = utf8mb4;
+) ENGINE = InnoDB
+  DEFAULT CHARACTER SET = utf8mb4;
 
 CREATE TABLE IF NOT EXISTS `issuefy`.`user_notification`
 (
@@ -149,7 +156,8 @@ CREATE TABLE IF NOT EXISTS `issuefy`.`user_notification`
             REFERENCES `issuefy`.`user` (`id`)
             ON DELETE CASCADE
             ON UPDATE CASCADE
-) ENGINE = InnoDB DEFAULT CHARACTER SET = utf8mb4;
+) ENGINE = InnoDB
+  DEFAULT CHARACTER SET = utf8mb4;
 
 CREATE TABLE IF NOT EXISTS `issuefy`.`user_issue_star`
 (
@@ -169,7 +177,8 @@ CREATE TABLE IF NOT EXISTS `issuefy`.`user_issue_star`
             REFERENCES `issuefy`.`issue` (`id`)
             ON DELETE CASCADE
             ON UPDATE CASCADE
-) ENGINE = InnoDB DEFAULT CHARACTER SET = utf8mb4;
+) ENGINE = InnoDB
+  DEFAULT CHARACTER SET = utf8mb4;
 
 SET SQL_MODE = @OLD_SQL_MODE;
 SET FOREIGN_KEY_CHECKS = @OLD_FOREIGN_KEY_CHECKS;
