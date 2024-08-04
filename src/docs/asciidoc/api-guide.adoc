@@ -146,9 +146,49 @@ include::{snippets}/issuefy/notifications/update/request-fields.adoc[]
 
 include::{snippets}/issuefy/notifications/update/http-response.adoc[]
 
-== 4. 사용자 설정
+== 4. 마이페이지
 
 === 4.1 사용자 정보 조회
+
+==== HTTP 요청
+
+include::{snippets}/issuefy/user/get-user-info/http-request.adoc[]
+
+==== HTTP 응답
+
+include::{snippets}/issuefy/user/get-user-info/http-response.adoc[]
+
+===== Response Fields
+
+include::{snippets}/issuefy/user/get-user-info/response-fields.adoc[]
+
+=== 4.2 알림 수신 여부 업데이트
+
+==== HTTP 요청
+
+include::{snippets}/issuefy/user/update-alert/http-request.adoc[]
+
+===== Request Fields
+
+include::{snippets}/issuefy/user/update-alert/request-fields.adoc[]
+
+==== HTTP 응답
+
+include::{snippets}/issuefy/user/update-alert/http-response.adoc[]
+
+=== 4.3 이메일 업데이트
+
+==== HTTP 요청
+
+include::{snippets}/issuefy/user/update-email/http-request.adoc[]
+
+===== Request Fields
+
+include::{snippets}/issuefy/user/update-email/request-fields.adoc[]
+
+==== HTTP 응답
+
+include::{snippets}/issuefy/user/update-email/http-response.adoc[]
 
 
 

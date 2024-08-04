@@ -48,7 +48,7 @@ class UserControllerTest {
 			.andExpect(jsonPath("$.avatar_url").value("https://example.com/avatar.jpg"))
 			.andExpect(jsonPath("$.email").value("test@gmail.com"))
 			.andExpect(jsonPath("$.alertStatus").value(false))
-			.andDo(document("get-user-info",
+			.andDo(document("issuefy/user/get-user-info",
 				responseFields(
 					fieldWithPath("login").description("사용자의 GitHub ID"),
 					fieldWithPath("avatar_url").description("사용자의 GitHub 프로필 이미지 URL"),
@@ -75,7 +75,7 @@ class UserControllerTest {
 
 		// then
 		result.andExpect(status().isNoContent())
-			.andDo(document("update-email",
+			.andDo(document("issuefy/user/update-email",
 				requestFields(
 					fieldWithPath("email").description("새로운 이메일 주소")
 				)));
@@ -99,7 +99,7 @@ class UserControllerTest {
 
 		// then
 		result.andExpect(status().isNoContent())
-			.andDo(document("update-alert",
+			.andDo(document("issuefy/user/update-alert",
 				requestFields(
 					fieldWithPath("alertStatus").description("알림 받기 / 안받기")
 				)));
