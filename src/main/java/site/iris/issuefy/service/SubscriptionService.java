@@ -6,6 +6,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -24,6 +27,7 @@ import site.iris.issuefy.model.dto.GithubRepositoryDto;
 import site.iris.issuefy.model.dto.RepositoryDto;
 import site.iris.issuefy.model.dto.RepositoryUrlDto;
 import site.iris.issuefy.model.vo.OrgRecord;
+import site.iris.issuefy.model.vo.PagedSubscriptionResponse;
 import site.iris.issuefy.repository.SubscriptionRepository;
 import site.iris.issuefy.repository.UserRepository;
 import site.iris.issuefy.response.SubscriptionResponse;
@@ -41,17 +45,20 @@ public class SubscriptionService {
 	private final RepositoryService repositoryService;
 	private final GithubTokenService githubTokenService;
 
-	public List<SubscriptionResponse> getSubscribedRepositories(String githubId) {
+	public PagedSubscriptionResponse getSubscribedRepositories(String githubId, int pageNumber, int pageSize) {
 		User user = userRepository.findByGithubId(githubId)
 			.orElseThrow(() -> new UserNotFoundException(githubId));
-		List<Subscription> subscriptions = subscriptionRepository.findByUserId(user.getId());
+
+		Pageable pageable = PageRequest.of(pageNumber, pageSize);
+		Page<Subscription> subscriptions = subscriptionRepository.findByUserId(user.getId(), pageable);
 
 		Map<OrgRecord, List<RepositoryDto>> orgResponseMap = new HashMap<>();
 		for (Subscription subscription : subscriptions) {
 			Long orgId = subscription.getRepository().getOrg().getGhOrgId();
 			String orgName = subscription.getRepository().getOrg().getName();
 			RepositoryDto repositoryDto = RepositoryDto.of(subscription.getRepository().getGhRepoId(),
-				subscription.getRepository().getName(), subscription.isRepoStarred(), subscription.getRepository().getLatestUpdateAt());
+				subscription.getRepository().getName(), subscription.isRepoStarred(),
+				subscription.getRepository().getLatestUpdateAt());
 
 			OrgRecord orgRecord = OrgRecord.from(orgId, orgName, new ArrayList<>());
 
@@ -67,7 +74,13 @@ public class SubscriptionService {
 			responses.add(SubscriptionResponse.from(orgRecord));
 		}
 
-		return responses;
+		return PagedSubscriptionResponse.of(
+			responses,
+			subscriptions.getNumber(),
+			subscriptions.getSize(),
+			subscriptions.getTotalElements(),
+			subscriptions.getTotalPages()
+		);
 	}
 
 	@Transactional
@@ -92,14 +105,14 @@ public class SubscriptionService {
 
 	@Transactional
 	public void toggleRepositoryStar(String githubId, Long ghRepoId) {
-		 User user = userRepository.findByGithubId(githubId)
-        .orElseThrow(() -> new UserNotFoundException(UserNotFoundException.USER_NOT_FOUND));
+		User user = userRepository.findByGithubId(githubId)
+			.orElseThrow(() -> new UserNotFoundException(UserNotFoundException.USER_NOT_FOUND));
 
-    Subscription subscription = subscriptionRepository.findByUserIdAndRepository_GhRepoId(user.getId(), ghRepoId)
-        .orElseThrow();
+		Subscription subscription = subscriptionRepository.findByUserIdAndRepository_GhRepoId(user.getId(), ghRepoId)
+			.orElseThrow();
 
-    subscription.toggleStar();
-    subscriptionRepository.save(subscription);
+		subscription.toggleStar();
+		subscriptionRepository.save(subscription);
 	}
 
 	private ResponseEntity<GithubOrgDto> getOrgInfo(RepositoryUrlDto repositoryUrlDto, String accessToken) {

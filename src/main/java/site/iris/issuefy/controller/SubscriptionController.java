@@ -14,12 +14,14 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import site.iris.issuefy.model.dto.RepositoryUrlDto;
+import site.iris.issuefy.model.vo.PagedSubscriptionResponse;
 import site.iris.issuefy.model.vo.RepositoryRecord;
 import site.iris.issuefy.response.SubscriptionResponse;
 import site.iris.issuefy.service.GithubTokenService;
@@ -35,12 +37,15 @@ public class SubscriptionController {
 	private final GithubTokenService githubTokenService;
 
 	@GetMapping
-	public ResponseEntity<List<SubscriptionResponse>> getSubscribedRepositories(
-		@RequestAttribute("githubId") String githubId) {
+	public ResponseEntity<PagedSubscriptionResponse> getSubscribedRepositories(
+		@RequestAttribute("githubId") String githubId,
+		@RequestParam(defaultValue = "0") int pageNumber) {
+
+		int pageSize = 15;
 		logRequest(githubId, "Request SubscribedRepositories");
-		List<SubscriptionResponse> subscriptionResponses = subscriptionService.getSubscribedRepositories(githubId);
-		logResponse(githubId, subscriptionResponses);
-		return ResponseEntity.ok(subscriptionResponses);
+		PagedSubscriptionResponse response = subscriptionService.getSubscribedRepositories(githubId, pageNumber, pageSize);
+		logResponse(githubId, response);
+		return ResponseEntity.ok(response);
 	}
 
 	@PostMapping
