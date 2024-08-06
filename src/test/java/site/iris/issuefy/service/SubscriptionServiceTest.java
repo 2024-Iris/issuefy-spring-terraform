@@ -5,7 +5,6 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 import java.io.IOException;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -18,6 +17,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.util.ReflectionTestUtils;
 
@@ -30,9 +32,9 @@ import site.iris.issuefy.entity.Subscription;
 import site.iris.issuefy.entity.User;
 import site.iris.issuefy.exception.UserNotFoundException;
 import site.iris.issuefy.model.dto.RepositoryUrlDto;
+import site.iris.issuefy.model.vo.PagedSubscriptionResponse;
 import site.iris.issuefy.repository.SubscriptionRepository;
 import site.iris.issuefy.repository.UserRepository;
-import site.iris.issuefy.response.SubscriptionResponse;
 
 @Slf4j
 @ExtendWith(MockitoExtension.class)
@@ -78,19 +80,21 @@ class SubscriptionServiceTest {
 		Org org = new Org("testOrg", 123L);
 		Repository repository = new Repository(org, "testRepo", 123L);
 		Subscription subscription = new Subscription(user, repository);
+		Pageable pageable = PageRequest.of(1, 15);
 
 		when(userRepository.findByGithubId(githubId)).thenReturn(Optional.of(user));
-		when(subscriptionRepository.findByUserId(user.getId())).thenReturn(List.of(subscription));
+		doReturn(new PageImpl<>(List.of(subscription)))
+			.when(subscriptionRepository).findByUserId(user.getId(), pageable);
 
 		// when
-		List<SubscriptionResponse> responses = subscriptionService.getSubscribedRepositories(githubId);
+		PagedSubscriptionResponse responses = subscriptionService.getSubscribedRepositories(githubId, 1, 15);
 
 		// then
 		assertNotNull(responses);
-		assertEquals(1, responses.size());
-		assertEquals("testOrg", responses.get(0).org().name());
-		assertEquals(1, responses.get(0).org().repositories().size());
-		assertEquals("testRepo", responses.get(0).org().repositories().get(0).getName());
+		assertEquals(1, responses.subscriptionResponses().size());
+		assertEquals("testOrg", responses.subscriptionResponses().get(0).org().name());
+		assertEquals(1, responses.subscriptionResponses().get(0).org().repositories().size());
+		assertEquals("testRepo", responses.subscriptionResponses().get(0).org().repositories().get(0).getName());
 	}
 
 	@DisplayName("리포지토리를 구독한다")

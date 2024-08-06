@@ -6,7 +6,7 @@ VALUES ('githubuser1', 'user1@example.com'),
        ('githubuser2', 'user2@example.com'),
        ('lvalentine6', 'user3@example.com');
 
--- Inserting organizations
+-- Inserting subscriptionResponses
 INSERT INTO `organization` (name, gh_org_id)
 VALUES ('2024-Iris', 166014585),
        ('Org2', 166014586),
