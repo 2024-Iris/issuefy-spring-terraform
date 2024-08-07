@@ -31,10 +31,10 @@ CREATE TABLE IF NOT EXISTS `issuefy`.`organization`
 
 CREATE TABLE IF NOT EXISTS `issuefy`.`repository`
 (
-    `id`             BIGINT      NOT NULL AUTO_INCREMENT,
-    `org_id`         BIGINT      NOT NULL,
-    `name`           VARCHAR(45) NOT NULL,
-    `gh_repo_id`     BIGINT      NOT NULL,
+    `id`               BIGINT      NOT NULL AUTO_INCREMENT,
+    `org_id`           BIGINT      NOT NULL,
+    `name`             VARCHAR(45) NOT NULL,
+    `gh_repo_id`       BIGINT      NOT NULL,
     `latest_update_at` DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (`id`),
     INDEX `fk_repository_org_idx` (`org_id` ASC) VISIBLE,
