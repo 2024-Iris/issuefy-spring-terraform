@@ -1,14 +1,12 @@
 package site.iris.issuefy.service;
 
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -24,19 +22,16 @@ import site.iris.issuefy.entity.User;
 import site.iris.issuefy.exception.UserNotFoundException;
 import site.iris.issuefy.model.dto.GithubOrgDto;
 import site.iris.issuefy.model.dto.GithubRepositoryDto;
-import site.iris.issuefy.model.dto.RepositoryDto;
 import site.iris.issuefy.model.dto.RepositoryUrlDto;
-import site.iris.issuefy.model.vo.OrgRecord;
-import site.iris.issuefy.model.vo.PagedSubscriptionResponse;
+import site.iris.issuefy.model.dto.SubscriptionListDto;
 import site.iris.issuefy.repository.SubscriptionRepository;
 import site.iris.issuefy.repository.UserRepository;
-import site.iris.issuefy.response.SubscriptionResponse;
+import site.iris.issuefy.response.PagedSubscriptionResponse;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class SubscriptionService {
-	// TODO Enum으로 변경
 	private static String ORG_REQUEST_URL = "https://api.github.com/orgs/";
 	private static String REPOSITORY_REQUEST_URL = "https://api.github.com/repos/";
 	private final SubscriptionRepository subscriptionRepository;
@@ -45,42 +40,48 @@ public class SubscriptionService {
 	private final RepositoryService repositoryService;
 	private final GithubTokenService githubTokenService;
 
-	public PagedSubscriptionResponse getSubscribedRepositories(String githubId, int pageNumber, int pageSize) {
+	public PagedSubscriptionResponse getSubscribedRepositories(String githubId, int page, int pageSize, String sort,
+		String order, boolean starred) {
 		User user = userRepository.findByGithubId(githubId)
 			.orElseThrow(() -> new UserNotFoundException(githubId));
 
-		Pageable pageable = PageRequest.of(pageNumber, pageSize);
-		Page<Subscription> subscriptions = subscriptionRepository.findByUserId(user.getId(), pageable);
+		Sort.Direction direction = Sort.Direction.fromString(order);
+		Sort sorting = Sort.by(direction, getActualSortProperty(sort));
+		Pageable pageable = PageRequest.of(page, pageSize, sorting);
 
-		Map<OrgRecord, List<RepositoryDto>> orgResponseMap = new HashMap<>();
-		for (Subscription subscription : subscriptions) {
-			Long orgId = subscription.getRepository().getOrg().getGhOrgId();
-			String orgName = subscription.getRepository().getOrg().getName();
-			RepositoryDto repositoryDto = RepositoryDto.of(subscription.getRepository().getGhRepoId(),
-				subscription.getRepository().getName(), subscription.isRepoStarred(),
-				subscription.getRepository().getLatestUpdateAt());
-
-			OrgRecord orgRecord = OrgRecord.from(orgId, orgName, new ArrayList<>());
-
-			if (!orgResponseMap.containsKey(orgRecord)) {
-				orgResponseMap.put(orgRecord, new ArrayList<>());
-			}
-			orgResponseMap.get(orgRecord).add(repositoryDto);
+		Page<Subscription> subscriptions;
+		if (starred) {
+			subscriptions = subscriptionRepository.findPageByUserIdAndRepoStarredTrue(user.getId(), pageable);
+		} else {
+			subscriptions = subscriptionRepository.findPageByUserId(user.getId(), pageable);
 		}
 
-		List<SubscriptionResponse> responses = new ArrayList<>();
-		for (Map.Entry<OrgRecord, List<RepositoryDto>> entry : orgResponseMap.entrySet()) {
-			OrgRecord orgRecord = OrgRecord.from(entry.getKey().id(), entry.getKey().name(), entry.getValue());
-			responses.add(SubscriptionResponse.from(orgRecord));
-		}
+		List<SubscriptionListDto> subscriptionListDtos = subscriptions.getContent().stream()
+			.map(subscription -> SubscriptionListDto.of(
+				subscription.getRepository().getOrg().getGhOrgId(),
+				subscription.getRepository().getOrg().getName(),
+				subscription.getRepository().getGhRepoId(),
+				subscription.getRepository().getName(),
+				subscription.getRepository().getLatestUpdateAt(),
+				subscription.isRepoStarred()
+			))
+			.toList();
 
 		return PagedSubscriptionResponse.of(
-			responses,
 			subscriptions.getNumber(),
 			subscriptions.getSize(),
 			subscriptions.getTotalElements(),
-			subscriptions.getTotalPages()
-		);
+			subscriptions.getTotalPages(),
+			subscriptionListDtos
+			);
+	}
+
+	private String getActualSortProperty(String sort) {
+		return switch (sort) {
+			default -> "repository.latestUpdateAt";
+			case "repositoryName" -> "repository.name";
+			case "orgName" -> "repository.org.name";
+		};
 	}
 
 	@Transactional
@@ -108,7 +109,8 @@ public class SubscriptionService {
 		User user = userRepository.findByGithubId(githubId)
 			.orElseThrow(() -> new UserNotFoundException(UserNotFoundException.USER_NOT_FOUND));
 
-		Subscription subscription = subscriptionRepository.findByUserIdAndRepository_GhRepoId(user.getId(), ghRepoId)
+		Subscription subscription = subscriptionRepository.findByUserIdAndRepository_GhRepoId(user.getId(),
+				ghRepoId)
 			.orElseThrow();
 
 		subscription.toggleStar();
@@ -132,7 +134,8 @@ public class SubscriptionService {
 		String accessToken) {
 		return WebClient.create()
 			.get()
-			.uri(REPOSITORY_REQUEST_URL + repositoryUrlDto.getOrgName() + "/" + repositoryUrlDto.getRepositoryName())
+			.uri(
+				REPOSITORY_REQUEST_URL + repositoryUrlDto.getOrgName() + "/" + repositoryUrlDto.getRepositoryName())
 			.headers(headers -> {
 				headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
 				headers.setBearerAuth(accessToken);

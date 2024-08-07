@@ -2,7 +2,6 @@ package site.iris.issuefy.controller;
 
 import java.net.URI;
 import java.util.Collections;
-import java.util.List;
 
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -21,9 +20,8 @@ import org.springframework.web.reactive.function.client.WebClient;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import site.iris.issuefy.model.dto.RepositoryUrlDto;
-import site.iris.issuefy.model.vo.PagedSubscriptionResponse;
 import site.iris.issuefy.model.vo.RepositoryRecord;
-import site.iris.issuefy.response.SubscriptionResponse;
+import site.iris.issuefy.response.PagedSubscriptionResponse;
 import site.iris.issuefy.service.GithubTokenService;
 import site.iris.issuefy.service.SubscriptionService;
 
@@ -39,11 +37,15 @@ public class SubscriptionController {
 	@GetMapping
 	public ResponseEntity<PagedSubscriptionResponse> getSubscribedRepositories(
 		@RequestAttribute("githubId") String githubId,
-		@RequestParam(defaultValue = "0") int pageNumber) {
+		@RequestParam(defaultValue = "0") int page,
+		@RequestParam(defaultValue = "latestUpdateAt") String sort,
+		@RequestParam(defaultValue = "desc") String order,
+		@RequestParam(defaultValue = "false") boolean starred) {
 
 		int pageSize = 15;
 		logRequest(githubId, "Request SubscribedRepositories");
-		PagedSubscriptionResponse response = subscriptionService.getSubscribedRepositories(githubId, pageNumber, pageSize);
+		PagedSubscriptionResponse response = subscriptionService.getSubscribedRepositories(githubId, page, pageSize,
+			sort, order, starred);
 		logResponse(githubId, response);
 		return ResponseEntity.ok(response);
 	}
