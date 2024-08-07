@@ -34,15 +34,15 @@ public class Subscription {
 	private Repository repository;
 
 	@Column(name = "is_repo_starred", nullable = false)
-	private boolean isRepoStarred;
+	private boolean repoStarred;
 
 	public Subscription(User user, Repository repository) {
 		this.user = user;
 		this.repository = repository;
-		this.isRepoStarred = false;
+		this.repoStarred = false;
 	}
 
 	public void toggleStar() {
-		this.isRepoStarred = !this.isRepoStarred;
+		this.repoStarred = !this.repoStarred;
 	}
 }
