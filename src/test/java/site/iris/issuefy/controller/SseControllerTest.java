@@ -48,7 +48,7 @@ class SseControllerTest {
 				.accept(MediaType.TEXT_EVENT_STREAM_VALUE))
 			.andExpect(status().isOk())
 			.andExpect(request().asyncStarted())
-			.andDo(document("sse-connect"));
+			.andDo(document("issuefy/sse/connect"));
 	}
 
 	@Test
@@ -60,9 +60,9 @@ class SseControllerTest {
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(dto)))
 			.andExpect(status().isOk())
-			.andDo(document("sse-receive",
+			.andDo(document("issuefy/sse/receive",
 				requestFields(
-					fieldWithPath("updatedRepositoryIds").description("List of updated repository IDs")
+					fieldWithPath("updatedRepositoryIds").description("업데이트 된 리포지토리 ID 목록")
 				)
 			));
 
