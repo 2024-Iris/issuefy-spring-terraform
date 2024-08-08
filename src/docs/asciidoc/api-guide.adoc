@@ -20,23 +20,29 @@ endif::[]
 === 1.1 OAuth 로그인
 
 ==== HTTP 요청
+
 include::{snippets}/issuefy/oauth/login/http-request.adoc[]
 
 ==== HTTP 응답
+
 include::{snippets}/issuefy/oauth/login/http-response.adoc[]
 
 ===== 응답 필드
+
 include::{snippets}/issuefy/oauth/login/response-fields.adoc[]
 
 === 1.2 OAuth 로그아웃
 
 ==== HTTP 요청
+
 include::{snippets}/issuefy/oauth/logout/http-request.adoc[]
 
 ===== 요청 헤더
+
 include::{snippets}/issuefy/oauth/logout/request-headers.adoc[]
 
 ==== HTTP 응답
+
 include::{snippets}/issuefy/oauth/logout/http-response.adoc[]
 
 == 2. 리포지토리
@@ -44,12 +50,15 @@ include::{snippets}/issuefy/oauth/logout/http-response.adoc[]
 === 2.1 리포지토리 구독
 
 ==== HTTP 요청
+
 include::{snippets}/issuefy/subscriptions/post/http-request.adoc[]
 
 ===== 요청 본문
+
 include::{snippets}/issuefy/subscriptions/post/request-fields.adoc[]
 
 ==== HTTP 응답
+
 include::{snippets}/issuefy/subscriptions/post/http-response.adoc[]
 
 === 2.2 리포지토리 구독 취소
@@ -59,25 +68,31 @@ include::{snippets}/issuefy/subscriptions/post/http-response.adoc[]
 include::{snippets}/issuefy/subscriptions/delete/http-request.adoc[]
 
 ==== HTTP 응답
+
 include::{snippets}/issuefy/subscriptions/delete/http-response.adoc[]
 
 === 2.3 구독중인 리포지토리 목록 조회
 
 ==== HTTP 요청
+
 include::{snippets}/issuefy/subscriptions/get/http-request.adoc[]
 
 ==== HTTP 응답
+
 include::{snippets}/issuefy/subscriptions/get/http-response.adoc[]
 
 === 2.4 리포지토리 즐겨찾기
 
 ==== HTTP 요청
+
 include::{snippets}/issuefy/subscriptions/star/http-request.adoc[]
 
 ===== 경로 매개변수
+
 include::{snippets}/issuefy/subscriptions/star/path-parameters.adoc[]
 
 ==== HTTP 응답
+
 include::{snippets}/issuefy/subscriptions/star/http-response.adoc[]
 
 == 3. 이슈
@@ -85,9 +100,11 @@ include::{snippets}/issuefy/subscriptions/star/http-response.adoc[]
 === 3.1 이슈 목록 조회
 
 ==== HTTP 요청
+
 include::{snippets}/issuefy/issues/get/http-request.adoc[]
 
 ===== 경로 매개변수
+
 include::{snippets}/issuefy/issues/get/path-parameters.adoc[]
 
 ==== HTTP 응답
@@ -95,6 +112,7 @@ include::{snippets}/issuefy/issues/get/path-parameters.adoc[]
 include::{snippets}/issuefy/issues/get/http-response.adoc[]
 
 ===== 응답 본문
+
 include::{snippets}/issuefy/issues/get/response-body.adoc[]
 
 == 4. Server-Sent Events (SSE)
@@ -102,20 +120,25 @@ include::{snippets}/issuefy/issues/get/response-body.adoc[]
 === 4.1 SSE 연결
 
 ==== HTTP 요청
+
 include::{snippets}/issuefy/sse/connect/http-request.adoc[]
 
 ==== HTTP 응답
+
 include::{snippets}/issuefy/sse/connect/http-response.adoc[]
 
 === 4.2 SSE 수신
 
 ==== HTTP 요청
+
 include::{snippets}/issuefy/sse/receive/http-request.adoc[]
 
 ===== 요청 필드
+
 include::{snippets}/issuefy/sse/receive/request-fields.adoc[]
 
 ==== HTTP 응답
+
 include::{snippets}/issuefy/sse/receive/http-response.adoc[]
 
 == 5. 알림
@@ -123,23 +146,29 @@ include::{snippets}/issuefy/sse/receive/http-response.adoc[]
 === 5.1 알림 조회
 
 ==== HTTP 요청
+
 include::{snippets}/issuefy/notifications/get/http-request.adoc[]
 
 ==== HTTP 응답
+
 include::{snippets}/issuefy/notifications/get/http-response.adoc[]
 
 ===== 응답 필드
+
 include::{snippets}/issuefy/notifications/get/response-fields.adoc[]
 
 === 5.2 알림 읽음 여부 업데이트
 
 ==== HTTP 요청
+
 include::{snippets}/issuefy/notifications/update/http-request.adoc[]
 
 ===== 요청 필드
+
 include::{snippets}/issuefy/notifications/update/request-fields.adoc[]
 
 ==== HTTP 응답
+
 include::{snippets}/issuefy/notifications/update/http-response.adoc[]
 
 == 6. 마이페이지
@@ -147,32 +176,41 @@ include::{snippets}/issuefy/notifications/update/http-response.adoc[]
 === 6.1 사용자 정보 조회
 
 ==== HTTP 요청
+
 include::{snippets}/issuefy/user/get-user-info/http-request.adoc[]
 
 ==== HTTP 응답
+
 include::{snippets}/issuefy/user/get-user-info/http-response.adoc[]
 
 ===== 응답 필드
+
 include::{snippets}/issuefy/user/get-user-info/response-fields.adoc[]
 
 === 6.2 알림 수신 여부 업데이트
 
 ==== HTTP 요청
+
 include::{snippets}/issuefy/user/update-alert/http-request.adoc[]
 
 ===== 요청 필드
+
 include::{snippets}/issuefy/user/update-alert/request-fields.adoc[]
 
 ==== HTTP 응답
+
 include::{snippets}/issuefy/user/update-alert/http-response.adoc[]
 
 === 6.3 이메일 업데이트
 
 ==== HTTP 요청
+
 include::{snippets}/issuefy/user/update-email/http-request.adoc[]
 
 ===== 요청 필드
+
 include::{snippets}/issuefy/user/update-email/request-fields.adoc[]
 
 ==== HTTP 응답
+
 include::{snippets}/issuefy/user/update-email/http-response.adoc[]
