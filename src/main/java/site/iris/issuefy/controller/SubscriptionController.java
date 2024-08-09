@@ -28,7 +28,6 @@ import site.iris.issuefy.service.SubscriptionService;
 @RestController
 @RequestMapping("/api/subscription")
 @RequiredArgsConstructor
-@Slf4j
 public class SubscriptionController {
 
 	private final SubscriptionService subscriptionService;
@@ -43,28 +42,23 @@ public class SubscriptionController {
 		@RequestParam(defaultValue = "false") boolean starred) {
 
 		int pageSize = 15;
-		logRequest(githubId, "Request SubscribedRepositories");
 		PagedSubscriptionResponse response = subscriptionService.getSubscribedRepositories(githubId, page, pageSize,
 			sort, order, starred);
-		logResponse(githubId, response);
 		return ResponseEntity.ok(response);
 	}
 
 	@PostMapping
 	public ResponseEntity<String> addRepository(@RequestAttribute String githubId,
 		@RequestBody RepositoryRecord RepositoryRecord) {
-		logRequest(githubId, "Request AddRepository");
 		checkRepositoryExistence(githubId, RepositoryRecord);
 		RepositoryUrlDto repositoryUrlDto = RepositoryUrlDto.of(RepositoryRecord.repositoryUrl(), githubId);
 		subscriptionService.addSubscribeRepository(repositoryUrlDto, githubId);
-		logResponse(githubId, RepositoryRecord.repositoryUrl());
 		return ResponseEntity.created(URI.create(RepositoryRecord.repositoryUrl())).build();
 	}
 
 	@DeleteMapping("/{gh_repo_id}")
 	public ResponseEntity<Void> unsubscribeRepository(@RequestAttribute String githubId,
 		@PathVariable("gh_repo_id") Long ghRepoId) {
-		logRequest(githubId, "Request UnsubscribeRepository for RepoId: " + ghRepoId);
 		subscriptionService.unsubscribeRepository(ghRepoId);
 		return ResponseEntity.noContent().build();
 	}
@@ -72,14 +66,12 @@ public class SubscriptionController {
 	@PutMapping("star/{gh_repo_id}")
 	public ResponseEntity<Void> starRepository(@RequestAttribute String githubId,
 		@PathVariable("gh_repo_id") Long ghRepoId) {
-		logRequest(githubId, "Request StarRepository for RepoId: " + ghRepoId);
 		subscriptionService.toggleRepositoryStar(githubId, ghRepoId);
 		return ResponseEntity.noContent().build();
 	}
 
 	private void checkRepositoryExistence(String githubId, RepositoryRecord RepositoryRecord) {
 		String accessToken = githubTokenService.findAccessToken(githubId);
-		logRequest(githubId, "Request Github API, Repository Url : " + RepositoryRecord.repositoryUrl());
 		WebClient.create()
 			.get()
 			.uri(RepositoryRecord.repositoryUrl())
@@ -90,13 +82,5 @@ public class SubscriptionController {
 			.retrieve()
 			.toBodilessEntity()
 			.block();
-	}
-
-	private void logRequest(String githubId, String message) {
-		log.info("GitHub ID: {} - {}", githubId, message);
-	}
-
-	private void logResponse(String githubId, Object response) {
-		log.info("{} : Response {}", githubId, response);
 	}
 }

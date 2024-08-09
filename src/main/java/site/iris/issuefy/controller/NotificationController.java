@@ -19,7 +19,6 @@ import site.iris.issuefy.service.NotificationService;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("api/notifications")
-@Slf4j
 public class NotificationController {
 
 	private final NotificationService notificationService;
@@ -27,7 +26,6 @@ public class NotificationController {
 	@GetMapping
 	public ResponseEntity<List<NotificationDto>> getNotifications(@RequestAttribute String githubId) {
 		List<NotificationDto> notificationDtos = notificationService.findNotifications(githubId);
-		log.info(notificationDtos.toString());
 		return ResponseEntity.ok(notificationDtos);
 	}
 

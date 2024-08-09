@@ -9,12 +9,10 @@ import lombok.extern.slf4j.Slf4j;
 
 @RestController
 @RequestMapping("/api")
-@Slf4j
 public class HealthCheckController {
 
 	@GetMapping("/health")
 	public ResponseEntity<String> healthCheck() {
-		log.debug("Request Health Check");
 		return ResponseEntity.ok().build();
 	}
 }
