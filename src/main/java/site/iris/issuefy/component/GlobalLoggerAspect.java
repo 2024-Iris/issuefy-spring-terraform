@@ -16,34 +16,44 @@ import jakarta.servlet.http.HttpServletRequest;
 @Aspect
 @Component
 public class GlobalLoggerAspect {
-	@Around("execution(* site.iris.issuefy.controller..*.*(..))")
-	public Object logController(ProceedingJoinPoint joinPoint) throws Throwable {
-		Class<?> clazz = joinPoint.getTarget().getClass();
-		Logger logger = LoggerFactory.getLogger(clazz);
 
-		HttpServletRequest request = ((ServletRequestAttributes)RequestContextHolder.currentRequestAttributes()).getRequest();
-		String methodName = joinPoint.getSignature().getName();
+    @Around("execution(* site.iris.issuefy.controller..*.*(..)) && !execution(* site.iris.issuefy.controller.SseController.*(..))")
+    public Object logRegularController(ProceedingJoinPoint joinPoint) throws Throwable {
+        return logController(joinPoint, "Regular");
+    }
 
-		logger.info("Request: {} {} - Method: {}",
-			request.getMethod(), request.getRequestURI(), methodName);
+    @Around("execution(* site.iris.issuefy.controller.SseController.*(..))")
+    public Object logSseController(ProceedingJoinPoint joinPoint) throws Throwable {
+        return logController(joinPoint, "SSE");
+    }
 
-		long startTime = System.currentTimeMillis();
-		Object result = joinPoint.proceed();
-		long duration = System.currentTimeMillis() - startTime;
+    private Object logController(ProceedingJoinPoint joinPoint, String controllerType) throws Throwable {
+        Logger logger = LoggerFactory.getLogger(joinPoint.getTarget().getClass());
+        HttpServletRequest request = ((ServletRequestAttributes)RequestContextHolder.currentRequestAttributes()).getRequest();
+        String methodName = joinPoint.getSignature().getName();
+        String githubId = (String) request.getAttribute("githubId");
 
-		logger.info("Response: {} {} - Method: {} - Duration: {}ms",
-			request.getMethod(), request.getRequestURI(), methodName, duration);
+        logger.info("{} Request: {} {} - Method: {} - GithubID: {}",
+            controllerType, request.getMethod(), request.getRequestURI(), methodName, githubId);
 
-		return result;
-	}
+        long startTime = System.currentTimeMillis();
+        Object result = joinPoint.proceed();
+        long duration = System.currentTimeMillis() - startTime;
 
-	@AfterThrowing(pointcut = "execution(* site.iris.issuefy.service..*.*(..))", throwing = "ex")
-	public void logServiceException(JoinPoint joinPoint, Exception ex) {
-		Class<?> clazz = joinPoint.getTarget().getClass();
-		Logger logger = LoggerFactory.getLogger(clazz);
+        if (controllerType.equals("SSE") && methodName.equals("connect")) {
+            logger.info("SSE Connection established for user: {}", githubId);
+        }
 
-		String methodName = joinPoint.getSignature().getName();
-		logger.error("Exception in method: {} - Error: {}",
-			methodName, ex.getMessage(), ex);
-	}
+        logger.info("{} Response: {} {} - Method: {} - GithubID: {} - Duration: {}ms",
+            controllerType, request.getMethod(), request.getRequestURI(), methodName, githubId, duration);
+
+        return result;
+    }
+
+    @AfterThrowing(pointcut = "execution(* site.iris.issuefy.service..*.*(..))", throwing = "ex")
+    public void logServiceException(JoinPoint joinPoint, Exception ex) {
+        Logger logger = LoggerFactory.getLogger(joinPoint.getTarget().getClass());
+        String methodName = joinPoint.getSignature().getName();
+        logger.error("Exception in method: {} - Error: {}", methodName, ex.getMessage(), ex);
+    }
 }
