@@ -1,8 +1,9 @@
 package site.iris.issuefy.service;
 
 import java.security.Key;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import java.util.HashMap;
@@ -16,91 +17,101 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 
 import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import lombok.extern.slf4j.Slf4j;
 import site.iris.issuefy.entity.Jwt;
-import site.iris.issuefy.model.dto.BlacklistedJwtDto;
 
 @Component
 @Slf4j
 public class TokenProvider {
 
-	private final RedisTemplate<String, BlacklistedJwtDto> redisTemplate;
-	private Key key;
+    private static final ZoneOffset UTC_ZONE = ZoneOffset.UTC;
+    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").withZone(UTC_ZONE);
+    private static final long ACCESS_TOKEN_VALIDITY_HOURS = 8L;
+    private static final long REFRESH_TOKEN_VALIDITY_DAYS = 60L;
+    private static final long BLACKLIST_EXTRA_HOURS = 1L;
+    private static final int TOKEN_ID_LENGTH = 10;
 
-	public TokenProvider(RedisTemplate<String, BlacklistedJwtDto> redisTemplate,
-		@Value("${jwt.secretKey}") String secretKey) {
-		this.key = Keys.hmacShaKeyFor(secretKey.getBytes());
-		this.redisTemplate = redisTemplate;
-	}
+    private final RedisTemplate<String, String> redisTemplate;
+    private final Key key;
 
-	public Jwt createJwt(Map<String, Object> claims) {
-		String accessToken = createToken(claims, getExpireDateAccessToken());
-		String refreshToken = createToken(new HashMap<>(), getExpireDateRefreshToken());
+    public TokenProvider(RedisTemplate<String, String> redisTemplate,
+                         @Value("${jwt.secretKey}") String secretKey) {
+        this.key = Keys.hmacShaKeyFor(secretKey.getBytes());
+        this.redisTemplate = redisTemplate;
+    }
 
-		return Jwt.of(accessToken, refreshToken);
-	}
+    public Jwt createJwt(Map<String, Object> claims) {
+        String accessToken = createToken(claims, getExpireDateAccessToken());
+        String refreshToken = createToken(new HashMap<>(), getExpireDateRefreshToken());
 
-	private String createToken(Map<String, Object> claims, Date expireDate) {
+        return Jwt.of(accessToken, refreshToken);
+    }
 
-		return Jwts.builder()
-			.claims(claims)
-			.expiration(expireDate)
-			.signWith(key)
-			.compact();
-	}
+    private String createToken(Map<String, Object> claims, Date expireDate) {
+        return Jwts.builder()
+                .claims(claims)
+                .expiration(expireDate)
+                .signWith(key)
+                .compact();
+    }
 
-	public Claims getClaims(String token) {
+    public Claims getClaims(String token) {
+        return Jwts.parser()
+                .verifyWith((SecretKey)key)
+                .build()
+                .parseSignedClaims(token)
+                .getPayload();
+    }
 
-		return Jwts.parser()
-			.verifyWith((SecretKey)key)
-			.build()
-			.parseSignedClaims(token)
-			.getPayload();
-	}
+    public boolean isValidToken(String token) {
+        Claims claims;
+        try {
+            claims = getClaims(token);
+        } catch (JwtException | IllegalArgumentException e) {
+            return false;
+        }
 
-	public boolean isValidToken(String token) {
-		BlacklistedJwtDto blacklistedJwtDto = redisTemplate.opsForValue().get(token);
-		if (blacklistedJwtDto != null) {
-			return false;
-		}
-		try {
-			Jws<Claims> claims = Jwts.parser()
-				.verifyWith((SecretKey)key)
-				.build()
-				.parseSignedClaims(token);
-			return claims.getPayload()
-				.getExpiration()
-				.after(Date.from(LocalDateTime.now().atZone(ZoneId.systemDefault()).toInstant()));
-		} catch (JwtException | IllegalArgumentException e) {
-			return false;
-		}
-	}
+        String githubId = claims.get("githubId", String.class);
+        String blacklistKey = "blacklist:" + githubId + ":" + generateTokenId(token);
 
-	public void invalidateToken(String token) {
-		Claims claims = getClaims(token);
-		LocalDateTime expiresAt = claims.getExpiration().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
-		LocalDateTime now = LocalDateTime.now();
+        return Boolean.FALSE.equals(redisTemplate.hasKey(blacklistKey)) &&
+               claims.getExpiration().after(Date.from(ZonedDateTime.now(UTC_ZONE).toInstant()));
+    }
 
-		BlacklistedJwtDto blacklistedJwtDto = new BlacklistedJwtDto(token, now, expiresAt);
+    public void invalidateToken(String token) {
+        Claims claims = getClaims(token);
+        String githubId = claims.get("githubId", String.class);
+        ZonedDateTime tokenExpiresAt = ZonedDateTime.ofInstant(claims.getExpiration().toInstant(), UTC_ZONE);
+        ZonedDateTime now = ZonedDateTime.now(UTC_ZONE);
+        ZonedDateTime blacklistExpiresAt = tokenExpiresAt.plusHours(BLACKLIST_EXTRA_HOURS);
 
-		LocalDateTime redisExpirationTime = expiresAt.plusHours(1);
-		long redisExpirationSeconds = ChronoUnit.SECONDS.between(LocalDateTime.now(), redisExpirationTime);
-		redisTemplate.opsForValue().set(token, blacklistedJwtDto, redisExpirationSeconds, TimeUnit.SECONDS);
-	}
+        String blacklistKey = "blacklist:" + githubId + ":" + generateTokenId(token);
+        Map<String, String> blacklistEntry = new HashMap<>();
+        blacklistEntry.put("tokenExpiresAt", formatDateTime(tokenExpiresAt));
+        blacklistEntry.put("invalidatedAt", formatDateTime(now));
+        blacklistEntry.put("blacklistExpiresAt", formatDateTime(blacklistExpiresAt));
+        blacklistEntry.put("token", token);
 
-	private Date getExpireDateAccessToken() {
-		long expireTimeMils = 1000L * 60 * 60 * 8;
+        redisTemplate.opsForHash().putAll(blacklistKey, blacklistEntry);
+        redisTemplate.expire(blacklistKey, ChronoUnit.SECONDS.between(now, blacklistExpiresAt), TimeUnit.SECONDS);
+    }
 
-		return new Date(System.currentTimeMillis() + expireTimeMils);
-	}
+    private Date getExpireDateAccessToken() {
+        return Date.from(ZonedDateTime.now(UTC_ZONE).plusHours(ACCESS_TOKEN_VALIDITY_HOURS).toInstant());
+    }
 
-	private Date getExpireDateRefreshToken() {
-		long expireTimeMils = 1000L * 60 * 60 * 24 * 60;
+    private Date getExpireDateRefreshToken() {
+        return Date.from(ZonedDateTime.now(UTC_ZONE).plusDays(REFRESH_TOKEN_VALIDITY_DAYS).toInstant());
+    }
 
-		return new Date(System.currentTimeMillis() + expireTimeMils);
-	}
+    private String generateTokenId(String token) {
+        return token.substring(Math.max(0, token.length() - TOKEN_ID_LENGTH));
+    }
+
+    private String formatDateTime(ZonedDateTime dateTime) {
+        return dateTime.format(DATE_FORMATTER);
+    }
 }
