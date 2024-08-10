@@ -35,7 +35,7 @@ public class GlobalLoggerAspect {
 		String methodName = joinPoint.getSignature().getName();
 
 		if (controllerType.equals("SSE") && methodName.equals("connect")) {
-			logger.debug("SSE Connection opened for user: {}", MDC.get("user"));
+			logger.info("SSE Connection opened for user: {}", MDC.get("user"));
 			return joinPoint.proceed();
 		}
 

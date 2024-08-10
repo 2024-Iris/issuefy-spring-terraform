@@ -2,6 +2,7 @@ package site.iris.issuefy.controller;
 
 import java.io.IOException;
 
+import org.slf4j.MDC;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -12,9 +13,12 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import site.iris.issuefy.filter.JwtAuthenticationFilter;
 import site.iris.issuefy.model.dto.UpdateRepositoryDto;
 import site.iris.issuefy.service.NotificationService;
 
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 public class SseController {
@@ -28,6 +32,7 @@ public class SseController {
 
 		emitter.onTimeout(() -> {
 			notificationService.removeEmitter(githubId);
+			log.info("SSE Connection closed for user: {}", JwtAuthenticationFilter.maskId(githubId));
 			try {
 				emitter.send(SseEmitter.event().name("error").data("Connection timed out"));
 			} catch (IOException ignored) {
