@@ -25,9 +25,13 @@ import site.iris.issuefy.service.TokenProvider;
 @Slf4j
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
-	public static final String BEARER_DELIMITER = "Bearer ";
-	public static final int UUID_BEGIN_IDX = 0;
-	public static final int UUID_END_IDX = 8;
+	private static final String BEARER_DELIMITER = "Bearer ";
+	private static final int UUID_BEGIN_IDX = 0;
+	private static final int UUID_END_IDX = 8;
+	private static final int VISIBLE_CHARS_FRONT = 2;
+	private static final int VISIBLE_CHARS_BACK = 2;
+	private static final int MIN_LENGTH_FOR_MASKING = 5;
+	private static final char MASK_CHAR = '*';
 
 	private final TokenProvider tokenProvider;
 	private final LambdaKey lambdaKey;
@@ -42,20 +46,19 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
 		MDC.put("containerId", ContainerIdUtil.getContainerId());
 		MDC.put("requestId", requestId);
-		MDC.put("clientIP", clientIP);
 		MDC.put("requestURL", path);
 
 		try {
 			// 프리플라이트 요청 처리
 			if (request.getMethod().equals("OPTIONS")) {
-				MDC.put("githubId", "OPTIONS");
+				MDC.put("user", "OPTIONS");
 				filterChain.doFilter(request, response);
 				return;
 			}
 
 			// 인증이 필요없는 경로 처리
 			if (path.startsWith("/api/login") || path.equals("/api/docs") || path.equals("/api/health")) {
-				MDC.put("githubId", "Anonymous");
+				MDC.put("user", "Anonymous");
 				filterChain.doFilter(request, response);
 				return;
 			}
@@ -64,7 +67,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 			if (path.startsWith("/api/receive")) {
 				String bearerToken = request.getHeader(AUTHORIZATION);
 				if (bearerToken.equals(BEARER_DELIMITER + lambdaKey.getKey())) {
-					MDC.put("githubId", "LambdaFunction");
+					MDC.put("user", "LambdaFunction");
 					filterChain.doFilter(request, response);
 					return;
 				}
@@ -73,20 +76,20 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 			// JWT 토큰 처리
 			String token = getJwtFromRequest(request);
 			if (!tokenProvider.isValidToken(token)) {
-				MDC.put("githubId", "JwtFilter");
+				MDC.put("user", "JwtFilter");
 				throw new UnauthenticatedException(UnauthenticatedException.ACCESS_TOKEN_EXPIRED,
 					HttpStatus.FORBIDDEN.value());
 			}
 
 			Claims claims = tokenProvider.getClaims(token);
 			String githubId = (String)claims.get("githubId");
-			MDC.put("githubId", githubId);
+			MDC.put("user", maskId(githubId));
 			request.setAttribute("githubId", githubId);
 
 			filterChain.doFilter(request, response);
 
 		} catch (UnauthenticatedException e) {
-			handleUnauthorizedException(response, e);
+			handleUnauthorizedException(clientIP, path, response, e);
 		} finally {
 			MDC.clear();
 		}
@@ -100,10 +103,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 		return clientIP;
 	}
 
-	private void handleUnauthorizedException(HttpServletResponse response, UnauthenticatedException e)
+	private void handleUnauthorizedException(String clientIP, String path, HttpServletResponse response,
+		UnauthenticatedException e)
 		throws IOException {
-		log.warn("Status: {}, Message: {}",
-			e.getStatusCode(),
+		log.warn("ClientIP: {}, RequestURL : {}, Message: {}",
+			clientIP,
+			path,
 			e.getMessage());
 
 		response.setHeader("Access-Control-Allow-Origin", "http://localhost:3000");
@@ -130,5 +135,19 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 		}
 
 		return bearerToken.substring(BEARER_DELIMITER.length());
+	}
+
+	public static String maskId(String githubId) {
+		if (githubId == null || githubId.length() < MIN_LENGTH_FOR_MASKING) {
+			return githubId;
+		}
+
+		int totalVisibleChars = VISIBLE_CHARS_FRONT + VISIBLE_CHARS_BACK;
+		int maskedLength = Math.max(0, githubId.length() - totalVisibleChars);
+		String maskedPart = String.valueOf(MASK_CHAR).repeat(maskedLength);
+
+		return githubId.substring(0, VISIBLE_CHARS_FRONT) +
+			maskedPart +
+			githubId.substring(githubId.length() - VISIBLE_CHARS_BACK);
 	}
 }
