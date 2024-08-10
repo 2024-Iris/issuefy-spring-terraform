@@ -5,6 +5,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.reactive.function.client.WebClientException;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import lombok.extern.slf4j.Slf4j;
 import site.iris.issuefy.common.ErrorResponse;
@@ -48,5 +49,12 @@ public class GlobalExceptionHandler {
 		log.error(e.getMessage());
 		ErrorResponse errorResponse = new ErrorResponse(e.getMessage());
 		return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR.value()).body(errorResponse);
+	}
+
+	@ExceptionHandler(NoResourceFoundException.class)
+	public ResponseEntity<String> handleNoResourceFoundException(NoResourceFoundException ex) {
+		log.warn("Requested resource not found: {}", ex.getResourcePath());
+		return ResponseEntity.status(HttpStatus.NOT_FOUND)
+			.body("Requested resource not found");
 	}
 }
