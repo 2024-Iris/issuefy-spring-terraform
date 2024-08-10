@@ -19,6 +19,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import site.iris.issuefy.component.LambdaKey;
 import site.iris.issuefy.exception.UnauthenticatedException;
+import site.iris.issuefy.global.ContainerIdUtil;
 import site.iris.issuefy.service.TokenProvider;
 
 @Slf4j
@@ -39,6 +40,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 		String clientIP = getClientIp(request);
 		String path = request.getRequestURI();
 
+		MDC.put("containerId", ContainerIdUtil.getContainerId());
 		MDC.put("requestId", requestId);
 		MDC.put("clientIP", clientIP);
 		MDC.put("requestURL", path);
