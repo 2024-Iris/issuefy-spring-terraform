@@ -26,7 +26,7 @@ import site.iris.issuefy.service.GithubTokenService;
 import site.iris.issuefy.service.SubscriptionService;
 
 @RestController
-@RequestMapping("/api/subscription")
+@RequestMapping("/api/subscriptions")
 @RequiredArgsConstructor
 public class SubscriptionController {
 

@@ -58,13 +58,13 @@ class SubscriptionControllerTest {
 			PagedSubscriptionResponse.of(1, 15, 1, 1, subscriptionResponses));
 
 		// when
-		ResultActions result = mockMvc.perform(get("/api/subscription")
+		ResultActions result = mockMvc.perform(get("/api/subscriptions")
 			.header("Authorization", token)
 			.requestAttr("githubId", githubId));
 
 		// then
 		result.andExpect(status().isOk())
-			.andDo(document("issuefy/subscription/get",
+			.andDo(document("issuefy/subscriptions/get",
 				getDocumentRequest(),
 				getDocumentResponse()
 			));
@@ -79,18 +79,18 @@ class SubscriptionControllerTest {
 		RepositoryRecord repositoryUrlVo = new RepositoryRecord(repositoryUrl);
 
 		// when
-		ResultActions result = mockMvc.perform(post("/api/subscription")
+		ResultActions result = mockMvc.perform(post("/api/subscriptions")
 			.requestAttr("githubId", githubId)
 			.contentType(MediaType.APPLICATION_JSON)
 			.content(objectMapper.writeValueAsString(repositoryUrlVo)));
 
 		// then
 		result.andExpect(status().isCreated())
-			.andDo(document("issuefy/subscription/post",
+			.andDo(document("issuefy/subscriptions/post",
 				getDocumentRequest(),
 				getDocumentResponse(),
 				requestFields(
-					fieldWithPath("repositoryUrl").type(JsonFieldType.STRING).description("리포지토리 URL")
+					fieldWithPath("repositoryUrl").type(JsonFieldType.STRING).description("GitHub 리포지토리 URL")
 				)
 			));
 	}
@@ -104,12 +104,12 @@ class SubscriptionControllerTest {
 
 		doNothing().when(subscriptionService).unsubscribeRepository(ghRepoId);
 
-		mockMvc.perform(RestDocumentationRequestBuilders.delete("/api/subscription/{gh_repo_id}", ghRepoId)
+		mockMvc.perform(RestDocumentationRequestBuilders.delete("/api/subscriptions/{gh_repo_id}", ghRepoId)
 				.requestAttr("githubId", githubId))
 			.andExpect(status().isNoContent())
-			.andDo(document("unsubscribe-repository",
+			.andDo(document("issuefy/subscriptions/delete",
 				pathParameters(
-					parameterWithName("gh_repo_id").description("GitHub 저장소 ID")
+					parameterWithName("gh_repo_id").description("GitHub 리포지토리 ID")
 				)
 			));
 
@@ -127,16 +127,16 @@ class SubscriptionControllerTest {
 
 		// when
 		ResultActions result = mockMvc.perform(
-			RestDocumentationRequestBuilders.put("/api/subscription/star/{gh_repo_id}", ghRepoId)
+			RestDocumentationRequestBuilders.put("/api/subscriptions/star/{gh_repo_id}", ghRepoId)
 				.requestAttr("githubId", githubId));
 
 		// then
 		result.andExpect(status().isNoContent())
-			.andDo(document("issuefy/subscription/star",
+			.andDo(document("issuefy/subscriptions/star",
 				getDocumentRequest(),
 				getDocumentResponse(),
 				pathParameters(
-					parameterWithName("gh_repo_id").description("GitHub 저장소 ID")
+					parameterWithName("gh_repo_id").description("GitHub 리포지토리 ID")
 				)
 			));
 
