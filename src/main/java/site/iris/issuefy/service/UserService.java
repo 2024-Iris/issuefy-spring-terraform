@@ -64,7 +64,7 @@ public class UserService {
 
 	@Transactional
 	public void withdraw(String githubId) {
-		deleteGithubAuth(githubId);
+		githubDeleteGithubAuth(githubId);
 		userRepository.deleteByGithubId(githubId);
 	}
 
@@ -73,7 +73,7 @@ public class UserService {
 		return UserVerifyDto.from(exists);
 	}
 
-	private void deleteGithubAuth(String githubId) {
+	private void githubDeleteGithubAuth(String githubId) {
 		try {
 			String accessToken = githubTokenService.findAccessToken(githubId);
 			webClient.method(HttpMethod.DELETE)

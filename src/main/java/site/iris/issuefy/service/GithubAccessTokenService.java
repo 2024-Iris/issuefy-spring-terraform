@@ -20,7 +20,7 @@ public class GithubAccessTokenService {
 		this.webClient = webClient;
 	}
 
-	public String getToken(String code) {
+	public String githubGetToken(String code) {
 		return webClient.post()
 			.uri("/login/oauth/access_token")
 			.contentType(MediaType.APPLICATION_FORM_URLENCODED)

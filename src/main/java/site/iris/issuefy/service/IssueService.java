@@ -46,7 +46,7 @@ public class IssueService {
 
 	public RepositoryIssuesResponse initializeIssueSubscription(String orgName, String repoName, String githubId) {
 		Repository repository = findRepositoryByName(repoName);
-		Optional<List<IssueDto>> issueDtos = getOpenGoodFirstIssues(orgName, repoName, githubId);
+		Optional<List<IssueDto>> issueDtos = githubGetOpenGoodFirstIssues(orgName, repoName, githubId);
 
 		List<Issue> issues = new ArrayList<>();
 		List<Label> allLabels = new ArrayList<>();
@@ -111,7 +111,7 @@ public class IssueService {
 		}).toList();
 	}
 
-	private Optional<List<IssueDto>> getOpenGoodFirstIssues(String orgName, String repoName, String githubId) {
+	private Optional<List<IssueDto>> githubGetOpenGoodFirstIssues(String orgName, String repoName, String githubId) {
 		String accessToken = githubTokenService.findAccessToken(githubId);
 		return Optional.ofNullable(webClient.get()
 			.uri(uriBuilder -> uriBuilder

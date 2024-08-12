@@ -41,10 +41,10 @@ public class AuthenticationService {
 	}
 
 	public UserDto githubLogin(String code) {
-		String accessToken = githubAccessTokenService.getToken(code);
+		String accessToken = githubAccessTokenService.githubGetToken(code);
 		log.info("Successfully retrieve GitHub access token");
 		OauthDto oauthDto = parseOauthDto(accessToken);
-		UserDto loginUserDto = getUserInfo(oauthDto);
+		UserDto loginUserDto = githubGetUserInfo(oauthDto);
 		githubTokenService.storeAccessToken(loginUserDto.getGithubId(), oauthDto.getAccessToken());
 		userService.registerUserIfNotExist(loginUserDto);
 		return loginUserDto;
@@ -72,7 +72,7 @@ public class AuthenticationService {
 		return OauthDto.fromMap(responseMap);
 	}
 
-	private UserDto getUserInfo(OauthDto oauthDto) {
+	private UserDto githubGetUserInfo(OauthDto oauthDto) {
 		return webClient.get()
 			.uri("/user")
 			.headers(headers -> {

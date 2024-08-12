@@ -42,7 +42,7 @@ class AuthenticationServiceTest {
 		UserDto userDto = UserDto.of("testUser", "testUserUrl", "test@email.com", false);
 
 		GithubAccessTokenService githubAccessTokenService = mock(GithubAccessTokenService.class);
-		when(githubAccessTokenService.getToken(authenticationCode)).thenReturn(
+		when(githubAccessTokenService.githubGetToken(authenticationCode)).thenReturn(
 			"access_token=testToken&scope=&token_type=bearer");
 
 		WebClient webClient = WebClient.builder().baseUrl(mockWebServer.url("/").toString()).build();

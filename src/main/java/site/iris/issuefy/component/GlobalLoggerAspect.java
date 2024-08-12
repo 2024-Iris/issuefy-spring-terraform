@@ -63,4 +63,20 @@ public class GlobalLoggerAspect {
 		String methodName = joinPoint.getSignature().getName();
 		logger.error("Exception in method: {} - Error: {}", methodName, ex.getMessage(), ex);
 	}
+
+	@Around("execution(* site.iris.issuefy.service..*.github*(..))")
+	public Object logGithubApiCall(ProceedingJoinPoint joinPoint) throws Throwable {
+		Logger logger = LoggerFactory.getLogger(joinPoint.getTarget().getClass());
+		String methodName = joinPoint.getSignature().getName();
+
+		logger.info("GitHub API Call - Start: {}", methodName);
+		long startTime = System.currentTimeMillis();
+
+		Object result = joinPoint.proceed();
+
+		long duration = System.currentTimeMillis() - startTime;
+		logger.info("GitHub API Call - End: {} - Duration: {}ms", methodName, duration);
+
+		return result;
+	}
 }
