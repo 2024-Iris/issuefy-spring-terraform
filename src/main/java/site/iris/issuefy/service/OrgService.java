@@ -1,13 +1,13 @@
 package site.iris.issuefy.service;
 
-import java.util.Optional;
-
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import site.iris.issuefy.entity.Org;
+import site.iris.issuefy.exception.code.ErrorCode;
+import site.iris.issuefy.exception.validation.EmptyBodyException;
 import site.iris.issuefy.model.dto.GithubOrgDto;
 import site.iris.issuefy.repository.OrgRepository;
 
@@ -18,12 +18,15 @@ public class OrgService {
 
 	@Transactional
 	public Org saveOrg(ResponseEntity<GithubOrgDto> orgInfo) {
-		return Optional.ofNullable(orgInfo.getBody())
-			.map(body -> orgRepository.findByName(body.getLogin())
-				.orElseGet(() -> {
-					Org newOrg = new Org(orgInfo.getBody().getLogin(), orgInfo.getBody().getId());
-					return orgRepository.save(newOrg);
-				})
-			).orElseThrow(() -> new NullPointerException("Org Info Body is null"));
+		if (orgInfo.getBody() == null) {
+			throw new EmptyBodyException(ErrorCode.ORG_BODY_EMPTY.getMessage(), ErrorCode.ORG_BODY_EMPTY.getStatus());
+		}
+
+		GithubOrgDto orgDto = orgInfo.getBody();
+		return orgRepository.findByName(orgDto.getLogin())
+			.orElseGet(() -> {
+				Org newOrg = new Org(orgDto.getLogin(), orgDto.getId());
+				return orgRepository.save(newOrg);
+			});
 	}
 }

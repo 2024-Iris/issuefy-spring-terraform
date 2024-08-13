@@ -7,13 +7,15 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 
 import site.iris.issuefy.entity.Issue;
 import site.iris.issuefy.entity.IssueLabel;
 import site.iris.issuefy.entity.Label;
 import site.iris.issuefy.entity.Repository;
-import site.iris.issuefy.exception.RepositoryNotFoundException;
 import site.iris.issuefy.exception.code.ErrorCode;
+import site.iris.issuefy.exception.github.GithubApiException;
+import site.iris.issuefy.exception.resource.RepositoryNotFoundException;
 import site.iris.issuefy.model.dto.IssueDto;
 import site.iris.issuefy.repository.IssueLabelRepository;
 import site.iris.issuefy.repository.IssueRepository;
@@ -91,7 +93,8 @@ public class IssueService {
 		// TODO: 리포지토리 이름 변경 시 update 로직 구현 필요
 		return repositoryRepository.findByName(repositoryName)
 			.orElseThrow(
-				() -> new RepositoryNotFoundException(ErrorCode.NOT_EXIST_REPOSITORY.getMessage() + repositoryName));
+				() -> new RepositoryNotFoundException(ErrorCode.NOT_EXIST_REPOSITORY.getMessage(),
+					ErrorCode.NOT_EXIST_REPOSITORY.getStatus(), repositoryName));
 	}
 
 	private List<IssueResponse> convertToResponse(List<Issue> issues) {
@@ -113,20 +116,24 @@ public class IssueService {
 
 	private Optional<List<IssueDto>> githubGetOpenGoodFirstIssues(String orgName, String repoName, String githubId) {
 		String accessToken = githubTokenService.findAccessToken(githubId);
-		return Optional.ofNullable(webClient.get()
-			.uri(uriBuilder -> uriBuilder
-				.path("/repos/{owner}/{repo}/issues")
-				.queryParam("state", "open")
-				.queryParam("sort", "created")
-				.queryParam("direction", "desc")
-				.queryParam("labels", "good first issue")
-				.build(orgName, repoName))
-			.header("accept", "application/vnd.github+json")
-			.header("Authorization", "Bearer " + accessToken)
-			.retrieve()
-			.bodyToFlux(IssueDto.class)
-			.collectList()
-			.block());
+		try {
+			return Optional.ofNullable(webClient.get()
+				.uri(uriBuilder -> uriBuilder
+					.path("/repos/{owner}/{repo}/issues")
+					.queryParam("state", "open")
+					.queryParam("sort", "created")
+					.queryParam("direction", "desc")
+					.queryParam("labels", "good first issue")
+					.build(orgName, repoName))
+				.header("accept", "application/vnd.github+json")
+				.header("Authorization", "Bearer " + accessToken)
+				.retrieve()
+				.bodyToFlux(IssueDto.class)
+				.collectList()
+				.block());
+		} catch (WebClientResponseException e) {
+			throw new GithubApiException(e.getStatusCode(), e.getResponseBodyAsString());
+		}
 	}
 
 	private void saveAllEntities(List<Issue> issues, List<IssueLabel> issueLabels, List<Label> allLabels) {

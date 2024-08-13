@@ -13,6 +13,9 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import site.iris.issuefy.entity.User;
+import site.iris.issuefy.exception.code.ErrorCode;
+import site.iris.issuefy.exception.github.GithubApiException;
+import site.iris.issuefy.exception.resource.UserNotFoundException;
 import site.iris.issuefy.model.dto.UserDto;
 import site.iris.issuefy.model.dto.UserVerifyDto;
 import site.iris.issuefy.repository.UserRepository;
@@ -46,7 +49,9 @@ public class UserService {
 	}
 
 	public UserDto getUserInfo(String githubId) {
-		User user = userRepository.findByGithubId(githubId).orElseThrow();
+		User user = userRepository.findByGithubId(githubId)
+			.orElseThrow(() -> new UserNotFoundException(ErrorCode.NOT_EXIST_USER.getMessage(),
+				ErrorCode.NOT_EXIST_USER.getStatus(), githubId));
 		return UserDto.of(user.getGithubId(), user.getEmail(), user.isAlertStatus());
 	}
 
@@ -88,9 +93,8 @@ public class UserService {
 				.retrieve()
 				.toBodilessEntity()
 				.block();
-		} catch (Exception e) {
-			log.info(e.getMessage());
-			throw new IllegalArgumentException("Failed to delete github auth");
+		} catch (GithubApiException e) {
+			throw new GithubApiException(e.getStatusCode(), e.getGithubMessage());
 		}
 	}
 }

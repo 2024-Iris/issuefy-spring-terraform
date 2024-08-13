@@ -6,6 +6,9 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
+
+import site.iris.issuefy.exception.github.GithubApiException;
 
 @Service
 public class GithubAccessTokenService {
@@ -21,14 +24,18 @@ public class GithubAccessTokenService {
 	}
 
 	public String githubGetToken(String code) {
-		return webClient.post()
-			.uri("/login/oauth/access_token")
-			.contentType(MediaType.APPLICATION_FORM_URLENCODED)
-			.body(BodyInserters.fromFormData("client_id", clientId)
-				.with("client_secret", clientSecret)
-				.with("code", code))
-			.retrieve()
-			.bodyToMono(String.class)
-			.block();
+		try {
+			return webClient.post()
+				.uri("/login/oauth/access_token")
+				.contentType(MediaType.APPLICATION_FORM_URLENCODED)
+				.body(BodyInserters.fromFormData("client_id", clientId)
+					.with("client_secret", clientSecret)
+					.with("code", code))
+				.retrieve()
+				.bodyToMono(String.class)
+				.block();
+		} catch (WebClientResponseException e) {
+			throw new GithubApiException(e.getStatusCode(), e.getResponseBodyAsString());
+		}
 	}
 }

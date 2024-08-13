@@ -16,6 +16,9 @@ import site.iris.issuefy.entity.Notification;
 import site.iris.issuefy.entity.Subscription;
 import site.iris.issuefy.entity.User;
 import site.iris.issuefy.entity.UserNotification;
+import site.iris.issuefy.exception.code.ErrorCode;
+import site.iris.issuefy.exception.network.SseException;
+import site.iris.issuefy.exception.resource.UserNotFoundException;
 import site.iris.issuefy.model.dto.NotificationDto;
 import site.iris.issuefy.model.dto.NotificationReadDto;
 import site.iris.issuefy.model.dto.UnreadNotificationDto;
@@ -52,20 +55,22 @@ public class NotificationService {
 				.data(getNotification(githubId)));
 			log.debug("Initial notification sent successfully to user {}", githubId);
 		} catch (IOException e) {
-			log.error("Failed to send initial notification to user {}", githubId, e);
+			throw new SseException(ErrorCode.FAILED_INIT_CONNECTION.getMessage(),
+				ErrorCode.FAILED_INIT_CONNECTION.getStatus());
 		}
 	}
 
 	private UnreadNotificationDto getNotification(String githubId) {
 		User user = userRepository.findByGithubId(githubId)
-			.orElseThrow(() -> new RuntimeException("User not found with githubId: " + githubId));
+			.orElseThrow(() -> new UserNotFoundException(ErrorCode.NOT_EXIST_USER.getMessage(),
+				ErrorCode.NOT_EXIST_USER.getStatus(), githubId));
 
 		int unreadCount = userNotificationRepository.countByUserIdAndIsReadFalse(user.getId());
 		return new UnreadNotificationDto(unreadCount);
 	}
 
 	public void findSubscribeRepositoryUser(Long repositoryId) {
-		List<Subscription> subscriptions = subscriptionRepository.findByRepositoryId(repositoryId);
+		List<Subscription> subscriptions = subscriptionRepository.findByRepositoryId(repositoryId).orElseThrow();
 		for (Subscription subscription : subscriptions) {
 			String githubId = subscription.getUser().getGithubId();
 			String repositoryName = subscription.getRepository().getName();
@@ -91,9 +96,8 @@ public class NotificationService {
 					.data(unreadNotificationDto));
 			}
 		} catch (IOException e) {
-			log.error("Failed to send notification to user {}", githubId, e);
-		} catch (Exception e) {
-			log.error("Unexpected error when sending notification to user {}", githubId, e);
+			throw new SseException(ErrorCode.FAILED_SENDING_MESSAGE.getMessage(),
+				ErrorCode.FAILED_SENDING_MESSAGE.getStatus());
 		}
 	}
 

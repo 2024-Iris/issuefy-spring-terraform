@@ -18,9 +18,10 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import site.iris.issuefy.component.LambdaKey;
-import site.iris.issuefy.exception.UnauthenticatedException;
-import site.iris.issuefy.global.ContainerIdUtil;
+import site.iris.issuefy.exception.code.ErrorCode;
+import site.iris.issuefy.exception.security.UnauthenticatedException;
 import site.iris.issuefy.service.TokenProvider;
+import site.iris.issuefy.util.ContainerIdUtil;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -75,10 +76,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
 			// JWT 토큰 처리
 			String token = getJwtFromRequest(request);
+
 			if (!tokenProvider.isValidToken(token)) {
 				MDC.put("user", "JwtFilter");
-				throw new UnauthenticatedException(UnauthenticatedException.ACCESS_TOKEN_EXPIRED,
-					HttpStatus.FORBIDDEN.value());
+				throw new UnauthenticatedException(ErrorCode.ACCESS_TOKEN_EXPIRED.getMessage(),
+					ErrorCode.ACCESS_TOKEN_EXPIRED.getStatus());
 			}
 
 			Claims claims = tokenProvider.getClaims(token);
@@ -114,7 +116,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 		response.setHeader("Access-Control-Allow-Origin", "http://localhost:3000");
 		response.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
 		response.setHeader("Access-Control-Allow-Headers", "*");
-		response.setStatus(e.getStatusCode());
+		response.setStatus(e.getStatus().value());
 		response.setContentType("application/json");
 		response.setCharacterEncoding("UTF-8");
 		response.getWriter().write("{\"message\":\"" + e.getMessage() + "\"}");
@@ -122,18 +124,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
 	private String getJwtFromRequest(HttpServletRequest request) {
 		String bearerToken;
-
 		try {
 			bearerToken = request.getHeader(AUTHORIZATION);
 			if (bearerToken == null || !bearerToken.startsWith(BEARER_DELIMITER)) {
-				throw new UnauthenticatedException(UnauthenticatedException.INVALID_TOKEN_TYPE,
-					HttpStatus.UNAUTHORIZED.value());
+				throw new UnauthenticatedException(ErrorCode.INVALID_TOKEN_TYPE.getMessage(),
+					ErrorCode.INVALID_TOKEN_TYPE.getStatus());
 			}
 		} catch (UnauthenticatedException e) {
-			throw new UnauthenticatedException(UnauthenticatedException.INVALID_HEADER,
-				HttpStatus.UNAUTHORIZED.value());
+			throw new UnauthenticatedException(ErrorCode.INVALID_TOKEN_TYPE.getMessage(),
+				ErrorCode.INVALID_TOKEN_TYPE.getStatus());
 		}
-
 		return bearerToken.substring(BEARER_DELIMITER.length());
 	}
 
