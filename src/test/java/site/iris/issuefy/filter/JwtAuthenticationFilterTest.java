@@ -89,7 +89,7 @@ class JwtAuthenticationFilterTest {
 		assertEquals(HttpStatus.UNAUTHORIZED.value(), response.getStatus());
 		assertTrue(
 			response.getContentAsString()
-				.contains("\"message\":\"" + ErrorCode.INVALID_TOKEN_TYPE.getMessage() + "\""));
+				.contains("\"message\":\"" + ErrorCode.INVALID_HEADER.getMessage() + "\""));
 	}
 
 	@DisplayName("Bearer 토큰이 아닐 경우 UnauthenticatedException을 발생시킨다.")

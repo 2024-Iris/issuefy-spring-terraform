@@ -45,9 +45,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 		int maskedLength = Math.max(0, githubId.length() - totalVisibleChars);
 		String maskedPart = String.valueOf(MASK_CHAR).repeat(maskedLength);
 
-		return githubId.substring(0, VISIBLE_CHARS_FRONT) +
-			maskedPart +
-			githubId.substring(githubId.length() - VISIBLE_CHARS_BACK);
+		return githubId.substring(0, VISIBLE_CHARS_FRONT) + maskedPart + githubId.substring(
+			githubId.length() - VISIBLE_CHARS_BACK);
 	}
 
 	@Override
@@ -119,12 +118,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 	}
 
 	private void handleUnauthorizedException(String clientIP, String path, HttpServletResponse response,
-		UnauthenticatedException e)
-		throws IOException {
-		log.warn("ClientIP: {}, RequestURL : {}, Message: {}",
-			clientIP,
-			path,
-			e.getMessage());
+		UnauthenticatedException e) throws IOException {
+		log.warn("ClientIP: {}, RequestURL : {}, Message: {}", clientIP, path, e.getMessage());
 
 		response.setHeader("Access-Control-Allow-Origin", "http://localhost:3000");
 		response.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
@@ -136,14 +131,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 	}
 
 	private String getJwtFromRequest(HttpServletRequest request) {
-		String bearerToken;
-		try {
-			bearerToken = request.getHeader(AUTHORIZATION);
-			if (bearerToken == null || !bearerToken.startsWith(BEARER_DELIMITER)) {
-				throw new UnauthenticatedException(ErrorCode.INVALID_TOKEN_TYPE.getMessage(),
-					ErrorCode.INVALID_TOKEN_TYPE.getStatus());
-			}
-		} catch (UnauthenticatedException e) {
+		String bearerToken = request.getHeader(AUTHORIZATION);
+		if (bearerToken == null) {
+			throw new UnauthenticatedException(ErrorCode.INVALID_HEADER.getMessage(),
+				ErrorCode.INVALID_HEADER.getStatus());
+		}
+		if (!bearerToken.startsWith(BEARER_DELIMITER)) {
 			throw new UnauthenticatedException(ErrorCode.INVALID_TOKEN_TYPE.getMessage(),
 				ErrorCode.INVALID_TOKEN_TYPE.getStatus());
 		}
