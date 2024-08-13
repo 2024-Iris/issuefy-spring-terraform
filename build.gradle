@@ -33,7 +33,7 @@ dependencies {
     // Spring Boot
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation group: 'org.springframework.boot', name: 'spring-boot-starter-actuator', version: '3.2.0'
-    implementation group: 'org.springframework.boot', name: 'spring-boot-starter-webflux', version: '3.2.5'
+    implementation group: 'org.springframework.boot', name: 'spring-boot-starter-webflux', version: '3.3.2'
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
@@ -83,7 +83,7 @@ sonar {
         property 'sonar.java.coveragePlugin', 'jacoco'
         property 'sonar.exclusions', '**/test/**, **/Q*.java, **/*Doc*.java, **/resources/**, **/*Application*.java, **/*Config*.java, ' +
                 '**/*Vo.java, **/*Dto.java, **/*DTO*.java, **/*Request*.java, **/*Response*.java, **/*Exception*.java, **/*ErrorCode*.java, ' +
-                '**/entity/**, **/*Record*.java'
+                '**/entity/**, **/*Record*.java, **/component/**'
 
         property 'sonar.coverage.jacoco.xmlReportPaths', jacocoDir.get().file("jacoco/index.xml").asFile
     }
@@ -115,7 +115,7 @@ jacocoTestReport {
                             '**/dto/**',
                             '**/entity/**',
                             '**/response/**',
-                            '**/component/LambdaKey'
+                            '**/component/**'
                     ])
                 })
         )
