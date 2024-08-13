@@ -18,14 +18,13 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
-import site.iris.issuefy.entity.Notification;
-import site.iris.issuefy.entity.Org;
-import site.iris.issuefy.entity.Repository;
-import site.iris.issuefy.entity.Subscription;
-import site.iris.issuefy.entity.User;
-import site.iris.issuefy.entity.UserNotification;
+import site.iris.issuefy.entity.*;
+import site.iris.issuefy.exception.code.ErrorCode;
+import site.iris.issuefy.exception.network.SseException;
+import site.iris.issuefy.exception.resource.UserNotFoundException;
 import site.iris.issuefy.model.dto.NotificationDto;
 import site.iris.issuefy.model.dto.NotificationReadDto;
+import site.iris.issuefy.model.dto.UnreadNotificationDto;
 import site.iris.issuefy.model.dto.UpdateRepositoryDto;
 import site.iris.issuefy.repository.NotificationRepository;
 import site.iris.issuefy.repository.SubscriptionRepository;
@@ -34,130 +33,144 @@ import site.iris.issuefy.repository.UserRepository;
 
 class NotificationServiceTest {
 
-	@InjectMocks
-	private NotificationService notificationService;
+    @InjectMocks
+    private NotificationService notificationService;
 
-	@Mock
-	private UserNotificationRepository userNotificationRepository;
-	@Mock
-	private SubscriptionRepository subscriptionRepository;
-	@Mock
-	private UserRepository userRepository;
-	@Mock
-	private NotificationRepository notificationRepository;
-	@Mock
-	private ConcurrentHashMap<String, SseEmitter> sseEmitters;
+    @Mock
+    private UserNotificationRepository userNotificationRepository;
+    @Mock
+    private SubscriptionRepository subscriptionRepository;
+    @Mock
+    private UserRepository userRepository;
+    @Mock
+    private NotificationRepository notificationRepository;
+    @Mock
+    private ConcurrentHashMap<String, SseEmitter> sseEmitters;
 
-	@BeforeEach
-	void setUp() {
-		MockitoAnnotations.openMocks(this);
-	}
+    @BeforeEach
+    void setUp() {
+        MockitoAnnotations.openMocks(this);
+    }
 
-	@Test
-	@DisplayName("람다에서 수신한 깃허브 리포지토리 ID를 저장하고 해당되는 유저에게 알림을 보낸다.")
-	void handleRedisMessage() {
-		UpdateRepositoryDto dto = new UpdateRepositoryDto(Arrays.asList("1", "2"));
+    @Test
+    @DisplayName("최초 SSE 연결을 생성하고 초기화 메시지를 보낸다.")
+    void sendInitialNotification() throws IOException {
+        String githubId = "testUser";
+        SseEmitter emitter = mock(SseEmitter.class);
+        User user = new User(1L, "testId", "test@email.com", false);
 
-		notificationService.handleRedisMessage(dto);
-		verify(subscriptionRepository, times(2)).findByRepositoryId(anyLong());
-	}
+        when(userRepository.findByGithubId(githubId)).thenReturn(Optional.of(user));
+        when(userNotificationRepository.countByUserIdAndIsReadFalse(1L)).thenReturn(5);
 
-	@Test
-	@DisplayName("최초 SSE 연결을 생성하고 초기화 메시지를 보낸다.")
-	void sendInitialNotification() throws IOException {
-		String githubId = "testUser";
-		SseEmitter emitter = mock(SseEmitter.class);
-		User user = new User(1L, "testId", "test@email.com", false);
+        notificationService.sendInitialNotification(githubId, emitter);
 
-		when(userRepository.findByGithubId(githubId)).thenReturn(Optional.of(user));
-		when(userNotificationRepository.countByUserIdAndIsReadFalse(1L)).thenReturn(5);
+        verify(emitter).send(any(SseEmitter.SseEventBuilder.class));
+    }
 
-		notificationService.sendInitialNotification(githubId, emitter);
+    @Test
+    @DisplayName("최초 SSE 연결 생성 시 예외가 발생하면 SseException을 던진다.")
+    void sendInitialNotification_throwsSseException() throws IOException {
+        String githubId = "testUser";
+        SseEmitter emitter = mock(SseEmitter.class);
+        User user = new User(1L, "testId", "test@email.com", false);
 
-		verify(emitter).send(any(SseEmitter.SseEventBuilder.class));
-	}
+        when(userRepository.findByGithubId(githubId)).thenReturn(Optional.of(user));
+        when(userNotificationRepository.countByUserIdAndIsReadFalse(1L)).thenReturn(5);
+        doThrow(new IOException()).when(emitter).send(any(SseEmitter.SseEventBuilder.class));
 
-	@Test
-	@DisplayName("업데이트가 발생한 리포지토리를 구독중인 유저를 찾는다.")
-	void findSubscribeRepositoryUser() {
-		User user = new User(1L, "testId", "test@email.com", false);
-		Org org = new Org(1L, "test", 1L);
-		Repository repository = new Repository(1L, org, "testRepo", 1L, LocalDateTime.now());
-		Subscription subscription = new Subscription(1L, user, repository, false);
+        assertThrows(SseException.class, () -> notificationService.sendInitialNotification(githubId, emitter));
+    }
 
-		when(subscriptionRepository.findByRepositoryId(1L)).thenReturn(List.of(subscription));
+    @Test
+    @DisplayName("유저에게 생성된 알림 전체를 반환한다.")
+    void findNotifications() {
+        User user = new User(1L, "testId", "test@email.com", false);
+        Org org = new Org(1L, "testOrg", 1L);
+        Repository repository = new Repository(1L, org, "testRepo", 1L, LocalDateTime.now());
+        Notification notification = new Notification(1L, repository, "testRepo", LocalDateTime.now());
+        UserNotification userNotification = new UserNotification(1L, user, notification, false);
 
-		notificationService.findSubscribeRepositoryUser(1L);
+        when(userNotificationRepository.findUserNotificationsByUserGithubId("testId"))
+            .thenReturn(List.of(userNotification));
 
-		verify(notificationRepository).save(any(Notification.class));
-		verify(userNotificationRepository).save(any(UserNotification.class));
-	}
+        List<NotificationDto> result = notificationService.findNotifications("testId");
 
-	@Test
-	@DisplayName("유저에게 생성된 알림 전체를 반환한다.")
-	void findNotifications() {
-		User user = new User(1L, "testId", "test@email.com", false);
-		Org org = new Org(1L, "testOrg", 1L);
-		Repository repository = new Repository(1L, org, "testRepo", 1L, LocalDateTime.now());
-		Notification notification = new Notification(1L, repository, "testRepo", LocalDateTime.now());
-		UserNotification userNotification = new UserNotification(1L, user, notification, false);
+        assertFalse(result.isEmpty());
+        assertEquals(1, result.size());
+        assertEquals("testOrg", result.get(0).getOrgName());
+        assertEquals("testRepo", result.get(0).getRepositoryName());
+        assertFalse(result.get(0).isRead());
+        assertEquals(1L, result.get(0).getUserNotificationId());
+    }
 
-		when(userNotificationRepository.findUserNotificationsByUserGithubId("testId"))
-			.thenReturn(List.of(userNotification));
+    @Test
+    @DisplayName("유저에게 생성된 알림을 읽음 처리한다.")
+    void updateUserNotificationsAsRead() {
+        NotificationReadDto dto = new NotificationReadDto();
+        dto.setUserNotificationIds(Arrays.asList(1L, 2L, 3L));
 
-		List<NotificationDto> result = notificationService.findNotifications("testId");
+        notificationService.updateUserNotificationsAsRead(dto);
 
-		assertFalse(result.isEmpty());
-		assertEquals(1, result.size());
-		assertEquals("testOrg", result.get(0).getOrgName());
-		assertEquals("testRepo", result.get(0).getRepositoryName());
-		assertFalse(result.get(0).isRead());
-		assertEquals(1L, result.get(0).getUserNotificationId());
-	}
+        verify(userNotificationRepository).markAsRead(dto.getUserNotificationIds());
+    }
 
-	@Test
-	@DisplayName("유저에게 생성된 알림을 읽음 처리한다.")
-	void updateUserNotificationsAsRead() {
-		NotificationReadDto dto = new NotificationReadDto();
-		dto.setUserNotificationIds(Arrays.asList(1L, 2L, 3L));
+    @Test
+    @DisplayName("ConcurrentHashMap에 SSE 커넥션 정보를 삽입한다.")
+    void addEmitter() {
+        String githubId = "testUser";
+        SseEmitter emitter = new SseEmitter();
 
-		notificationService.updateUserNotificationsAsRead(dto);
+        notificationService.addEmitter(githubId, emitter);
 
-		verify(userNotificationRepository).markAsRead(dto.getUserNotificationIds());
-	}
+        verify(sseEmitters).put(githubId, emitter);
+    }
 
-	@Test
-	@DisplayName("ConcurrentHashMap에 SSE 커넥션 정보를 삽입한다.")
-	void addEmitter() {
-		String githubId = "testUser";
-		SseEmitter emitter = new SseEmitter();
+    @Test
+    @DisplayName("ConcurrentHashMap에서 SSE 커넥션 정보를 가져온다.")
+    void getEmitter() {
+        String githubId = "testUser";
+        SseEmitter emitter = new SseEmitter();
 
-		notificationService.addEmitter(githubId, emitter);
+        when(sseEmitters.get(githubId)).thenReturn(emitter);
 
-		verify(sseEmitters, times(1)).put(githubId, emitter);
-	}
+        SseEmitter result = notificationService.getEmitter(githubId);
 
-	@Test
-	@DisplayName("ConcurrentHashMap에 SSE 커넥션 정보를 가져온다.")
-	void getEmitter() {
-		String githubId = "testUser";
-		SseEmitter emitter = new SseEmitter();
+        assertEquals(emitter, result);
+        verify(sseEmitters).get(githubId);
+    }
 
-		when(sseEmitters.get(githubId)).thenReturn(emitter);
+    @Test
+    @DisplayName("ConcurrentHashMap에서 SSE 커넥션 정보를 삭제한다.")
+    void removeEmitter() {
+        String githubId = "testUser";
 
-		SseEmitter result = notificationService.getEmitter(githubId);
+        notificationService.removeEmitter(githubId);
 
-		assertEquals(emitter, result);
-		verify(sseEmitters, times(1)).get(githubId);
-	}
+        verify(sseEmitters).remove(githubId);
+    }
 
-	@Test
-	@DisplayName("ConcurrentHashMap에 SSE 커넥션 정보를 삭제한다.")
-	void removeEmitter() {
-		String githubId = "testUser";
+    @Test
+    @DisplayName("존재하지 않는 사용자에 대해 UserNotFoundException을 던진다.")
+    void getNotification_throwsUserNotFoundException() {
+        String githubId = "nonExistentUser";
 
-		notificationService.removeEmitter(githubId);
+        when(userRepository.findByGithubId(githubId)).thenReturn(Optional.empty());
 
-		verify(sseEmitters, times(1)).remove(githubId);
-	}
+        assertThrows(UserNotFoundException.class, () -> notificationService.getNotification(githubId));
+    }
+
+    @Test
+    @DisplayName("알림을 유저에게 보내는 데 실패하면 SseException을 던진다.")
+    void sendNotificationToUser_throwsSseException() throws IOException {
+        String githubId = "testUser";
+        User user = new User(1L, "testId", "test@email.com", false);
+        SseEmitter emitter = mock(SseEmitter.class);
+
+        when(userRepository.findByGithubId(githubId)).thenReturn(Optional.of(user));
+        when(userNotificationRepository.countByUserIdAndIsReadFalse(1L)).thenReturn(5);
+        when(sseEmitters.get(githubId)).thenReturn(emitter);
+        doThrow(new IOException()).when(emitter).send(any(SseEmitter.SseEventBuilder.class));
+
+        assertThrows(SseException.class, () -> notificationService.sendNotificationToUser(githubId));
+    }
 }

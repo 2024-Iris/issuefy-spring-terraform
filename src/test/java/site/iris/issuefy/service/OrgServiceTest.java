@@ -15,6 +15,7 @@ import org.mockito.MockitoAnnotations;
 import org.springframework.http.ResponseEntity;
 
 import site.iris.issuefy.entity.Org;
+import site.iris.issuefy.exception.validation.EmptyBodyException;
 import site.iris.issuefy.model.dto.GithubOrgDto;
 import site.iris.issuefy.repository.OrgRepository;
 
@@ -36,9 +37,9 @@ class OrgServiceTest {
 	void testSaveOrg_WithNullBody() {
 		ResponseEntity<GithubOrgDto> orgInfo = ResponseEntity.ok(null);
 
-		NullPointerException exception = assertThrows(NullPointerException.class, () -> orgService.saveOrg(orgInfo));
+		EmptyBodyException exception = assertThrows(EmptyBodyException.class, () -> orgService.saveOrg(orgInfo));
 
-		assertEquals("Org Info Body is null", exception.getMessage());
+		assertEquals("Org info body is empty", exception.getMessage());
 	}
 
 	@Test

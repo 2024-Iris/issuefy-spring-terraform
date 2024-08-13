@@ -16,6 +16,7 @@ import org.springframework.http.ResponseEntity;
 
 import site.iris.issuefy.entity.Org;
 import site.iris.issuefy.entity.Repository;
+import site.iris.issuefy.exception.validation.EmptyBodyException;
 import site.iris.issuefy.model.dto.GithubRepositoryDto;
 import site.iris.issuefy.repository.RepositoryRepository;
 
@@ -38,10 +39,10 @@ class RepositoryServiceTest {
 		ResponseEntity<GithubRepositoryDto> repositoryInfo = ResponseEntity.ok(null);
 		Org org = new Org(1L, "testOrg", 123L);
 
-		NullPointerException exception = assertThrows(NullPointerException.class,
+		EmptyBodyException exception = assertThrows(EmptyBodyException.class,
 			() -> repositoryService.saveRepository(repositoryInfo, org));
 
-		assertEquals("Repository info body is null", exception.getMessage());
+		assertEquals("Repository info body is empty", exception.getMessage());
 	}
 
 	@Test
