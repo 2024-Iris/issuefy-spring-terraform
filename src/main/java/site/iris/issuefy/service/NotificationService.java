@@ -60,7 +60,7 @@ public class NotificationService {
 		}
 	}
 
-	private UnreadNotificationDto getNotification(String githubId) {
+	public UnreadNotificationDto getNotification(String githubId) {
 		User user = userRepository.findByGithubId(githubId)
 			.orElseThrow(() -> new UserNotFoundException(ErrorCode.NOT_EXIST_USER.getMessage(),
 				ErrorCode.NOT_EXIST_USER.getStatus(), githubId));
@@ -85,7 +85,7 @@ public class NotificationService {
 		}
 	}
 
-	private void sendNotificationToUser(String githubId) {
+	public void sendNotificationToUser(String githubId) {
 		try {
 			UnreadNotificationDto unreadNotificationDto = getNotification(githubId);
 			SseEmitter emitter = getEmitter(githubId);
