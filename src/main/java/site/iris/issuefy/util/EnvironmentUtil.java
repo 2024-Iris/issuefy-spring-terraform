@@ -1,4 +1,4 @@
-package site.iris.issuefy.global;
+package site.iris.issuefy.util;
 
 public class EnvironmentUtil {
 	public static boolean isEcsEnvironment() {

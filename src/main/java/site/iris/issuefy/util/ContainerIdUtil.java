@@ -1,4 +1,4 @@
-package site.iris.issuefy.global;
+package site.iris.issuefy.util;
 
 import java.net.URI;
 import java.net.http.HttpClient;
