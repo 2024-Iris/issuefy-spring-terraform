@@ -16,12 +16,12 @@ public enum ErrorCode {
 	USER_STARRED_SUBSCRIPTIONS_PAGE_NOT_FOUND(HttpStatus.NOT_FOUND, "User starred subscriptions page not found"),
 	FAILED_INIT_CONNECTION(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to initialize sse connection"),
 	FAILED_SENDING_MESSAGE(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to send sse message"),
-	ORG_BODY_EMPTY(HttpStatus.INTERNAL_SERVER_ERROR, "Org body is empty"),
+	ORG_BODY_EMPTY(HttpStatus.INTERNAL_SERVER_ERROR, "Org info body is empty"),
 	ACCESS_TOKEN_EXPIRED(HttpStatus.UNAUTHORIZED, "access token has expired"),
 	INVALID_HEADER(HttpStatus.UNAUTHORIZED, "invalid header"),
 	INVALID_TOKEN_TYPE(HttpStatus.UNAUTHORIZED, "invalid token type"),
 	INVALID_REPOSITORY_URL(HttpStatus.BAD_REQUEST, "Invalid Repository URL"),
-	REPOSITORY_BODY_EMPTY(HttpStatus.INTERNAL_SERVER_ERROR, "Repository body is empty"),
+	REPOSITORY_BODY_EMPTY(HttpStatus.INTERNAL_SERVER_ERROR, "Repository info body is empty"),
 	INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error");
 
 	private final HttpStatus status;
