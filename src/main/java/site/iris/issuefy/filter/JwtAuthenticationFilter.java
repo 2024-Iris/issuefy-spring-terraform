@@ -6,7 +6,6 @@ import java.io.IOException;
 import java.util.UUID;
 
 import org.slf4j.MDC;
-import org.springframework.http.HttpStatus;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import io.jsonwebtoken.Claims;
@@ -36,6 +35,20 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
 	private final TokenProvider tokenProvider;
 	private final LambdaKey lambdaKey;
+
+	public static String maskId(String githubId) {
+		if (githubId == null || githubId.length() < MIN_LENGTH_FOR_MASKING) {
+			return githubId;
+		}
+
+		int totalVisibleChars = VISIBLE_CHARS_FRONT + VISIBLE_CHARS_BACK;
+		int maskedLength = Math.max(0, githubId.length() - totalVisibleChars);
+		String maskedPart = String.valueOf(MASK_CHAR).repeat(maskedLength);
+
+		return githubId.substring(0, VISIBLE_CHARS_FRONT) +
+			maskedPart +
+			githubId.substring(githubId.length() - VISIBLE_CHARS_BACK);
+	}
 
 	@Override
 	protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response,
@@ -135,19 +148,5 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 				ErrorCode.INVALID_TOKEN_TYPE.getStatus());
 		}
 		return bearerToken.substring(BEARER_DELIMITER.length());
-	}
-
-	public static String maskId(String githubId) {
-		if (githubId == null || githubId.length() < MIN_LENGTH_FOR_MASKING) {
-			return githubId;
-		}
-
-		int totalVisibleChars = VISIBLE_CHARS_FRONT + VISIBLE_CHARS_BACK;
-		int maskedLength = Math.max(0, githubId.length() - totalVisibleChars);
-		String maskedPart = String.valueOf(MASK_CHAR).repeat(maskedLength);
-
-		return githubId.substring(0, VISIBLE_CHARS_FRONT) +
-			maskedPart +
-			githubId.substring(githubId.length() - VISIBLE_CHARS_BACK);
 	}
 }

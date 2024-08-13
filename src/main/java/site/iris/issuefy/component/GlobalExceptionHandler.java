@@ -10,11 +10,11 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.reactive.function.client.WebClientException;
 
 import lombok.extern.slf4j.Slf4j;
-import site.iris.issuefy.response.ErrorResponse;
 import site.iris.issuefy.exception.github.GithubApiException;
 import site.iris.issuefy.exception.network.NetworkException;
 import site.iris.issuefy.exception.resource.ResourceNotFoundException;
 import site.iris.issuefy.exception.validation.ValidationException;
+import site.iris.issuefy.response.ErrorResponse;
 
 @Slf4j
 @RestControllerAdvice

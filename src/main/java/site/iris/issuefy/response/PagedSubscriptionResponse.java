@@ -20,7 +20,7 @@ public class PagedSubscriptionResponse {
 		int pageSize,
 		long totalElements,
 		int totalPages,
-		List<SubscriptionListDto>subscriptionListDtos
+		List<SubscriptionListDto> subscriptionListDtos
 	) {
 		return new PagedSubscriptionResponse(currentPage, pageSize, totalElements, totalPages, subscriptionListDtos);
 	}

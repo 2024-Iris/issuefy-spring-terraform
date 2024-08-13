@@ -2,7 +2,6 @@ package site.iris.issuefy.controller;
 
 import java.io.IOException;
 
-import org.slf4j.MDC;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;

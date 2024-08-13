@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import site.iris.issuefy.model.dto.NotificationDto;
 import site.iris.issuefy.model.dto.NotificationReadDto;
 import site.iris.issuefy.service.NotificationService;
