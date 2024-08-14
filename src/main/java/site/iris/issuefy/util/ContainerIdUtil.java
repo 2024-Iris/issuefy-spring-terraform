@@ -1,10 +1,8 @@
 package site.iris.issuefy.util;
 
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
+import org.springframework.web.reactive.function.client.WebClient;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class ContainerIdUtil {
@@ -18,14 +16,15 @@ public class ContainerIdUtil {
 		}
 
 		try {
-			HttpClient client = HttpClient.newHttpClient();
-			HttpRequest request = HttpRequest.newBuilder()
-				.uri(URI.create(METADATA_URI))
-				.build();
+			String response = WebClient.create()
+				.get()
+				.uri(METADATA_URI)
+				.retrieve()
+				.bodyToMono(String.class)
+				.block(); // 여기서 블로킹 발생
 
-			HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
 			ObjectMapper mapper = new ObjectMapper();
-			var containerInfo = mapper.readTree(response.body());
+			JsonNode containerInfo = mapper.readTree(response);
 			return containerInfo.get("ContainerID").asText();
 		} catch (Exception e) {
 			return UNKNOWN_CONTAINER_ID;
