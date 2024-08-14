@@ -21,7 +21,7 @@ public class ContainerIdUtil {
 				.uri(METADATA_URI)
 				.retrieve()
 				.bodyToMono(String.class)
-				.block(); // 여기서 블로킹 발생
+				.block();
 
 			ObjectMapper mapper = new ObjectMapper();
 			JsonNode containerInfo = mapper.readTree(response);
