@@ -18,11 +18,11 @@ public class OrgService {
 
 	@Transactional
 	public Org saveOrg(ResponseEntity<GithubOrgDto> orgInfo) {
-		if (orgInfo.getBody() == null) {
+		GithubOrgDto orgDto = orgInfo.getBody();
+		if (orgDto == null || orgInfo.getBody() == null) {
 			throw new EmptyBodyException(ErrorCode.ORG_BODY_EMPTY.getMessage(), ErrorCode.ORG_BODY_EMPTY.getStatus());
 		}
 
-		GithubOrgDto orgDto = orgInfo.getBody();
 		return orgRepository.findByName(orgDto.getLogin())
 			.orElseGet(() -> {
 				Org newOrg = new Org(orgDto.getLogin(), orgDto.getId());

@@ -10,9 +10,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public class ContainerIdUtil {
 	private static final String METADATA_URI = System.getenv("ECS_CONTAINER_METADATA_URI_V4");
 	private static final String LOCAL_CONTAINER_ID = "local";
+	private static final String UNKNOWN_CONTAINER_ID = "unknown";
 
 	public static String getContainerId() {
-		if (!EnvironmentUtil.isEcsEnvironment()) {
+		if (!isEcsEnvironment()) {
 			return LOCAL_CONTAINER_ID;
 		}
 
@@ -27,7 +28,11 @@ public class ContainerIdUtil {
 			var containerInfo = mapper.readTree(response.body());
 			return containerInfo.get("ContainerID").asText();
 		} catch (Exception e) {
-			return "unknown";
+			return UNKNOWN_CONTAINER_ID;
 		}
+	}
+
+	public static boolean isEcsEnvironment() {
+		return METADATA_URI != null && !METADATA_URI.isEmpty();
 	}
 }

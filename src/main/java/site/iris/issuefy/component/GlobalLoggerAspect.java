@@ -57,7 +57,7 @@ public class GlobalLoggerAspect {
 		return result;
 	}
 
-	@AfterThrowing(pointcut = "execution(* site.iris.issuefy.service..*.*(..))", throwing = "ex")
+	@AfterThrowing(pointcut = "execution(* site.iris.issuefy..*.*(..))", throwing = "ex")
 	public void logServiceException(JoinPoint joinPoint, Exception ex) {
 		Logger logger = LoggerFactory.getLogger(joinPoint.getTarget().getClass());
 		String methodName = joinPoint.getSignature().getName();

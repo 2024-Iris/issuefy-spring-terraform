@@ -20,12 +20,13 @@ public class RepositoryService {
 
 	@Transactional
 	public Repository saveRepository(ResponseEntity<GithubRepositoryDto> repositoryInfo, Org org) {
-		if (repositoryInfo.getBody() == null) {
+		GithubRepositoryDto repoDto = repositoryInfo.getBody();
+
+		if (repoDto == null || repositoryInfo.getBody() == null) {
 			throw new EmptyBodyException(ErrorCode.REPOSITORY_BODY_EMPTY.getMessage(),
 				ErrorCode.REPOSITORY_BODY_EMPTY.getStatus());
 		}
 
-		GithubRepositoryDto repoDto = repositoryInfo.getBody();
 		return repositoryRepository.findByGhRepoId(repoDto.getId())
 			.orElseGet(() -> {
 				Repository newRepository = new Repository(org, repoDto.getName(), repoDto.getId());
