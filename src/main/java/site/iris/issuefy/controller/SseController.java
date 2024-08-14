@@ -13,6 +13,8 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import site.iris.issuefy.exception.code.ErrorCode;
+import site.iris.issuefy.exception.network.SseException;
 import site.iris.issuefy.filter.JwtAuthenticationFilter;
 import site.iris.issuefy.model.dto.UpdateRepositoryDto;
 import site.iris.issuefy.service.NotificationService;
@@ -34,7 +36,8 @@ public class SseController {
 			log.info("SSE Connection closed for user: {}", JwtAuthenticationFilter.maskId(githubId));
 			try {
 				emitter.send(SseEmitter.event().name("error").data("Connection timed out"));
-			} catch (IOException ignored) {
+			} catch (IOException e) {
+				throw new SseException(ErrorCode.UNKNOWN_SSE_ERROR.getMessage(), ErrorCode.UNKNOWN_SSE_ERROR.getStatus());
 			} finally {
 				emitter.complete();
 			}

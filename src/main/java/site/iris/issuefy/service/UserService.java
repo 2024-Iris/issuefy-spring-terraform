@@ -2,8 +2,6 @@ package site.iris.issuefy.service;
 
 import java.util.Map;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpMethod;
@@ -22,8 +20,6 @@ import site.iris.issuefy.repository.UserRepository;
 
 @Service
 public class UserService {
-
-	private static final Logger log = LoggerFactory.getLogger(UserService.class);
 	private final UserRepository userRepository;
 	private final GithubTokenService githubTokenService;
 	private final WebClient webClient;
