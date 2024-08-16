@@ -1,7 +1,5 @@
 package site.iris.issuefy.controller;
 
-import java.io.IOException;
-
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -13,9 +11,6 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import site.iris.issuefy.exception.code.ErrorCode;
-import site.iris.issuefy.exception.network.SseException;
-import site.iris.issuefy.filter.JwtAuthenticationFilter;
 import site.iris.issuefy.model.dto.UpdateRepositoryDto;
 import site.iris.issuefy.service.NotificationService;
 
@@ -31,23 +26,14 @@ public class SseController {
 		notificationService.addEmitter(githubId, emitter);
 		notificationService.sendInitialNotification(githubId, emitter);
 
-		emitter.onTimeout(() -> {
-			notificationService.removeEmitter(githubId);
-			log.info("SSE Connection closed for user: {}", JwtAuthenticationFilter.maskId(githubId));
-			try {
-				emitter.send(SseEmitter.event().name("error").data("Connection timed out"));
-			} catch (IOException e) {
-				throw new SseException(ErrorCode.UNKNOWN_SSE_ERROR.getMessage(), ErrorCode.UNKNOWN_SSE_ERROR.getStatus());
-			} finally {
-				emitter.complete();
-			}
-		});
+		emitter.onTimeout(() -> notificationService.removeEmitter(githubId));
+		emitter.onCompletion(() -> notificationService.removeEmitter(githubId));
 
 		return ResponseEntity.ok(emitter);
 	}
 
 	@PostMapping("/api/receive")
-	public void receive(@RequestBody UpdateRepositoryDto updateRepositoryDto) {
-		notificationService.handleRedisMessage(updateRepositoryDto);
+	public void receiveToLambda(@RequestBody UpdateRepositoryDto updateRepositoryDto) {
+		notificationService.handleUpdateRepositoryDto(updateRepositoryDto);
 	}
 }
