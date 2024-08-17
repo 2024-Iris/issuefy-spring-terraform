@@ -18,9 +18,9 @@ public enum ErrorCode {
 	FAILED_SENDING_MESSAGE(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to send sse message"),
 	UNKNOWN_SSE_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "Unknown sse error"),
 	ORG_BODY_EMPTY(HttpStatus.INTERNAL_SERVER_ERROR, "Org info body is empty"),
-	ACCESS_TOKEN_EXPIRED(HttpStatus.UNAUTHORIZED, "access token has expired"),
-	INVALID_HEADER(HttpStatus.UNAUTHORIZED, "invalid header"),
-	INVALID_TOKEN_TYPE(HttpStatus.UNAUTHORIZED, "invalid token type"),
+	ACCESS_TOKEN_EXPIRED(HttpStatus.UNAUTHORIZED, "Access token has expired"),
+	INVALID_HEADER(HttpStatus.UNAUTHORIZED, "Invalid header"),
+	INVALID_TOKEN_TYPE(HttpStatus.UNAUTHORIZED, "Invalid token type"),
 	INVALID_REPOSITORY_URL(HttpStatus.BAD_REQUEST, "Invalid Repository URL"),
 	REPOSITORY_BODY_EMPTY(HttpStatus.INTERNAL_SERVER_ERROR, "Repository info body is empty"),
 	INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error");
