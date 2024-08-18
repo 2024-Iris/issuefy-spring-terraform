@@ -1,4 +1,4 @@
-package site.iris.issuefy.common;
+package site.iris.issuefy.response;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;

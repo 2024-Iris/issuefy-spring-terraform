@@ -3,7 +3,6 @@ package site.iris.issuefy.service;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -13,28 +12,27 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.core.ValueOperations;
 
 import io.jsonwebtoken.Claims;
 import site.iris.issuefy.entity.Jwt;
-import site.iris.issuefy.model.dto.BlacklistedJwtDto;
 
 class TokenProviderTest {
 
 	private TokenProvider tokenProvider;
 
 	@Mock
-	private RedisTemplate<String, BlacklistedJwtDto> redisTemplate;
+	private RedisTemplate<String, String> redisTemplate;
 
 	@Mock
-	private ValueOperations<String, BlacklistedJwtDto> valueOperations;
+	private HashOperations<String, Object, Object> hashOperations;
 
 	@BeforeEach
 	void setUp() {
 		MockitoAnnotations.openMocks(this);
 		String secretKey = "test-secret-key-test-secret-key-test-secret-key";
-		when(redisTemplate.opsForValue()).thenReturn(valueOperations);
+		when(redisTemplate.opsForHash()).thenReturn(hashOperations);
 		tokenProvider = new TokenProvider(redisTemplate, secretKey);
 	}
 
@@ -84,13 +82,9 @@ class TokenProviderTest {
 		tokenProvider.invalidateToken(token);
 
 		// then
-		verify(redisTemplate).opsForValue();
-		verify(valueOperations).set(
-			eq(token),
-			any(BlacklistedJwtDto.class),
-			anyLong(),
-			eq(TimeUnit.SECONDS)
-		);
+		verify(redisTemplate).opsForHash();
+		verify(hashOperations).putAll(anyString(), anyMap());
+		verify(redisTemplate).expire(anyString(), anyLong(), eq(TimeUnit.SECONDS));
 	}
 
 	@DisplayName("블랙리스트에 있는 토큰은 유효하지 않다고 판단한다.")
@@ -98,8 +92,8 @@ class TokenProviderTest {
 	void isValidToken_blacklisted() {
 		// given
 		String token = "blacklisted.token";
-		when(valueOperations.get(token)).thenReturn(
-			new BlacklistedJwtDto(token, LocalDateTime.now(), LocalDateTime.now().plusHours(1)));
+		String blacklistKey = "blacklist:dokkisan:" + token.substring(token.length() - 10);
+		when(redisTemplate.hasKey(blacklistKey)).thenReturn(true);
 
 		// when
 		boolean isValid = tokenProvider.isValidToken(token);

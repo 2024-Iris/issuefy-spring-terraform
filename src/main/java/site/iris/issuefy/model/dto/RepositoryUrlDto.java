@@ -6,7 +6,8 @@ import java.util.regex.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.ToString;
-import site.iris.issuefy.exception.InvalidUrlException;
+import site.iris.issuefy.exception.code.ErrorCode;
+import site.iris.issuefy.exception.validation.InvalidUrlException;
 
 @Getter
 @AllArgsConstructor
@@ -24,6 +25,7 @@ public class RepositoryUrlDto {
 		if (matcher.find()) {
 			return new RepositoryUrlDto(repositoryUrl, githubId, matcher.group(1), matcher.group(2));
 		}
-		throw new InvalidUrlException(InvalidUrlException.INVALID_URL);
+		throw new InvalidUrlException(ErrorCode.INVALID_REPOSITORY_URL.getMessage(),
+			ErrorCode.INVALID_REPOSITORY_URL.getStatus());
 	}
 }

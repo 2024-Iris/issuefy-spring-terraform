@@ -2,8 +2,6 @@ package site.iris.issuefy.service;
 
 import java.util.Map;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpMethod;
@@ -13,14 +11,15 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import site.iris.issuefy.entity.User;
+import site.iris.issuefy.exception.code.ErrorCode;
+import site.iris.issuefy.exception.github.GithubApiException;
+import site.iris.issuefy.exception.resource.UserNotFoundException;
 import site.iris.issuefy.model.dto.UserDto;
 import site.iris.issuefy.model.dto.UserVerifyDto;
 import site.iris.issuefy.repository.UserRepository;
 
 @Service
 public class UserService {
-
-	private static final Logger log = LoggerFactory.getLogger(UserService.class);
 	private final UserRepository userRepository;
 	private final GithubTokenService githubTokenService;
 	private final WebClient webClient;
@@ -46,7 +45,9 @@ public class UserService {
 	}
 
 	public UserDto getUserInfo(String githubId) {
-		User user = userRepository.findByGithubId(githubId).orElseThrow();
+		User user = userRepository.findByGithubId(githubId)
+			.orElseThrow(() -> new UserNotFoundException(ErrorCode.NOT_EXIST_USER.getMessage(),
+				ErrorCode.NOT_EXIST_USER.getStatus(), githubId));
 		return UserDto.of(user.getGithubId(), user.getEmail(), user.isAlertStatus());
 	}
 
@@ -64,7 +65,7 @@ public class UserService {
 
 	@Transactional
 	public void withdraw(String githubId) {
-		deleteGithubAuth(githubId);
+		githubDeleteGithubAuth(githubId);
 		userRepository.deleteByGithubId(githubId);
 	}
 
@@ -73,7 +74,7 @@ public class UserService {
 		return UserVerifyDto.from(exists);
 	}
 
-	private void deleteGithubAuth(String githubId) {
+	private void githubDeleteGithubAuth(String githubId) {
 		try {
 			String accessToken = githubTokenService.findAccessToken(githubId);
 			webClient.method(HttpMethod.DELETE)
@@ -88,9 +89,8 @@ public class UserService {
 				.retrieve()
 				.toBodilessEntity()
 				.block();
-		} catch (Exception e) {
-			log.info(e.getMessage());
-			throw new IllegalArgumentException("Failed to delete github auth");
+		} catch (GithubApiException e) {
+			throw new GithubApiException(e.getStatusCode(), e.getGithubMessage());
 		}
 	}
 }

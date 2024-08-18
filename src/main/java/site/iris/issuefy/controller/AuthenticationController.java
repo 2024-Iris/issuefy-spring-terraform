@@ -3,24 +3,22 @@ package site.iris.issuefy.controller;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.slf4j.MDC;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import site.iris.issuefy.entity.Jwt;
 import site.iris.issuefy.model.dto.UserDto;
 import site.iris.issuefy.response.OauthResponse;
 import site.iris.issuefy.service.AuthenticationService;
 import site.iris.issuefy.service.TokenProvider;
 
-@Slf4j
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api")
@@ -30,14 +28,12 @@ public class AuthenticationController {
 
 	@GetMapping("/login")
 	public ResponseEntity<OauthResponse> login(@RequestParam String code) {
-		log.info("Login request occurs");
 		UserDto userDto = authenticationService.githubLogin(code);
 		Map<String, Object> claims = new HashMap<>();
 		claims.put("githubId", userDto.getGithubId());
 		Jwt jwt = tokenProvider.createJwt(claims);
 
-		log.info("user login : {}, authorization code : {}", userDto.getGithubId(), code);
-		log.info("response : {}", jwt.toString());
+		MDC.put("githubId", userDto.getGithubId());
 		return ResponseEntity.ok()
 			.body(OauthResponse.of(userDto.getGithubId(), userDto.getEmail(), userDto.getGithubProfileImage(),
 				userDto.isAlertStatus(), jwt
@@ -45,9 +41,7 @@ public class AuthenticationController {
 	}
 
 	@PostMapping("/logout")
-	public ResponseEntity<String> logout(@RequestAttribute String githubId,
-		@RequestHeader("Authorization") String token) {
-		log.info("user logout : {}", githubId);
+	public ResponseEntity<String> logout(@RequestHeader("Authorization") String token) {
 		String jwtToken = token.replace("Bearer ", "");
 		tokenProvider.invalidateToken(jwtToken);
 		return ResponseEntity.ok().build();

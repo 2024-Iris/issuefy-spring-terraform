@@ -1,6 +1,7 @@
 package site.iris.issuefy.entity;
 
 import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -32,8 +33,16 @@ public class Subscription {
 	@JoinColumn(name = "repository_id", nullable = false)
 	private Repository repository;
 
+	@Column(name = "is_repo_starred", nullable = false)
+	private boolean repoStarred;
+
 	public Subscription(User user, Repository repository) {
 		this.user = user;
 		this.repository = repository;
+		this.repoStarred = false;
+	}
+
+	public void toggleStar() {
+		this.repoStarred = !this.repoStarred;
 	}
 }

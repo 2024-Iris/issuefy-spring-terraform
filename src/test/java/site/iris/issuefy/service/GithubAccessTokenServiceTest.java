@@ -35,7 +35,7 @@ class GithubAccessTokenServiceTest {
 
 	@Test
 	@DisplayName("AuthenticationCode를 전송하면 AccessToken을 반환한다.")
-	void getToken() {
+	void githubGetToken() {
 		// given
 		WebClient webClient = WebClient.builder().baseUrl(mockWebServer.url("/").toString()).build();
 		GithubAccessTokenService githubAccessTokenService = new GithubAccessTokenService(webClient);
@@ -46,7 +46,7 @@ class GithubAccessTokenServiceTest {
 		String expectedResponse = "access_token=testToken&scope=&token_type=bearer";
 
 		// when
-		String result = githubAccessTokenService.getToken(authenticationCode);
+		String result = githubAccessTokenService.githubGetToken(authenticationCode);
 
 		// then
 		assertNotNull(result);

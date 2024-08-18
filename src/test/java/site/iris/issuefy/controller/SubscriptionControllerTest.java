@@ -25,8 +25,9 @@ import org.springframework.test.web.servlet.ResultActions;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import site.iris.issuefy.model.dto.SubscriptionListDto;
 import site.iris.issuefy.model.vo.RepositoryRecord;
-import site.iris.issuefy.response.SubscriptionResponse;
+import site.iris.issuefy.response.PagedSubscriptionResponse;
 import site.iris.issuefy.service.GithubTokenService;
 import site.iris.issuefy.service.SubscriptionService;
 
@@ -52,8 +53,9 @@ class SubscriptionControllerTest {
 		// given
 		String token = "Bearer testToken";
 		String githubId = "testGithubId";
-		List<SubscriptionResponse> subscriptionResponses = new ArrayList<>();
-		when(subscriptionService.getSubscribedRepositories("testToken")).thenReturn(subscriptionResponses);
+		List<SubscriptionListDto> subscriptionResponses = new ArrayList<>();
+		when(subscriptionService.getSubscribedRepositories("testToken", 1, 15, "sort", "order", false)).thenReturn(
+			PagedSubscriptionResponse.of(1, 15, 1, 1, subscriptionResponses));
 
 		// when
 		ResultActions result = mockMvc.perform(get("/api/subscriptions")
@@ -121,7 +123,7 @@ class SubscriptionControllerTest {
 		String githubId = "testUser";
 		Long ghRepoId = 1L;
 
-		doNothing().when(subscriptionService).starRepository(ghRepoId);
+		doNothing().when(subscriptionService).toggleRepositoryStar(githubId, ghRepoId);
 
 		// when
 		ResultActions result = mockMvc.perform(
@@ -138,6 +140,6 @@ class SubscriptionControllerTest {
 				)
 			));
 
-		verify(subscriptionService).starRepository(ghRepoId);
+		verify(subscriptionService).toggleRepositoryStar(githubId, ghRepoId);
 	}
 }

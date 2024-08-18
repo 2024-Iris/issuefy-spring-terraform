@@ -8,13 +8,11 @@ import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RestController;
 
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import site.iris.issuefy.response.RepositoryIssuesResponse;
 import site.iris.issuefy.service.IssueService;
 
 @RestController
 @RequiredArgsConstructor
-@Slf4j
 public class IssueController {
 	private final IssueService issueService;
 
@@ -22,9 +20,7 @@ public class IssueController {
 	public ResponseEntity<RepositoryIssuesResponse> getIssuesByRepoName(@PathVariable("org_name") String orgName,
 		@PathVariable("repo_name") String repoName,
 		@RequestAttribute String githubId) {
-		log.info("getIssuesByRepoName: {}", repoName);
 		RepositoryIssuesResponse response = issueService.initializeIssueSubscription(orgName, repoName, githubId);
-		log.info(repoName);
 		return ResponseEntity.status(HttpStatus.OK).body(response);
 	}
 }
