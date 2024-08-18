@@ -67,9 +67,9 @@ public class NotificationService {
 
 			if (sseService.isConnected(githubId)) {
 				sseService.sendEventToUser(githubId, "notification", notificationData);
-				return;
+			} else {
+				publishNotificationToRedis(githubId, notificationData);
 			}
-			publishNotificationToRedis(githubId, notificationData);
 		}
 	}
 
