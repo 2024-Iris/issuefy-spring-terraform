@@ -19,7 +19,7 @@ import jakarta.servlet.http.HttpServletRequest;
 @Component
 public class GlobalLoggerAspect {
 
-	@Around("execution(* site.iris.issuefy.controller..*.*(..)) && !execution(* site.iris.issuefy.controller.SseController.*(..))")
+	@Around("execution(* site.iris.issuefy.controller..*.*(..)) && !execution(* site.iris.issuefy.controller.SseController.*(..)) && !execution(* site.iris.issuefy.controller.HealthCheckController.*(..))")
 	public Object logRegularController(ProceedingJoinPoint joinPoint) throws Throwable {
 		return logController(joinPoint, "Regular");
 	}
