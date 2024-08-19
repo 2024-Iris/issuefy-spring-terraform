@@ -36,6 +36,7 @@ import site.iris.issuefy.util.ContainerIdUtil;
 @RequiredArgsConstructor
 public class NotificationService {
 
+	private static final String EVENT_NAME = "notifications";
 	private final UserNotificationRepository userNotificationRepository;
 	private final SubscriptionRepository subscriptionRepository;
 	private final UserRepository userRepository;
@@ -66,7 +67,7 @@ public class NotificationService {
 			UnreadNotificationDto notificationData = getNotification(githubId);
 
 			if (sseService.isConnected(githubId)) {
-				sseService.sendEventToUser(githubId, "notification", notificationData);
+				sseService.sendEventToUser(githubId, EVENT_NAME, notificationData);
 			} else {
 				publishNotificationToRedis(githubId, notificationData);
 			}
@@ -78,7 +79,7 @@ public class NotificationService {
 			String message = new ObjectMapper().writeValueAsString(
 				Map.of(
 					"githubId", githubId,
-					"notification", notificationData,
+					EVENT_NAME, notificationData,
 					"senderId", ContainerIdUtil.getContainerId()
 				)
 			);
@@ -101,11 +102,11 @@ public class NotificationService {
 				return;
 			}
 
-			UnreadNotificationDto notificationData = mapper.treeToValue(jsonNode.get("notification"),
+			UnreadNotificationDto notificationData = mapper.treeToValue(jsonNode.get(EVENT_NAME),
 				UnreadNotificationDto.class);
 
 			if (sseService.isConnected(githubId)) {
-				sseService.sendEventToUser(githubId, "notification", notificationData);
+				sseService.sendEventToUser(githubId, EVENT_NAME, notificationData);
 			}
 
 		} catch (JsonProcessingException e) {

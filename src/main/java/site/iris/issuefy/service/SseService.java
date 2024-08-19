@@ -17,11 +17,12 @@ import site.iris.issuefy.util.ContainerIdUtil;
 public class SseService {
 
 	private static final String CONTAINER_ID = ContainerIdUtil.getContainerId();
+	private static final String PREFIX_EMITTER = "emitter:";
 	private final RedisTemplate<String, String> redisTemplate;
 	private final ConcurrentHashMap<String, SseEmitter> emitters = new ConcurrentHashMap<>();
 
 	public SseEmitter connect(String githubId) {
-		String currentContainer = redisTemplate.opsForValue().get("emitter:" + githubId);
+		String currentContainer = redisTemplate.opsForValue().get(PREFIX_EMITTER + githubId);
 
 		if (currentContainer != null && !currentContainer.equals(CONTAINER_ID)) {
 			redisTemplate.convertAndSend("disconnect", githubId);
@@ -49,12 +50,12 @@ public class SseService {
 	}
 
 	public void addEmitter(String githubId, SseEmitter emitter) {
-		redisTemplate.opsForValue().set("emitter:" + githubId, CONTAINER_ID);
+		redisTemplate.opsForValue().set(PREFIX_EMITTER + githubId, CONTAINER_ID);
 		emitters.put(githubId, emitter);
 	}
 
 	public void removeEmitter(String githubId) {
-		redisTemplate.delete("emitter:" + githubId);
+		redisTemplate.delete(PREFIX_EMITTER + githubId);
 		emitters.remove(githubId);
 	}
 

@@ -106,11 +106,9 @@ class SseServiceTest {
 
 	@Test
 	@DisplayName("초기 연결 메시지를 전송한다.")
-	void initConnect() throws IOException {
-		SseEmitter emitter = new SseEmitter();
+	void initConnect() {
 		sseService.connect(GITHUB_ID);
 
-		// initConnect is private, so we're testing it indirectly through connect
 		verify(valueOperations).set(eq("emitter:" + GITHUB_ID), anyString());
 	}
 }
