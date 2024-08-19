@@ -135,4 +135,30 @@ class NotificationServiceTest {
 
 		assertThrows(UserNotFoundException.class, () -> notificationService.getNotification(githubId));
 	}
+
+	@Test
+	@DisplayName("Redis 메시지를 처리하고 연결된 클라이언트에게 알림을 전송한다.")
+	void handleRedisMessage_connectedClient() throws Exception {
+		String message = "{\"githubId\":\"testUser\",\"notification\":{\"unreadCount\":5},\"senderId\":\"sender1\"}";
+		ObjectMapper realObjectMapper = new ObjectMapper();
+		when(objectMapper.readTree(message)).thenReturn(realObjectMapper.readTree(message));
+		when(sseService.isConnected("testUser")).thenReturn(true);
+
+		notificationService.handleRedisMessage(message);
+
+		verify(sseService).sendEventToUser(eq("testUser"), eq("notification"), any(UnreadNotificationDto.class));
+	}
+
+	@Test
+	@DisplayName("Redis 메시지를 처리할 때 연결되지 않은 클라이언트에게는 알림을 전송하지 않는다.")
+	void handleRedisMessage_disconnectedClient() throws Exception {
+		String message = "{\"githubId\":\"testUser\",\"notification\":{\"unreadCount\":5},\"senderId\":\"sender1\"}";
+		ObjectMapper realObjectMapper = new ObjectMapper();
+		when(objectMapper.readTree(message)).thenReturn(realObjectMapper.readTree(message));
+		when(sseService.isConnected("testUser")).thenReturn(false);
+
+		notificationService.handleRedisMessage(message);
+
+		verify(sseService, never()).sendEventToUser(anyString(), anyString(), any());
+	}
 }

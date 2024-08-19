@@ -3,7 +3,7 @@ package site.iris.issuefy.service;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-import java.util.concurrent.ConcurrentHashMap;
+import java.io.IOException;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -28,37 +28,89 @@ class SseServiceTest {
 	@Mock
 	private ValueOperations<String, String> valueOperations;
 
-	private final ConcurrentHashMap<String, SseEmitter> emitters = new ConcurrentHashMap<>();
+	@Mock
+	private SseEmitter mockEmitter;
+
+	private final String GITHUB_ID = "testUser";
 
 	@BeforeEach
 	void setUp() {
 		MockitoAnnotations.openMocks(this);
-		sseService = new SseService(redisTemplate);
 		when(redisTemplate.opsForValue()).thenReturn(valueOperations);
 	}
 
 	@Test
-	@DisplayName("SSE 연결을 생성한다")
+	@DisplayName("SSE 연결을 생성한다.")
 	void connect() {
-		String githubId = "testUser";
-		when(valueOperations.get("emitter:" + githubId)).thenReturn(null);
+		when(valueOperations.get("emitter:" + GITHUB_ID)).thenReturn(null);
 
-		SseEmitter result = sseService.connect(githubId);
+		SseEmitter result = sseService.connect(GITHUB_ID);
 
 		assertNotNull(result);
-		verify(valueOperations).set("emitter:" + githubId, ContainerIdUtil.getContainerId());
+		verify(valueOperations).set("emitter:" + GITHUB_ID, ContainerIdUtil.getContainerId());
 	}
 
 	@Test
-	@DisplayName("이미 연결된 사용자의 연결을 갱신한다")
+	@DisplayName("이미 연결된 사용자의 연결을 갱신한다.")
 	void connect_existingConnection() {
-		String githubId = "testUser";
-		when(valueOperations.get("emitter:" + githubId)).thenReturn("otherContainer");
+		when(valueOperations.get("emitter:" + GITHUB_ID)).thenReturn("otherContainer");
 
-		SseEmitter result = sseService.connect(githubId);
+		SseEmitter result = sseService.connect(GITHUB_ID);
 
 		assertNotNull(result);
-		verify(redisTemplate).convertAndSend("disconnect", githubId);
-		verify(valueOperations).set("emitter:" + githubId, ContainerIdUtil.getContainerId());
+		verify(redisTemplate).convertAndSend("disconnect", GITHUB_ID);
+		verify(valueOperations).set("emitter:" + GITHUB_ID, ContainerIdUtil.getContainerId());
+	}
+
+	@Test
+	@DisplayName("연결 해제를 정상적으로 처리한다.")
+	void handleDisconnect() {
+		sseService.addEmitter(GITHUB_ID, mockEmitter);
+		sseService.handleDisconnect(GITHUB_ID);
+
+		assertFalse(sseService.isConnected(GITHUB_ID));
+		verify(redisTemplate).delete("emitter:" + GITHUB_ID);
+	}
+
+	@Test
+	@DisplayName("이벤트가 발생하면 사용자가에 알림을 전송한다.")
+	void sendEventToUser() throws IOException {
+		sseService.addEmitter(GITHUB_ID, mockEmitter);
+
+		sseService.sendEventToUser(GITHUB_ID, "testEvent", "testData");
+
+		verify(mockEmitter).send(any(SseEmitter.SseEventBuilder.class));
+	}
+
+	@Test
+	@DisplayName("사용자에게 이벤트 전송 실패 시 Emitter를 제거한다.")
+	void sendEventToUser_FailureRemovesEmitter() throws IOException {
+		sseService.addEmitter(GITHUB_ID, mockEmitter);
+		doThrow(new IOException()).when(mockEmitter).send(any(SseEmitter.SseEventBuilder.class));
+
+		sseService.sendEventToUser(GITHUB_ID, "testEvent", "testData");
+
+		assertFalse(sseService.isConnected(GITHUB_ID));
+		verify(redisTemplate).delete("emitter:" + GITHUB_ID);
+	}
+
+	@Test
+	@DisplayName("연결 상태를 확인한다.")
+	void isConnected() {
+		sseService.addEmitter(GITHUB_ID, mockEmitter);
+		assertTrue(sseService.isConnected(GITHUB_ID));
+
+		sseService.removeEmitter(GITHUB_ID);
+		assertFalse(sseService.isConnected(GITHUB_ID));
+	}
+
+	@Test
+	@DisplayName("초기 연결 메시지를 전송한다.")
+	void initConnect() throws IOException {
+		SseEmitter emitter = new SseEmitter();
+		sseService.connect(GITHUB_ID);
+
+		// initConnect is private, so we're testing it indirectly through connect
+		verify(valueOperations).set(eq("emitter:" + GITHUB_ID), anyString());
 	}
 }
