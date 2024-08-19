@@ -36,7 +36,7 @@ import site.iris.issuefy.util.ContainerIdUtil;
 @RequiredArgsConstructor
 public class NotificationService {
 
-	private static final String EVENT_NAME = "notifications";
+	private static final String EVENT_NAME = "notification";
 	private final UserNotificationRepository userNotificationRepository;
 	private final SubscriptionRepository subscriptionRepository;
 	private final UserRepository userRepository;
