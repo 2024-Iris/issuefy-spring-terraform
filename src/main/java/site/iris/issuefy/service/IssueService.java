@@ -69,7 +69,6 @@ public class IssueService {
 		Issue issue = Issue.of(
 			repository,
 			issueDto.getTitle(),
-			issueDto.isStarred(),
 			issueDto.isRead(),
 			issueDto.getState(),
 			issueDto.getCreatedAt(),
@@ -107,7 +106,6 @@ public class IssueService {
 				issue.getTitle(),
 				labelService.convertLabelsResponse(optionalLabels),
 				issue.isRead(),
-				issue.isStarred(),
 				issue.getCreatedAt(),
 				issue.getUpdatedAt(),
 				issue.getClosedAt());

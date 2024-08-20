@@ -15,7 +15,6 @@ public class IssueResponse {
 	private String title;
 	private List<LabelResponse> labels;
 	private boolean isRead;
-	private boolean isStarred;
 	private LocalDateTime createdAt;
 	private LocalDateTime updatedAt;
 	private LocalDateTime closedAt;
@@ -27,7 +26,6 @@ public class IssueResponse {
 		String title,
 		List<LabelResponse> labels,
 		boolean isRead,
-		boolean isStarred,
 		LocalDateTime createdAt,
 		LocalDateTime updatedAt,
 		LocalDateTime closedAt) {
@@ -38,7 +36,6 @@ public class IssueResponse {
 			title,
 			labels,
 			isRead,
-			isStarred,
 			createdAt,
 			updatedAt,
 			closedAt
