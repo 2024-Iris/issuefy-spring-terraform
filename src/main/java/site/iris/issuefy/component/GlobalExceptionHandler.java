@@ -4,11 +4,9 @@ import java.io.IOException;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-import org.springframework.web.context.request.async.AsyncRequestTimeoutException;
 import org.springframework.web.reactive.function.client.WebClientException;
 
 import lombok.extern.slf4j.Slf4j;
@@ -70,13 +68,5 @@ public class GlobalExceptionHandler {
 	private ResponseEntity<ErrorResponse> createErrorResponse(HttpStatusCode status, String message) {
 		ErrorResponse errorResponse = new ErrorResponse(message);
 		return ResponseEntity.status(status).body(errorResponse);
-	}
-
-	@ExceptionHandler(AsyncRequestTimeoutException.class)
-	public ResponseEntity<ErrorResponse> handleAsyncRequestTimeoutException(AsyncRequestTimeoutException e) {
-		return ResponseEntity
-			.status(HttpStatus.SERVICE_UNAVAILABLE)
-			.contentType(MediaType.APPLICATION_JSON)
-			.body(new ErrorResponse("Server-Sent Events connection timed out. Please try reconnecting."));
 	}
 }
