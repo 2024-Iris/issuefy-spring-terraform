@@ -13,12 +13,14 @@ import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
 @Table(name = "notification")
+@ToString
 public class Notification {
 
 	@Id
@@ -39,15 +41,5 @@ public class Notification {
 		this.repository = repository;
 		this.repositoryName = repositoryName;
 		this.pushTime = pushTime;
-	}
-
-	@Override
-	public String toString() {
-		return "Notification{" +
-			"id=" + id +
-			", repository=" + repository +
-			", message='" + repositoryName + '\'' +
-			", pushTime=" + pushTime +
-			'}';
 	}
 }

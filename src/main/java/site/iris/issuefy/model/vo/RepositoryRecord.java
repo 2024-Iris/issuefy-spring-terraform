@@ -5,7 +5,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import site.iris.issuefy.exception.InvalidUrlException;
+import site.iris.issuefy.exception.code.ErrorCode;
+import site.iris.issuefy.exception.validation.InvalidUrlException;
 
 public record RepositoryRecord(String repositoryUrl) {
 
@@ -14,7 +15,8 @@ public record RepositoryRecord(String repositoryUrl) {
 		Pattern pattern = Pattern.compile("^https://github\\.com/[a-zA-Z0-9_.-]+/[a-zA-Z0-9_.-]+");
 		Matcher matcher = pattern.matcher(decodedUrl);
 		if (!matcher.matches()) {
-			throw new InvalidUrlException(InvalidUrlException.INVALID_URL);
+			throw new InvalidUrlException(ErrorCode.INVALID_REPOSITORY_URL.getMessage(),
+				ErrorCode.INVALID_REPOSITORY_URL.getStatus());
 		}
 		this.repositoryUrl = decodedUrl;
 	}

@@ -25,8 +25,9 @@ import org.springframework.test.web.servlet.ResultActions;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import site.iris.issuefy.model.dto.SubscriptionListDto;
 import site.iris.issuefy.model.vo.RepositoryRecord;
-import site.iris.issuefy.response.SubscriptionResponse;
+import site.iris.issuefy.response.PagedSubscriptionResponse;
 import site.iris.issuefy.service.GithubTokenService;
 import site.iris.issuefy.service.SubscriptionService;
 
@@ -52,17 +53,18 @@ class SubscriptionControllerTest {
 		// given
 		String token = "Bearer testToken";
 		String githubId = "testGithubId";
-		List<SubscriptionResponse> subscriptionResponses = new ArrayList<>();
-		when(subscriptionService.getSubscribedRepositories("testToken")).thenReturn(subscriptionResponses);
+		List<SubscriptionListDto> subscriptionResponses = new ArrayList<>();
+		when(subscriptionService.getSubscribedRepositories("testToken", 1, 15, "sort", "order", false)).thenReturn(
+			PagedSubscriptionResponse.of(1, 15, 1, 1, subscriptionResponses));
 
 		// when
-		ResultActions result = mockMvc.perform(get("/api/subscription")
+		ResultActions result = mockMvc.perform(get("/api/subscriptions")
 			.header("Authorization", token)
 			.requestAttr("githubId", githubId));
 
 		// then
 		result.andExpect(status().isOk())
-			.andDo(document("issuefy/subscription/get",
+			.andDo(document("issuefy/subscriptions/get",
 				getDocumentRequest(),
 				getDocumentResponse()
 			));
@@ -77,18 +79,18 @@ class SubscriptionControllerTest {
 		RepositoryRecord repositoryUrlVo = new RepositoryRecord(repositoryUrl);
 
 		// when
-		ResultActions result = mockMvc.perform(post("/api/subscription")
+		ResultActions result = mockMvc.perform(post("/api/subscriptions")
 			.requestAttr("githubId", githubId)
 			.contentType(MediaType.APPLICATION_JSON)
 			.content(objectMapper.writeValueAsString(repositoryUrlVo)));
 
 		// then
 		result.andExpect(status().isCreated())
-			.andDo(document("issuefy/subscription/post",
+			.andDo(document("issuefy/subscriptions/post",
 				getDocumentRequest(),
 				getDocumentResponse(),
 				requestFields(
-					fieldWithPath("repositoryUrl").type(JsonFieldType.STRING).description("리포지토리 URL")
+					fieldWithPath("repositoryUrl").type(JsonFieldType.STRING).description("GitHub 리포지토리 URL")
 				)
 			));
 	}
@@ -102,15 +104,42 @@ class SubscriptionControllerTest {
 
 		doNothing().when(subscriptionService).unsubscribeRepository(ghRepoId);
 
-		mockMvc.perform(RestDocumentationRequestBuilders.delete("/api/subscription/{gh_repo_id}", ghRepoId)
+		mockMvc.perform(RestDocumentationRequestBuilders.delete("/api/subscriptions/{gh_repo_id}", ghRepoId)
 				.requestAttr("githubId", githubId))
 			.andExpect(status().isNoContent())
-			.andDo(document("unsubscribe-repository",
+			.andDo(document("issuefy/subscriptions/delete",
 				pathParameters(
-					parameterWithName("gh_repo_id").description("GitHub 저장소 ID")
+					parameterWithName("gh_repo_id").description("GitHub 리포지토리 ID")
 				)
 			));
 
 		verify(subscriptionService).unsubscribeRepository(ghRepoId);
+	}
+
+	@Test
+	@DisplayName("리포지토리 즐겨찾기를 토글한다.")
+	void toggleStarRepository() throws Exception {
+		// given
+		String githubId = "testUser";
+		Long ghRepoId = 1L;
+
+		doNothing().when(subscriptionService).toggleRepositoryStar(githubId, ghRepoId);
+
+		// when
+		ResultActions result = mockMvc.perform(
+			RestDocumentationRequestBuilders.put("/api/subscriptions/star/{gh_repo_id}", ghRepoId)
+				.requestAttr("githubId", githubId));
+
+		// then
+		result.andExpect(status().isNoContent())
+			.andDo(document("issuefy/subscriptions/star",
+				getDocumentRequest(),
+				getDocumentResponse(),
+				pathParameters(
+					parameterWithName("gh_repo_id").description("GitHub 리포지토리 ID")
+				)
+			));
+
+		verify(subscriptionService).toggleRepositoryStar(githubId, ghRepoId);
 	}
 }

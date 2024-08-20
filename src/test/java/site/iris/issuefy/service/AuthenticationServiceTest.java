@@ -39,11 +39,12 @@ class AuthenticationServiceTest {
 	void githubLogin() {
 		// given
 		String authenticationCode = "testCode";
-		UserDto userDto = UserDto.of("testUser", "testUserUrl", "test@email.com");
+		String accessToken = "testToken";
+		UserDto expectedUserDto = UserDto.of("testUser", "testUserUrl", "test@email.com", false);
 
 		GithubAccessTokenService githubAccessTokenService = mock(GithubAccessTokenService.class);
-		when(githubAccessTokenService.getToken(authenticationCode)).thenReturn(
-			"access_token=testToken&scope=&token_type=bearer");
+		when(githubAccessTokenService.githubGetToken(authenticationCode)).thenReturn(
+			"access_token=" + accessToken + "&scope=&token_type=bearer");
 
 		WebClient webClient = WebClient.builder().baseUrl(mockWebServer.url("/").toString()).build();
 		UserService userService = mock(UserService.class);
@@ -56,7 +57,10 @@ class AuthenticationServiceTest {
 
 		// then
 		assertNotNull(result);
-		assertEquals(userDto.getGithubId(), result.getGithubId());
-		assertEquals(userDto.getGithubProfileImage(), result.getGithubProfileImage());
+		assertEquals(expectedUserDto.getGithubId(), result.getGithubId());
+		assertEquals(expectedUserDto.getGithubProfileImage(), result.getGithubProfileImage());
+
+		verify(githubTokenService).storeAccessToken(expectedUserDto.getGithubId(), accessToken);
+		verify(userService).registerUserIfNotExist(any(UserDto.class));
 	}
 }

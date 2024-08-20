@@ -16,6 +16,7 @@ import org.springframework.http.ResponseEntity;
 
 import site.iris.issuefy.entity.Org;
 import site.iris.issuefy.entity.Repository;
+import site.iris.issuefy.exception.validation.EmptyBodyException;
 import site.iris.issuefy.model.dto.GithubRepositoryDto;
 import site.iris.issuefy.repository.RepositoryRepository;
 
@@ -38,10 +39,10 @@ class RepositoryServiceTest {
 		ResponseEntity<GithubRepositoryDto> repositoryInfo = ResponseEntity.ok(null);
 		Org org = new Org(1L, "testOrg", 123L);
 
-		NullPointerException exception = assertThrows(NullPointerException.class,
+		EmptyBodyException exception = assertThrows(EmptyBodyException.class,
 			() -> repositoryService.saveRepository(repositoryInfo, org));
 
-		assertEquals("Repository info body is null", exception.getMessage());
+		assertEquals("Repository info body is empty", exception.getMessage());
 	}
 
 	@Test
@@ -50,7 +51,7 @@ class RepositoryServiceTest {
 		GithubRepositoryDto githubRepositoryDto = new GithubRepositoryDto(1L, "existingRepo", LocalDateTime.now());
 
 		Org org = new Org(1L, "testOrg", 123L);
-		Repository existingRepository = new Repository(org, "existingRepo", 1L);
+		Repository existingRepository = new Repository(1L, org, "existingRepo", 1L, LocalDateTime.now());
 
 		when(repositoryRepository.findByGhRepoId(1L)).thenReturn(Optional.of(existingRepository));
 
@@ -71,7 +72,7 @@ class RepositoryServiceTest {
 
 		when(repositoryRepository.findByGhRepoId(1L)).thenReturn(Optional.empty());
 
-		Repository newRepository = new Repository(org, "newRepo", 1L);
+		Repository newRepository = new Repository(1L, org, "newRepo", 1L, LocalDateTime.now());
 		when(repositoryRepository.save(any(Repository.class))).thenReturn(newRepository);
 
 		ResponseEntity<GithubRepositoryDto> repositoryInfo = ResponseEntity.ok(githubRepositoryDto);

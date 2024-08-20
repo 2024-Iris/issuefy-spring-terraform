@@ -1,6 +1,7 @@
 package site.iris.issuefy.entity;
 
 import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -11,12 +12,14 @@ import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
 @Table(name = "subscription")
+@ToString
 public class Subscription {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -30,17 +33,16 @@ public class Subscription {
 	@JoinColumn(name = "repository_id", nullable = false)
 	private Repository repository;
 
+	@Column(name = "is_repo_starred", nullable = false)
+	private boolean repoStarred;
+
 	public Subscription(User user, Repository repository) {
 		this.user = user;
 		this.repository = repository;
+		this.repoStarred = false;
 	}
 
-	@Override
-	public String toString() {
-		return "Subscription{" +
-			"id=" + id +
-			", user=" + user +
-			", repository=" + repository +
-			'}';
+	public void toggleStar() {
+		this.repoStarred = !this.repoStarred;
 	}
 }

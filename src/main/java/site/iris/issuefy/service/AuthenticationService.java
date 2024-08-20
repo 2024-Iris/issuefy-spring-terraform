@@ -2,18 +2,22 @@ package site.iris.issuefy.service;
 
 import static site.iris.issuefy.model.dto.OauthDto.*;
 
+import java.util.Arrays;
 import java.util.Collections;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 
 import lombok.extern.slf4j.Slf4j;
 import site.iris.issuefy.exception.code.ErrorCode;
+import site.iris.issuefy.exception.github.GithubApiException;
+import site.iris.issuefy.exception.security.AuthenticationException;
 import site.iris.issuefy.model.dto.OauthDto;
 import site.iris.issuefy.model.dto.UserDto;
 
@@ -29,7 +33,6 @@ public class AuthenticationService {
 	private final UserService userService;
 	private final GithubTokenService githubTokenService;
 
-	// 2개의 WebClient Bean중에서 apiWebClient Bean을 사용하기 위해 생성자를 만들었습니다.
 	@Autowired
 	public AuthenticationService(GithubAccessTokenService githubAccessTokenService,
 		@Qualifier("apiWebClient") WebClient webClient,
@@ -41,46 +44,49 @@ public class AuthenticationService {
 	}
 
 	public UserDto githubLogin(String code) {
-		String accessToken = githubAccessTokenService.getToken(code);
+		String accessToken = githubAccessTokenService.githubGetToken(code);
 		log.info("Successfully retrieve GitHub access token");
 		OauthDto oauthDto = parseOauthDto(accessToken);
-		UserDto loginUserDto = getUserInfo(oauthDto);
+		UserDto loginUserDto = githubGetUserInfo(oauthDto);
 		githubTokenService.storeAccessToken(loginUserDto.getGithubId(), oauthDto.getAccessToken());
 		userService.registerUserIfNotExist(loginUserDto);
 		return loginUserDto;
 	}
 
 	private OauthDto parseOauthDto(String accessToken) {
-		ConcurrentMap<String, String> responseMap = new ConcurrentHashMap<>();
 		String[] pair = accessToken.split("&");
+		ConcurrentMap<String, String> responseMap = Arrays.stream(pair)
+			.map(pairStr -> pairStr.split("="))
+			.collect(Collectors.toConcurrentMap(keyValue -> keyValue[KEY_INDEX],
+				keyValue -> keyValue.length == REQUIRE_SIZE ? keyValue[VALUE_INDEX] : "",
+				(key1, key2) -> key1
+			));
 
-		for (String pairStr : pair) {
-			String[] keyValue = pairStr.split("=");
-			if (keyValue.length == REQUIRE_SIZE) {
-				responseMap.put(keyValue[KEY_INDEX], keyValue[VALUE_INDEX]);
-			} else {
-				// null 값 대신 빈 문자열
-				responseMap.put(keyValue[KEY_INDEX], "");
-			}
-		}
-
-		// 필수 키가 없으면 예외 발생
-		if (!responseMap.containsKey(KEY_ACCESS_TOKEN) || !responseMap.containsKey(KEY_TOKEN_TYPE)) {
-			throw new IllegalArgumentException(ErrorCode.REQUIRED_KEYS_MISSING.getMessage());
-		}
+		validateKey(responseMap);
 
 		return OauthDto.fromMap(responseMap);
 	}
 
-	private UserDto getUserInfo(OauthDto oauthDto) {
-		return webClient.get()
-			.uri("/user")
-			.headers(headers -> {
-				headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
-				headers.setBearerAuth(oauthDto.getAccessToken());
-			})
-			.retrieve()
-			.bodyToMono(UserDto.class)
-			.block();
+	private void validateKey(ConcurrentMap<String, String> responseMap) {
+		if (!responseMap.containsKey(KEY_ACCESS_TOKEN) || !responseMap.containsKey(KEY_TOKEN_TYPE)) {
+			throw new AuthenticationException(ErrorCode.REQUIRED_KEYS_MISSING.getMessage(),
+				ErrorCode.REQUIRED_KEYS_MISSING.getStatus());
+		}
+	}
+
+	private UserDto githubGetUserInfo(OauthDto oauthDto) {
+		try {
+			return webClient.get()
+				.uri("/user")
+				.headers(headers -> {
+					headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+					headers.setBearerAuth(oauthDto.getAccessToken());
+				})
+				.retrieve()
+				.bodyToMono(UserDto.class)
+				.block();
+		} catch (WebClientResponseException e) {
+			throw new GithubApiException(e.getStatusCode(), e.getResponseBodyAsString());
+		}
 	}
 }

@@ -13,4 +13,6 @@ public interface UserRepository extends CrudRepository<User, Long> {
 	Optional<User> findByGithubId(String githubId);
 
 	boolean existsByGithubId(String githubId);
+
+	void deleteByGithubId(String githubId);
 }

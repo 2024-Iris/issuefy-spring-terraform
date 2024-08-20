@@ -13,29 +13,31 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import site.iris.issuefy.exception.code.ErrorCode;
+import site.iris.issuefy.exception.network.SseException;
+import site.iris.issuefy.filter.JwtAuthenticationFilter;
 import site.iris.issuefy.model.dto.UpdateRepositoryDto;
 import site.iris.issuefy.service.NotificationService;
 
+@Slf4j
 @RestController
 @RequiredArgsConstructor
-@Slf4j
 public class SseController {
 	private final NotificationService notificationService;
 
 	@GetMapping(value = "/api/connect", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
 	public ResponseEntity<SseEmitter> connect(@RequestAttribute String githubId) {
-		log.info("New connection for user: {}", githubId);
 		SseEmitter emitter = new SseEmitter(60000L);
 		notificationService.addEmitter(githubId, emitter);
 		notificationService.sendInitialNotification(githubId, emitter);
 
 		emitter.onTimeout(() -> {
-			log.info("SSE connection timed out for user: {}", githubId);
 			notificationService.removeEmitter(githubId);
+			log.info("SSE Connection closed for user: {}", JwtAuthenticationFilter.maskId(githubId));
 			try {
 				emitter.send(SseEmitter.event().name("error").data("Connection timed out"));
 			} catch (IOException e) {
-				log.error("Error sending timeout message", e);
+				throw new SseException(ErrorCode.UNKNOWN_SSE_ERROR.getMessage(), ErrorCode.UNKNOWN_SSE_ERROR.getStatus());
 			} finally {
 				emitter.complete();
 			}
@@ -46,7 +48,6 @@ public class SseController {
 
 	@PostMapping("/api/receive")
 	public void receive(@RequestBody UpdateRepositoryDto updateRepositoryDto) {
-		log.info("lambda request receive");
 		notificationService.handleRedisMessage(updateRepositoryDto);
 	}
 }

@@ -6,9 +6,11 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.ToString;
 
 @RequiredArgsConstructor
 @Getter
+@ToString
 public class OauthDto {
 
 	public static final String KEY_TOKEN_TYPE = "token_type";
@@ -35,14 +37,5 @@ public class OauthDto {
 			map.getOrDefault(KEY_ACCESS_TOKEN, ""),
 			map.getOrDefault(KEY_SCOPE, "")
 		);
-	}
-
-	@Override
-	public String toString() {
-		return "OauthDto{" +
-			"tokenType='" + tokenType + '\'' +
-			", accessToken='" + accessToken + '\'' +
-			", scope='" + scope + '\'' +
-			'}';
 	}
 }
