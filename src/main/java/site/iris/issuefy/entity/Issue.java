@@ -53,8 +53,7 @@ public class Issue {
 	@OneToMany(mappedBy = "issue")
 	private List<IssueLabel> issueLabels = new ArrayList<>();
 
-	private Issue(Repository repository, String title, boolean isRead, String state,
-		LocalDateTime createdAt,
+	private Issue(Repository repository, String title, boolean isRead, String state, LocalDateTime createdAt,
 		LocalDateTime updatedAt, LocalDateTime closedAt, long ghIssueId, List<IssueLabel> issueLabels) {
 		this.repository = repository;
 		this.title = title;
@@ -67,11 +66,9 @@ public class Issue {
 		this.issueLabels = issueLabels;
 	}
 
-	public static Issue of(Repository repository, String title, boolean isRead, String state,
-		LocalDateTime createdAt,
+	public static Issue of(Repository repository, String title, boolean isRead, String state, LocalDateTime createdAt,
 		LocalDateTime updatedAt, LocalDateTime closedAt, long ghIssueNumber, List<IssueLabel> issueLabels) {
-		return new Issue(repository, title, isRead, state, createdAt, updatedAt, closedAt, ghIssueNumber,
-			issueLabels);
+		return new Issue(repository, title, isRead, state, createdAt, updatedAt, closedAt, ghIssueNumber, issueLabels);
 	}
 }
 
