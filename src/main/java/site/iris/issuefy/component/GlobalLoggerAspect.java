@@ -19,7 +19,7 @@ import jakarta.servlet.http.HttpServletRequest;
 @Component
 public class GlobalLoggerAspect {
 
-	@Around("execution(* site.iris.issuefy.controller..*.*(..)) && !execution(* site.iris.issuefy.controller.SseController.*(..))")
+	@Around("execution(* site.iris.issuefy.controller..*.*(..)) && !execution(* site.iris.issuefy.controller.SseController.*(..)) && !execution(* site.iris.issuefy.controller.HealthCheckController.*(..))")
 	public Object logRegularController(ProceedingJoinPoint joinPoint) throws Throwable {
 		return logController(joinPoint, "Regular");
 	}
@@ -35,7 +35,7 @@ public class GlobalLoggerAspect {
 		String methodName = joinPoint.getSignature().getName();
 
 		if (controllerType.equals("SSE") && methodName.equals("connect")) {
-			logger.info("SSE Connection opened for user: {}", MDC.get("user"));
+			logger.debug("SSE Connection opened for user: {}", MDC.get("user"));
 			return joinPoint.proceed();
 		}
 
