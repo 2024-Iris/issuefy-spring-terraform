@@ -40,9 +40,10 @@ public class Repository {
 	@Column(name = "latest_update_at")
 	private LocalDateTime latestUpdateAt;
 
-	public Repository(Org org, String name, long ghRepoId) {
+	public Repository(Org org, String name, long ghRepoId, LocalDateTime latestUpdateAt) {
 		this.org = org;
 		this.name = name;
 		this.ghRepoId = ghRepoId;
+		this.latestUpdateAt = latestUpdateAt;
 	}
 }

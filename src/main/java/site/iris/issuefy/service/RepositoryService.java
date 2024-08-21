@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import site.iris.issuefy.entity.Org;
 import site.iris.issuefy.entity.Repository;
 import site.iris.issuefy.exception.code.ErrorCode;
@@ -14,6 +15,7 @@ import site.iris.issuefy.repository.RepositoryRepository;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class RepositoryService {
 
 	private final RepositoryRepository repositoryRepository;
@@ -21,7 +23,7 @@ public class RepositoryService {
 	@Transactional
 	public Repository saveRepository(ResponseEntity<GithubRepositoryDto> repositoryInfo, Org org) {
 		GithubRepositoryDto repoDto = repositoryInfo.getBody();
-
+		log.info("Saving new repository: {}", repoDto);
 		if (repoDto == null || repositoryInfo.getBody() == null) {
 			throw new EmptyBodyException(ErrorCode.REPOSITORY_BODY_EMPTY.getMessage(),
 				ErrorCode.REPOSITORY_BODY_EMPTY.getStatus());
@@ -29,7 +31,8 @@ public class RepositoryService {
 
 		return repositoryRepository.findByGhRepoId(repoDto.getId())
 			.orElseGet(() -> {
-				Repository newRepository = new Repository(org, repoDto.getName(), repoDto.getId());
+				log.info("Saving new repository: {}", repoDto);
+				Repository newRepository = new Repository(org, repoDto.getName(), repoDto.getId(), repoDto.getUpdated_at());
 				return repositoryRepository.save(newRepository);
 			});
 	}
