@@ -18,7 +18,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 
-import site.iris.issuefy.response.RepositoryIssuesResponse;
+import site.iris.issuefy.response.PagedRepositoryIssuesResponse;
 import site.iris.issuefy.service.IssueService;
 
 @WebMvcTest(IssueController.class)
@@ -38,7 +38,7 @@ class IssueControllerTest {
 		String orgName = "iris";
 		String repoName = "issuefy";
 		String githubId = "dokkisan";
-		RepositoryIssuesResponse response = new RepositoryIssuesResponse(repoName, new ArrayList<>());
+		PagedRepositoryIssuesResponse response = new PagedRepositoryIssuesResponse(repoName, new ArrayList<>());
 
 		// when
 		when(issueService.getRepositoryIssuesResponse(orgName, repoName, githubId))
