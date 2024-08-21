@@ -22,7 +22,7 @@ import site.iris.issuefy.entity.Repository;
 import site.iris.issuefy.repository.IssueLabelRepository;
 import site.iris.issuefy.repository.IssueRepository;
 import site.iris.issuefy.repository.RepositoryRepository;
-import site.iris.issuefy.response.RepositoryIssuesResponse;
+import site.iris.issuefy.response.PagedRepositoryIssuesResponse;
 
 class IssueServiceTest {
 	MockWebServer mockWebServer;
@@ -80,7 +80,7 @@ class IssueServiceTest {
 		when(repositoryRepository.findByName(anyString())).thenReturn(Optional.of(repository));
 
 		// when
-		RepositoryIssuesResponse response = issueService.getRepositoryIssuesResponse(repository.getOrg().getName(),
+		PagedRepositoryIssuesResponse response = issueService.getRepositoryIssuesResponse(repository.getOrg().getName(),
 			repository.getName(), "dokkisan");
 
 		// then
