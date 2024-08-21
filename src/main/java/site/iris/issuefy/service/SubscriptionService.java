@@ -83,6 +83,7 @@ public class SubscriptionService {
 			subscriptions = subscriptionRepository.findPageByUserIdAndRepoStarredTrue(user.getId(), pageable)
 				.orElseThrow(
 					() -> new SubscriptionPageNotFoundException(
+						// TODO 꼭 ENUM 2번 호출해야하나?
 						ErrorCode.USER_SUBSCRIPTIONS_PAGE_NOT_FOUND.getMessage(),
 						ErrorCode.USER_SUBSCRIPTIONS_PAGE_NOT_FOUND.getStatus(), user.getGithubId()));
 		} else {
@@ -94,6 +95,7 @@ public class SubscriptionService {
 		return subscriptions;
 	}
 
+	// TODO ENUM 변경
 	private String getActualSortProperty(String sort) {
 		return switch (sort) {
 			case "repositoryName" -> "repository.name";
