@@ -38,14 +38,23 @@ class IssueControllerTest {
 		String orgName = "iris";
 		String repoName = "issuefy";
 		String githubId = "dokkisan";
-		PagedRepositoryIssuesResponse response = new PagedRepositoryIssuesResponse(repoName, new ArrayList<>());
+		int page = 0;
+		int pageSize = 10;
+		String sort = "createdAt";
+		String order = "desc";
+		PagedRepositoryIssuesResponse response = new PagedRepositoryIssuesResponse(0, 10, 100, 10, repoName,
+			new ArrayList<>());
 
 		// when
-		when(issueService.getRepositoryIssuesResponse(orgName, repoName, githubId))
+		when(issueService.getRepositoryIssues(orgName, repoName, githubId, page, pageSize, sort, order))
 			.thenReturn(response);
 		ResultActions result = mockMvc.perform(
 			get("/api/subscriptions/{org_name}/{repo_name}/issues", orgName, repoName)
-				.requestAttr("githubId", githubId));
+				.requestAttr("githubId", githubId)
+				.param("page", String.valueOf(page))
+				.param("size", String.valueOf(pageSize))
+				.param("sort", sort)
+				.param("order", order));
 
 		// then
 		result.andExpect(status().isOk())
@@ -54,7 +63,14 @@ class IssueControllerTest {
 				getDocumentResponse(),
 				pathParameters(
 					parameterWithName("org_name").description("조직 이름"),
-					parameterWithName("repo_name").description("리포지토리 이름"))
+					parameterWithName("repo_name").description("리포지토리 이름")
+				),
+				queryParameters(
+					parameterWithName("page").description("페이지 번호").optional(),
+					parameterWithName("size").description("페이지 크기").optional(),
+					parameterWithName("sort").description("정렬 기준").optional(),
+					parameterWithName("order").description("정렬 순서").optional()
+				)
 			));
 	}
 }

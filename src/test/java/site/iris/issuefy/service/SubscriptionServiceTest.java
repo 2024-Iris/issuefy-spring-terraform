@@ -82,7 +82,7 @@ class SubscriptionServiceTest {
 		String githubId = "testUser";
 		User user = new User(githubId, "testuser@example.com");
 		Org org = new Org("testOrg", 123L);
-		Repository repository = new Repository(org, "testRepo", 123L);
+		Repository repository = new Repository(org, "testRepo", 123L, LocalDateTime.now());
 		Subscription subscription = new Subscription(user, repository);
 		Pageable pageable = PageRequest.of(1, 15, Sort.by(Sort.Direction.ASC, "repository.latestUpdateAt"));
 
@@ -108,7 +108,7 @@ class SubscriptionServiceTest {
 		String githubId = "testUser";
 		User user = new User(githubId, "testuser@example.com");
 		Org org = new Org("testOrg", 123L);
-		Repository repository = new Repository(org, "testRepo", 123L);
+		Repository repository = new Repository(org, "testRepo", 123L, LocalDateTime.now());
 		Subscription subscription = new Subscription(1L, user, repository, true);
 		Pageable pageable = PageRequest.of(1, 15, Sort.by(Sort.Direction.ASC, "repository.latestUpdateAt"));
 
@@ -136,7 +136,7 @@ class SubscriptionServiceTest {
 			"testOrg", "testRepo");
 		String githubId = "githubuser1";
 		Org org = new Org("organization1", 1L);
-		Repository repository = new Repository(org, "repo-a1", 1L);
+		Repository repository = new Repository(org, "repo-a1", 1L, LocalDateTime.now());
 		User user = new User(githubId, "user1@example.com");
 
 		mockWebServer.enqueue(new MockResponse()
