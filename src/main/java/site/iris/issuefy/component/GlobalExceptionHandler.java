@@ -7,6 +7,7 @@ import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.context.request.async.AsyncRequestTimeoutException;
 import org.springframework.web.reactive.function.client.WebClientException;
 
 import lombok.extern.slf4j.Slf4j;
@@ -68,5 +69,9 @@ public class GlobalExceptionHandler {
 	private ResponseEntity<ErrorResponse> createErrorResponse(HttpStatusCode status, String message) {
 		ErrorResponse errorResponse = new ErrorResponse(message);
 		return ResponseEntity.status(status).body(errorResponse);
+	}
+
+	@ExceptionHandler(AsyncRequestTimeoutException.class)
+	public void handleAsyncRequestTimeoutException(AsyncRequestTimeoutException e) {
 	}
 }

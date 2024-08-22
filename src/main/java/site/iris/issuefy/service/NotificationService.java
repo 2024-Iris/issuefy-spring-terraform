@@ -1,14 +1,17 @@
 package site.iris.issuefy.service;
 
-import java.io.IOException;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.Map;
+import java.util.stream.Collectors;
 
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -17,7 +20,6 @@ import site.iris.issuefy.entity.Subscription;
 import site.iris.issuefy.entity.User;
 import site.iris.issuefy.entity.UserNotification;
 import site.iris.issuefy.exception.code.ErrorCode;
-import site.iris.issuefy.exception.network.SseException;
 import site.iris.issuefy.exception.resource.UserNotFoundException;
 import site.iris.issuefy.model.dto.NotificationDto;
 import site.iris.issuefy.model.dto.NotificationReadDto;
@@ -27,36 +29,88 @@ import site.iris.issuefy.repository.NotificationRepository;
 import site.iris.issuefy.repository.SubscriptionRepository;
 import site.iris.issuefy.repository.UserNotificationRepository;
 import site.iris.issuefy.repository.UserRepository;
+import site.iris.issuefy.util.ContainerIdUtil;
 
 @Service
 @Slf4j
 @RequiredArgsConstructor
 public class NotificationService {
 
+	private static final String EVENT_NAME = "notification";
 	private final UserNotificationRepository userNotificationRepository;
 	private final SubscriptionRepository subscriptionRepository;
 	private final UserRepository userRepository;
 	private final NotificationRepository notificationRepository;
-	private final ConcurrentHashMap<String, SseEmitter> sseEmitters;
+	private final RedisTemplate<String, String> redisTemplate;
+	private final SseService sseService;
 
-	public void handleRedisMessage(UpdateRepositoryDto updateRepositoryDto) {
-		for (String repositoryIds : updateRepositoryDto.getUpdatedRepositoryIds()) {
-			Long repositoryId = Long.parseLong(repositoryIds);
-			findSubscribeRepositoryUser(repositoryId);
+	public void handleUpdateRepositoryDto(UpdateRepositoryDto updateRepositoryDto) {
+		for (String repositoryId : updateRepositoryDto.getUpdatedRepositoryIds()) {
+			Long repoId = Long.parseLong(repositoryId);
+			processNotificationForRepository(repoId);
 		}
 	}
 
-	public void sendInitialNotification(String githubId, SseEmitter emitter) {
+	private void processNotificationForRepository(Long repositoryId) {
+		List<Subscription> subscriptions = subscriptionRepository.findByRepositoryId(repositoryId).orElseThrow();
+		for (Subscription subscription : subscriptions) {
+			String githubId = subscription.getUser().getGithubId();
+			String repositoryName = subscription.getRepository().getName();
+
+			Notification notification = new Notification(subscription.getRepository(), repositoryName,
+				LocalDateTime.now());
+			notificationRepository.save(notification);
+
+			UserNotification userNotification = new UserNotification(subscription.getUser(), notification);
+			userNotificationRepository.save(userNotification);
+
+			UnreadNotificationDto notificationData = getNotification(githubId);
+
+			if (sseService.isConnected(githubId)) {
+				sseService.sendEventToUser(githubId, EVENT_NAME, notificationData);
+			} else {
+				publishNotificationToRedis(githubId, notificationData);
+			}
+		}
+	}
+
+	private void publishNotificationToRedis(String githubId, UnreadNotificationDto notificationData) {
 		try {
-			log.debug("Sending initial notification to user {}", githubId);
-			emitter.send(SseEmitter.event()
-				.id("0")
-				.name("initial")
-				.data(getNotification(githubId)));
-			log.debug("Initial notification sent successfully to user {}", githubId);
-		} catch (IOException e) {
-			throw new SseException(ErrorCode.FAILED_INIT_CONNECTION.getMessage(),
-				ErrorCode.FAILED_INIT_CONNECTION.getStatus());
+			String message = new ObjectMapper().writeValueAsString(
+				Map.of(
+					"githubId", githubId,
+					EVENT_NAME, notificationData,
+					"senderId", ContainerIdUtil.getContainerId()
+				)
+			);
+
+			redisTemplate.convertAndSend("notifications", message);
+			log.info("Published notification to Redis for user: {}", githubId);
+		} catch (JsonProcessingException e) {
+			log.error("Error publishing notification to Redis", e);
+		}
+	}
+
+	public void handleRedisMessage(String message) {
+		try {
+			ObjectMapper mapper = new ObjectMapper();
+			JsonNode jsonNode = mapper.readTree(message);
+			String githubId = jsonNode.get("githubId").asText();
+			String senderId = jsonNode.get("senderId").asText();
+
+			if (senderId.equals(ContainerIdUtil.getContainerId())) {
+				return;
+			}
+
+			UnreadNotificationDto notificationData = mapper.treeToValue(jsonNode.get(EVENT_NAME),
+				UnreadNotificationDto.class);
+
+			if (sseService.isConnected(githubId)) {
+				sseService.sendEventToUser(githubId, EVENT_NAME, notificationData);
+			}
+
+		} catch (JsonProcessingException e) {
+			log.error("Error parsing Redis message", e);
 		}
 	}
 
@@ -69,55 +123,12 @@ public class NotificationService {
 		return new UnreadNotificationDto(unreadCount);
 	}
 
-	public void findSubscribeRepositoryUser(Long repositoryId) {
-		List<Subscription> subscriptions = subscriptionRepository.findByRepositoryId(repositoryId).orElseThrow();
-		for (Subscription subscription : subscriptions) {
-			String githubId = subscription.getUser().getGithubId();
-			String repositoryName = subscription.getRepository().getName();
-			Notification notification = new Notification(subscription.getRepository(), repositoryName,
-				LocalDateTime.now());
-			notificationRepository.save(notification);
-
-			UserNotification userNotification = new UserNotification(subscription.getUser(), notification);
-			userNotificationRepository.save(userNotification);
-
-			sendNotificationToUser(githubId);
-		}
-	}
-
-	public void sendNotificationToUser(String githubId) {
-		try {
-			UnreadNotificationDto unreadNotificationDto = getNotification(githubId);
-			SseEmitter emitter = getEmitter(githubId);
-			if (emitter != null) {
-				emitter.send(SseEmitter.event()
-					.id(String.valueOf(System.currentTimeMillis()))
-					.name("notification")
-					.data(unreadNotificationDto));
-			}
-		} catch (IOException e) {
-			throw new SseException(ErrorCode.FAILED_SENDING_MESSAGE.getMessage(),
-				ErrorCode.FAILED_SENDING_MESSAGE.getStatus());
-		}
-	}
-
 	public List<NotificationDto> findNotifications(String githubId) {
 		List<UserNotification> userNotificationList = userNotificationRepository.findUserNotificationsByUserGithubId(
 			githubId);
-		List<NotificationDto> notificationDtoList = new ArrayList<>();
-
-		for (UserNotification userNotification : userNotificationList) {
-			String orgName = userNotification.getNotification().getRepository().getOrg().getName();
-			String repositoryName = userNotification.getNotification().getRepositoryName();
-			LocalDateTime localDateTime = userNotification.getNotification().getPushTime();
-			boolean isRead = userNotification.getIsRead();
-			Long userNotificationId = userNotification.getId();
-
-			notificationDtoList.add(
-				NotificationDto.of(userNotificationId, orgName, repositoryName, localDateTime, isRead));
-		}
-
-		return notificationDtoList;
+		return userNotificationList.stream()
+			.map(this::convertToNotificationDto)
+			.collect(Collectors.toList());
 	}
 
 	@Transactional
@@ -125,15 +136,15 @@ public class NotificationService {
 		userNotificationRepository.markAsRead(notificationReadDto.getUserNotificationIds());
 	}
 
-	public void addEmitter(String githubId, SseEmitter emitter) {
-		sseEmitters.put(githubId, emitter);
-	}
-
-	public SseEmitter getEmitter(String githubId) {
-		return sseEmitters.get(githubId);
-	}
-
-	public void removeEmitter(String githubId) {
-		sseEmitters.remove(githubId);
+	private NotificationDto convertToNotificationDto(UserNotification userNotification) {
+		Notification notification = userNotification.getNotification();
+		String orgName = notification.getRepository().getOrg().getName();
+		return NotificationDto.of(
+			userNotification.getId(),
+			orgName,
+			notification.getRepositoryName(),
+			notification.getPushTime(),
+			userNotification.getIsRead()
+		);
 	}
 }
