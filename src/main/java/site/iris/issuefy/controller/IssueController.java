@@ -21,12 +21,11 @@ public class IssueController {
 	public ResponseEntity<PagedRepositoryIssuesResponse> getIssuesByRepoName(@PathVariable("org_name") String orgName,
 		@PathVariable("repo_name") String repoName, @RequestParam(defaultValue = "0") int page,
 		@RequestParam(defaultValue = "updatedAt") String sort, @RequestParam(defaultValue = "desc") String order,
-		@RequestParam(defaultValue = "false") boolean starred, @RequestAttribute String githubId) {
+		@RequestAttribute String githubId) {
 
 		int pageSize = 15;
-
-		PagedRepositoryIssuesResponse response = issueService.getIssues(orgName, repoName, githubId, page, pageSize, sort, order,
-			starred);
+		PagedRepositoryIssuesResponse response = issueService.getRepositoryIssues(orgName, repoName, githubId, page,
+			pageSize, sort, order);
 
 		return ResponseEntity.status(HttpStatus.OK).body(response);
 	}

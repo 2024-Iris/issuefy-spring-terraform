@@ -5,6 +5,7 @@ import java.util.List;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import site.iris.issuefy.entity.Label;
 
 @Data
 @AllArgsConstructor
@@ -14,10 +15,11 @@ public class IssueResponse {
 	private String state;
 	private String title;
 	private List<LabelResponse> labels;
-	private boolean isRead;
+	private boolean read;
 	private LocalDateTime createdAt;
 	private LocalDateTime updatedAt;
 	private LocalDateTime closedAt;
+	private boolean starred;
 
 	public static IssueResponse of(
 		Long id,
@@ -25,20 +27,22 @@ public class IssueResponse {
 		String state,
 		String title,
 		List<LabelResponse> labels,
-		boolean isRead,
+		boolean read,
 		LocalDateTime createdAt,
 		LocalDateTime updatedAt,
-		LocalDateTime closedAt) {
+		LocalDateTime closedAt,
+		boolean starred) {
 		return new IssueResponse(
 			id,
 			githubIssueId,
 			state,
 			title,
 			labels,
-			isRead,
+			read,
 			createdAt,
 			updatedAt,
-			closedAt
+			closedAt,
+			starred
 		);
 	}
 

@@ -1,13 +1,13 @@
 package site.iris.issuefy.service;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
 import site.iris.issuefy.entity.Label;
+import site.iris.issuefy.exception.code.ErrorCode;
+import site.iris.issuefy.exception.resource.LabelNotFoundException;
 import site.iris.issuefy.mapper.LabelMapper;
 import site.iris.issuefy.repository.LabelRepository;
 import site.iris.issuefy.response.LabelResponse;
@@ -18,23 +18,21 @@ public class LabelService {
 	private final LabelRepository labelRepository;
 
 	public Label findOrCreateLabel(String name, String color) {
-		return labelRepository.findByNameAndColor(name, color)
-			.orElseGet(() -> {
-				Label newLabel = Label.of(name, color);
-				return labelRepository.save(newLabel);
-			});
+		return labelRepository.findByNameAndColor(name, color).orElseGet(() -> {
+			Label newLabel = Label.of(name, color);
+			return labelRepository.save(newLabel);
+		});
 	}
 
-	public Optional<List<Label>> getLabelsByIssueId(Long issueId) {
-		return labelRepository.findByIssue_id(issueId);
+	public List<Label> getLabelsByIssueId(Long issueId) {
+		ErrorCode errorCode = ErrorCode.NOT_EXIST_Label;
+		return labelRepository.findByIssue_id(issueId)
+			.orElseThrow(() -> new LabelNotFoundException(errorCode.getMessage(), errorCode.getStatus(),
+				String.valueOf(issueId)));
 	}
 
-	public List<LabelResponse> convertLabelsResponse(Optional<List<Label>> optionalLabels) {
-		return optionalLabels
-			.map(labels -> labels.stream()
-				.map(LabelMapper.INSTANCE::labelEntityToLabelDto)
-				.toList())
-			.orElseGet(ArrayList::new);
+	public List<LabelResponse> convertLabelsResponse(List<Label> labelResult) {
+		return labelResult.stream().map(LabelMapper.INSTANCE::labelEntityToLabelDto).toList();
 	}
 
 	public void saveAllLabels(List<Label> labels) {
