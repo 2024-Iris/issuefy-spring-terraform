@@ -781,7 +781,7 @@ Vary: Access-Control-Request-Headers</code></pre>
 <h4 id="_http_요청_7"><a class="link" href="#_http_요청_7">HTTP 요청</a></h4>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight nowrap"><code class="language-http hljs" data-lang="http">GET /api/subscriptions/iris/issuefy/issues HTTP/1.1
+<pre class="highlightjs highlight nowrap"><code class="language-http hljs" data-lang="http">GET /api/subscriptions/iris/issuefy/issues?page=0&amp;size=10&amp;sort=createdAt&amp;order=desc HTTP/1.1
 Host: issuefy.site</code></pre>
 </div>
 </div>
@@ -819,24 +819,14 @@ Host: issuefy.site</code></pre>
 <pre class="highlightjs highlight nowrap"><code class="language-http hljs" data-lang="http">HTTP/1.1 200 OK
 Vary: Origin
 Vary: Access-Control-Request-Method
-Vary: Access-Control-Request-Headers
-Content-Type: application/json
-Content-Length: 55
-
-{
-  "repositoryName" : "issuefy",
-  "issues" : [ ]
-}</code></pre>
+Vary: Access-Control-Request-Headers</code></pre>
 </div>
 </div>
 <div class="sect4">
 <h5 id="_응답_본문"><a class="link" href="#_응답_본문">응답 본문</a></h5>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight nowrap"><code class="language-json hljs" data-lang="json">{
-  "repositoryName" : "issuefy",
-  "issues" : [ ]
-}</code></pre>
+<pre class="highlightjs highlight nowrap"><code class="language-none hljs"></code></pre>
 </div>
 </div>
 </div>
@@ -953,13 +943,13 @@ Content-Length: 352
   "userNotificationId" : 1,
   "orgName" : "testOrg1",
   "repositoryName" : "testRepo1",
-  "notificationCreatedAt" : "2024-08-20T03:41:06.1070424",
+  "notificationCreatedAt" : "2024-08-23T04:39:28.2551374",
   "read" : false
 }, {
   "userNotificationId" : 2,
   "orgName" : "testOrg2",
   "repositoryName" : "testRepo2",
-  "notificationCreatedAt" : "2024-08-20T03:41:06.1070424",
+  "notificationCreatedAt" : "2024-08-23T04:39:28.2551374",
   "read" : false
 } ]</code></pre>
 </div>
@@ -1241,7 +1231,7 @@ Vary: Access-Control-Request-Headers</code></pre>
 <div id="footer">
 <div id="footer-text">
 Version 1.0.0<br>
-Last updated 2024-08-12 20:15:45 +0900
+Last updated 2024-08-20 19:00:34 +0900
 </div>
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.3/highlight.min.js"></script>
