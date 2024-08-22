@@ -32,7 +32,8 @@ public class RepositoryService {
 		return repositoryRepository.findByGhRepoId(repoDto.getId())
 			.orElseGet(() -> {
 				log.info("Saving new repository: {}", repoDto);
-				Repository newRepository = new Repository(org, repoDto.getName(), repoDto.getId(), repoDto.getUpdated_at());
+				Repository newRepository = new Repository(org, repoDto.getName(), repoDto.getId(),
+					repoDto.getUpdated_at());
 				return repositoryRepository.save(newRepository);
 			});
 	}
