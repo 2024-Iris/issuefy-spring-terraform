@@ -2,6 +2,7 @@ package site.iris.issuefy.service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -83,12 +84,9 @@ public class IssueService {
 	}
 
 	private void addNewIssues(String orgName, String repoName, String githubId, Repository repository) {
-		List<IssueDto> githubIssues = fetchOpenGoodFirstIssuesFromGithub(orgName, repoName, githubId);
-
-		if (githubIssues.isEmpty()) {
-			throw new GithubApiException(ErrorCode.GITHUB_RESPONSE_BODY_EMPTY.getStatus(),
-				ErrorCode.GITHUB_RESPONSE_BODY_EMPTY.getMessage());
-		}
+		List<IssueDto> githubIssues = fetchOpenGoodFirstIssuesFromGithub(orgName, repoName, githubId).orElseThrow(
+			() -> new GithubApiException(ErrorCode.GITHUB_RESPONSE_BODY_EMPTY.getStatus(),
+				ErrorCode.GITHUB_RESPONSE_BODY_EMPTY.getMessage()));
 
 		List<Label> allLabels = new ArrayList<>();
 		List<IssueLabel> issueLabels = new ArrayList<>();
@@ -100,10 +98,11 @@ public class IssueService {
 		saveIssuesToDatabase(issues, issueLabels, allLabels);
 	}
 
-	private List<IssueDto> fetchOpenGoodFirstIssuesFromGithub(String orgName, String repoName, String githubId) {
+	private Optional<List<IssueDto>> fetchOpenGoodFirstIssuesFromGithub(String orgName, String repoName,
+		String githubId) {
 		String accessToken = githubTokenService.findAccessToken(githubId);
 		try {
-			return webClient.get()
+			List<IssueDto> issues = webClient.get()
 				.uri(uriBuilder -> uriBuilder.path("/repos/{owner}/{repo}/issues")
 					.queryParam("state", "open")
 					.queryParam("sort", "updated")
@@ -116,6 +115,8 @@ public class IssueService {
 				.bodyToFlux(IssueDto.class)
 				.collectList()
 				.block();
+
+			return Optional.ofNullable(issues);
 		} catch (WebClientResponseException e) {
 			throw new GithubApiException(e.getStatusCode(), e.getResponseBodyAsString());
 		}
@@ -146,14 +147,11 @@ public class IssueService {
 
 	@Transactional
 	public void updateExistingIssues(String orgName, String repoName, String githubId, Repository repository) {
-		List<IssueDto> githubIssues = fetchOpenGoodFirstIssuesFromGithub(orgName, repoName, githubId);
+		List<IssueDto> githubIssues = fetchOpenGoodFirstIssuesFromGithub(orgName, repoName, githubId).orElseThrow(
+			() -> new GithubApiException(ErrorCode.GITHUB_RESPONSE_BODY_EMPTY.getStatus(),
+				ErrorCode.GITHUB_RESPONSE_BODY_EMPTY.getMessage()));
+
 		Issue mostRecentLocalIssue = findMostRecentLocalIssue(repository.getId());
-
-		if (githubIssues.isEmpty()) {
-			throw new GithubApiException(ErrorCode.GITHUB_RESPONSE_BODY_EMPTY.getStatus(),
-				ErrorCode.GITHUB_RESPONSE_BODY_EMPTY.getMessage());
-		}
-
 		boolean needUpdateIssue = shouldUpdateIssues(githubIssues, mostRecentLocalIssue);
 
 		if (needUpdateIssue) {
@@ -186,9 +184,7 @@ public class IssueService {
 	//  레이블 기능 재검토 필요하여 레이블 기능 배제함
 	@Transactional
 	public void updateLocalIssuesWithGithubData(List<IssueDto> githubIssues, Repository repository) {
-		List<Issue> updatedIssues = githubIssues.stream()
-			.map(dto -> createIssueFromDto(dto, repository))
-			.toList();
+		List<Issue> updatedIssues = githubIssues.stream().map(dto -> createIssueFromDto(dto, repository)).toList();
 
 		issueRepository.saveAll(updatedIssues);
 	}
@@ -222,34 +218,17 @@ public class IssueService {
 		Page<IssueWithStarStatusDto> issuePage = issueRepository.findIssuesWithStarStatus(repository.getId(),
 			user.getId(), pageable);
 
-		List<IssueResponse> issueResponseList = issuePage.getContent()
-			.stream()
-			.map(this::createIssueResponse)
-			.toList();
+		List<IssueResponse> issueResponseList = issuePage.getContent().stream().map(this::createIssueResponse).toList();
 
-		return PagedRepositoryIssuesResponse.of(
-			issuePage.getNumber(),
-			issuePage.getSize(),
-			issuePage.getTotalElements(),
-			issuePage.getTotalPages(),
-			repository.getName(),
-			issueResponseList
-		);
+		return PagedRepositoryIssuesResponse.of(issuePage.getNumber(), issuePage.getSize(),
+			issuePage.getTotalElements(), issuePage.getTotalPages(), repository.getName(), issueResponseList);
 	}
 
 	private IssueResponse createIssueResponse(IssueWithStarStatusDto issueDto) {
 		List<Label> labels = labelService.getLabelsByIssueId(issueDto.getIssue().getId());
-		return IssueResponse.of(
-			issueDto.getIssue().getId(),
-			issueDto.getIssue().getGhIssueId(),
-			issueDto.getIssue().getState(),
-			issueDto.getIssue().getTitle(),
-			labelService.convertLabelsResponse(labels),
-			issueDto.getIssue().isRead(),
-			issueDto.getIssue().getCreatedAt(),
-			issueDto.getIssue().getUpdatedAt(),
-			issueDto.getIssue().getClosedAt(),
-			issueDto.isStarred()
-		);
+		return IssueResponse.of(issueDto.getIssue().getId(), issueDto.getIssue().getGhIssueId(),
+			issueDto.getIssue().getState(), issueDto.getIssue().getTitle(), labelService.convertLabelsResponse(labels),
+			issueDto.getIssue().isRead(), issueDto.getIssue().getCreatedAt(), issueDto.getIssue().getUpdatedAt(),
+			issueDto.getIssue().getClosedAt(), issueDto.isStarred());
 	}
 }
