@@ -93,7 +93,7 @@ public class IssueService {
 
 		List<Issue> issues = githubIssues.stream()
 			.map(dto -> createIssueEntityFromDto(repository, dto, allLabels, issueLabels))
-			.collect(Collectors.toList());
+			.toList();
 
 		saveIssuesToDatabase(issues, issueLabels, allLabels);
 	}
