@@ -10,7 +10,8 @@ VALUES ('githubuser1', 'user1@example.com'),
 INSERT INTO `organization` (name, gh_org_id)
 VALUES ('2024-Iris', 166014585),
        ('Org2', 166014586),
-       ('Org3', 166014587);
+       ('Org3', 166014587),
+       ('elastic', 6764390);
 
 -- Inserting repositories
 INSERT INTO `repository` (org_id, name, gh_repo_id, latest_update_at)
@@ -41,7 +42,8 @@ VALUES (1, 'issuefy-test', 814324604, CURRENT_TIMESTAMP),
        (3, 'scikit-learn', 814324626, '2024-05-22 13:15:00'),
        (2, 'ansible', 814324627, '2024-05-23 11:40:00'),
        (1, 'nginx', 814324628, '2024-05-24 16:20:00'),
-       (3, 'postgresql', 814324629, '2024-05-25 08:05:00');
+       (3, 'postgresql', 814324629, '2024-05-25 08:05:00'),
+       (4, 'elasticsearch', 507775, CURRENT_TIMESTAMP);
 
 -- Inserting issues
 INSERT INTO `issue` (repository_id, title, gh_issue_id, is_read, state, created_at)
@@ -77,7 +79,7 @@ VALUES (3, 4, 0),
        (3, 11, 0),
        (3, 12, 1),
        (3, 13, 0),
-       (3, 14, 1),
+       (3, 14, 0),
        (3, 15, 0),
        (3, 16, 1),
        (3, 17, 0),
@@ -91,7 +93,8 @@ VALUES (3, 4, 0),
        (3, 25, 0),
        (3, 26, 0),
        (3, 27, 0),
-       (3, 28, 0);
+       (3, 28, 0),
+       (3, 29, 1);
 
 -- Inserting user_issue_star (예시)
 INSERT INTO `user_issue_star` (user_id, issue_id)
