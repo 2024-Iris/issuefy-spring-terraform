@@ -32,8 +32,7 @@ public class GlobalExceptionHandler {
 	}
 
 	@ExceptionHandler(IOException.class)
-	public ResponseEntity<ErrorResponse> handleIllegalArgumentException(IOException e) {
-		return createErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
+	public void handleIOExceptionException(IOException e) {
 	}
 
 	@ExceptionHandler(WebClientException.class)
