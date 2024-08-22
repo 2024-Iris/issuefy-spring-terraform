@@ -64,7 +64,7 @@ public class IssueService {
 		return createPagedRepositoryIssuesResponse(repository, sort, order, githubId, page, pageSize);
 	}
 
-	// TODO Repository 서비스 분리 필요
+	// TODO repositoryRepository를 서비스를 이용하는것이 필요
 	private Repository findRepositoryByName(String repositoryName) {
 		return repositoryRepository.findByName(repositoryName)
 			.orElseThrow(() -> new RepositoryNotFoundException(ErrorCode.NOT_EXIST_REPOSITORY.getMessage(),
@@ -84,6 +84,12 @@ public class IssueService {
 
 	private void addNewIssues(String orgName, String repoName, String githubId, Repository repository) {
 		List<IssueDto> githubIssues = fetchOpenGoodFirstIssuesFromGithub(orgName, repoName, githubId);
+
+		if (githubIssues.isEmpty()) {
+			throw new GithubApiException(ErrorCode.GITHUB_RESPONSE_BODY_EMPTY.getStatus(),
+				ErrorCode.GITHUB_RESPONSE_BODY_EMPTY.getMessage());
+		}
+
 		List<Label> allLabels = new ArrayList<>();
 		List<IssueLabel> issueLabels = new ArrayList<>();
 
@@ -143,6 +149,11 @@ public class IssueService {
 		List<IssueDto> githubIssues = fetchOpenGoodFirstIssuesFromGithub(orgName, repoName, githubId);
 		Issue mostRecentLocalIssue = findMostRecentLocalIssue(repository.getId());
 
+		if (githubIssues.isEmpty()) {
+			throw new GithubApiException(ErrorCode.GITHUB_RESPONSE_BODY_EMPTY.getStatus(),
+				ErrorCode.GITHUB_RESPONSE_BODY_EMPTY.getMessage());
+		}
+
 		boolean needUpdateIssue = shouldUpdateIssues(githubIssues, mostRecentLocalIssue);
 
 		if (needUpdateIssue) {
@@ -177,7 +188,7 @@ public class IssueService {
 	public void updateLocalIssuesWithGithubData(List<IssueDto> githubIssues, Repository repository) {
 		List<Issue> updatedIssues = githubIssues.stream()
 			.map(dto -> createIssueFromDto(dto, repository))
-			.collect(Collectors.toList());
+			.toList();
 
 		issueRepository.saveAll(updatedIssues);
 	}

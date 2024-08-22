@@ -21,6 +21,7 @@ public enum ErrorCode {
 	FAILED_COMPLETE_CONNECTION(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to send sse message"),
 	UNKNOWN_SSE_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "Unknown sse error"),
 	ORG_BODY_EMPTY(HttpStatus.INTERNAL_SERVER_ERROR, "Org info body is empty"),
+	GITHUB_RESPONSE_BODY_EMPTY(HttpStatus.INTERNAL_SERVER_ERROR, "Github Response body is empty"),
 	ACCESS_TOKEN_EXPIRED(HttpStatus.UNAUTHORIZED, "Access token has expired"),
 	INVALID_HEADER(HttpStatus.UNAUTHORIZED, "Invalid header"),
 	INVALID_TOKEN_TYPE(HttpStatus.UNAUTHORIZED, "Invalid token type"),
