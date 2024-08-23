@@ -9,7 +9,6 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 @Entity
 @Getter
@@ -22,7 +21,6 @@ public class IssueLabel {
 
 	@ManyToOne
 	@JoinColumn(name = "issue_id")
-	@Setter
 	private Issue issue;
 
 	@ManyToOne

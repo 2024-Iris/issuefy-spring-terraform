@@ -1,9 +1,9 @@
 package site.iris.issuefy.entity;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -50,8 +50,8 @@ public class Issue {
 	@Column
 	private long ghIssueId;
 
-	@OneToMany(mappedBy = "issue")
-	private List<IssueLabel> issueLabels = new ArrayList<>();
+	@OneToMany(mappedBy = "issue", cascade = CascadeType.ALL)
+	private List<IssueLabel> issueLabels;
 
 	private Issue(Repository repository, String title, boolean isRead, String state, LocalDateTime createdAt,
 		LocalDateTime updatedAt, LocalDateTime closedAt, long ghIssueId, List<IssueLabel> issueLabels) {
