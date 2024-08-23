@@ -3,7 +3,6 @@ package site.iris.issuefy.service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Page;
@@ -15,6 +14,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 
 import jakarta.transaction.Transactional;
+import lombok.extern.slf4j.Slf4j;
 import site.iris.issuefy.entity.Issue;
 import site.iris.issuefy.entity.IssueLabel;
 import site.iris.issuefy.entity.Label;
@@ -34,6 +34,7 @@ import site.iris.issuefy.repository.UserRepository;
 import site.iris.issuefy.response.IssueResponse;
 import site.iris.issuefy.response.PagedRepositoryIssuesResponse;
 
+@Slf4j
 @Service
 public class IssueService {
 	private static final ErrorCode ISSUE_NOT_FOUND_ERROR = ErrorCode.NOT_EXIST_ISSUE;
@@ -190,18 +191,17 @@ public class IssueService {
 		issueRepository.saveAll(updatedIssues);
 	}
 
-	// TODO 현재 엔티티간 양방향 연관관계로 불변객체로 만들기가 어려움 엔티티 설계 재검토 필요
-	//  현재 IssueLabel 엔티티에 issue 필드 Setter 주입하여 구현
 	private Issue createIssueFromDto(IssueDto dto, Repository repository) {
-		List<IssueLabel> issueLabels = dto.getLabels().stream().map(labelDto -> {
-			Label label = labelService.findOrCreateLabel(labelDto.getName(), labelDto.getColor());
-			return IssueLabel.of(null, label);
-		}).toList();
+		List<IssueLabel> issueLabels = new ArrayList<>();
 
 		Issue issue = Issue.of(repository, dto.getTitle(), false, dto.getState(), dto.getCreatedAt(),
 			dto.getUpdatedAt(), dto.getClosedAt(), dto.getGhIssueId(), issueLabels);
 
-		issueLabels.forEach(issueLabel -> issueLabel.setIssue(issue));
+		dto.getLabels().forEach(labelDto -> {
+			Label label = labelService.findOrCreateLabel(labelDto.getName(), labelDto.getColor());
+			IssueLabel issueLabel = IssueLabel.of(issue, label);
+			issueLabels.add(issueLabel);
+		});
 
 		return issue;
 	}
