@@ -3,7 +3,6 @@ package site.iris.issuefy.entity;
 import java.util.ArrayList;
 import java.util.List;
 
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -30,7 +29,8 @@ public class Label {
 	@Column(name = "color")
 	private String color;
 
-	@OneToMany(mappedBy = "label", cascade = CascadeType.ALL)
+	@OneToMany
+	@JoinTable(name = "issue_label")
 	private List<Issue> issue = new ArrayList<>();
 
 	private Label(String name, String color) {
