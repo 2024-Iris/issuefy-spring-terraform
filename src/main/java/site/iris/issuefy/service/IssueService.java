@@ -78,9 +78,10 @@ public class IssueService {
 
 		if (!issuesExist) {
 			addNewIssues(orgName, repoName, githubId, repository);
-		} else {
-			updateExistingIssues(orgName, repoName, githubId, repository);
+			return;
 		}
+
+		updateExistingIssues(orgName, repoName, githubId, repository);
 	}
 
 	private void addNewIssues(String orgName, String repoName, String githubId, Repository repository) {
