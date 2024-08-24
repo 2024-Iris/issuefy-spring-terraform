@@ -50,7 +50,7 @@ public class Issue {
 	@Column
 	private long ghIssueId;
 
-	@OneToMany(mappedBy = "issue", cascade = CascadeType.ALL)
+	@OneToMany(mappedBy = "issue")
 	private List<IssueLabel> issueLabels;
 
 	private Issue(Repository repository, String title, boolean isRead, String state, LocalDateTime createdAt,

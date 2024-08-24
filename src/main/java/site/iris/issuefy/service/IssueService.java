@@ -182,13 +182,15 @@ public class IssueService {
 		return isGithubIssueNewer && !isSameIssue;
 	}
 
-	// TODO 기존 이슈 삭제후 다시 인서트 방식으로 구현 벌크 업서트 방법을 도입하여 isRead 기능을 도입할지 재논의 필요
-	//  레이블 기능 재검토 필요하여 레이블 기능 배제함
 	@Transactional
 	public void updateLocalIssuesWithGithubData(List<IssueDto> githubIssues, Repository repository) {
 		List<Issue> updatedIssues = githubIssues.stream().map(dto -> createIssueFromDto(dto, repository)).toList();
-
 		issueRepository.saveAll(updatedIssues);
+
+		List<IssueLabel> allIssueLabels = updatedIssues.stream()
+			.flatMap(issue -> issue.getIssueLabels().stream())
+			.toList();
+		issueLabelRepository.saveAll(allIssueLabels);
 	}
 
 	private Issue createIssueFromDto(IssueDto dto, Repository repository) {
