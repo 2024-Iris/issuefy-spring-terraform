@@ -48,7 +48,7 @@ class SseServiceTest {
 
 		assertNotNull(result);
 		assertEquals(60000L, result.getTimeout());
-		verify(valueOperations).set("emitter:" + GITHUB_ID, ContainerIdUtil.getContainerId());
+		verify(valueOperations).set("emitter:" + GITHUB_ID, ContainerIdUtil.containerId);
 	}
 
 	@Test
@@ -61,7 +61,7 @@ class SseServiceTest {
 
 		assertNotNull(result);
 		verify(redisTemplate).convertAndSend("disconnect", GITHUB_ID);
-		verify(valueOperations).set("emitter:" + GITHUB_ID, ContainerIdUtil.getContainerId());
+		verify(valueOperations).set("emitter:" + GITHUB_ID, ContainerIdUtil.containerId);
 	}
 
 	@Test
