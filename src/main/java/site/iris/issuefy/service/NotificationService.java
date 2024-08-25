@@ -39,7 +39,7 @@ public class NotificationService {
 	private static final String EVENT_NAME = "notification";
 	private final UserNotificationRepository userNotificationRepository;
 	private final SubscriptionRepository subscriptionRepository;
-	private final UserRepository userRepository;
+	private final UserService userService;
 	private final NotificationRepository notificationRepository;
 	private final RedisTemplate<String, String> redisTemplate;
 	private final SseService sseService;
@@ -115,10 +115,7 @@ public class NotificationService {
 	}
 
 	public UnreadNotificationDto getNotification(String githubId) {
-		User user = userRepository.findByGithubId(githubId)
-			.orElseThrow(() -> new UserNotFoundException(ErrorCode.NOT_EXIST_USER.getMessage(),
-				ErrorCode.NOT_EXIST_USER.getStatus(), githubId));
-
+		User user = userService.findGithubUser(githubId);
 		int unreadCount = userNotificationRepository.countByUserIdAndIsReadFalse(user.getId());
 		return new UnreadNotificationDto(unreadCount);
 	}
