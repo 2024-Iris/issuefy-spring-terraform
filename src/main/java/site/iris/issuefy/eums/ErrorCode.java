@@ -13,7 +13,7 @@ public enum ErrorCode {
 	NOT_EXIST_REPOSITORY(HttpStatus.NOT_FOUND, "Repository does not exist"),
 	NOT_EXIST_ISSUE(HttpStatus.NOT_FOUND, "Issue does not exist"),
 	NOT_EXIST_USER(HttpStatus.NOT_FOUND, "User does not exist"),
-	NOT_EXIST_Label(HttpStatus.NOT_FOUND, "Label does not exist"),
+	NOT_EXIST_LABEL(HttpStatus.NOT_FOUND, "Label does not exist"),
 	USER_SUBSCRIPTIONS_PAGE_NOT_FOUND(HttpStatus.NOT_FOUND, "User subscriptions page not found"),
 	USER_STARRED_SUBSCRIPTIONS_PAGE_NOT_FOUND(HttpStatus.NOT_FOUND, "User starred subscriptions page not found"),
 	FAILED_INIT_CONNECTION(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to initialize sse connection"),
