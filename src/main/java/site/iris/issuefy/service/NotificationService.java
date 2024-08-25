@@ -19,8 +19,6 @@ import site.iris.issuefy.entity.Notification;
 import site.iris.issuefy.entity.Subscription;
 import site.iris.issuefy.entity.User;
 import site.iris.issuefy.entity.UserNotification;
-import site.iris.issuefy.eums.ErrorCode;
-import site.iris.issuefy.exception.resource.UserNotFoundException;
 import site.iris.issuefy.model.dto.NotificationDto;
 import site.iris.issuefy.model.dto.NotificationReadDto;
 import site.iris.issuefy.model.dto.UnreadNotificationDto;
@@ -28,7 +26,6 @@ import site.iris.issuefy.model.dto.UpdateRepositoryDto;
 import site.iris.issuefy.repository.NotificationRepository;
 import site.iris.issuefy.repository.SubscriptionRepository;
 import site.iris.issuefy.repository.UserNotificationRepository;
-import site.iris.issuefy.repository.UserRepository;
 import site.iris.issuefy.util.ContainerIdUtil;
 
 @Service
