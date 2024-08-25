@@ -16,7 +16,6 @@ public class IssueDto {
 	private Long ghIssueId;
 
 	private String title;
-	private boolean isStarred;
 	private boolean isRead;
 	private String state;
 
@@ -31,10 +30,10 @@ public class IssueDto {
 
 	private List<Label> labels;
 
-	public static IssueDto of(Long ghIssueId, String title, boolean isStarred, boolean isRead, String state,
+	public static IssueDto of(Long ghIssueId, String title, boolean isRead, String state,
 		LocalDateTime createdAt,
 		LocalDateTime updatedAt, LocalDateTime closedAt, List<Label> labels) {
-		return new IssueDto(ghIssueId, title, isStarred, isRead, state, createdAt, updatedAt, closedAt,
+		return new IssueDto(ghIssueId, title, isRead, state, createdAt, updatedAt, closedAt,
 			labels);
 	}
 }

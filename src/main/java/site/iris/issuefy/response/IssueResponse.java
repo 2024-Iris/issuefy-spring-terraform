@@ -14,11 +14,11 @@ public class IssueResponse {
 	private String state;
 	private String title;
 	private List<LabelResponse> labels;
-	private boolean isRead;
-	private boolean isStarred;
+	private boolean read;
 	private LocalDateTime createdAt;
 	private LocalDateTime updatedAt;
 	private LocalDateTime closedAt;
+	private boolean starred;
 
 	public static IssueResponse of(
 		Long id,
@@ -26,22 +26,22 @@ public class IssueResponse {
 		String state,
 		String title,
 		List<LabelResponse> labels,
-		boolean isRead,
-		boolean isStarred,
+		boolean read,
 		LocalDateTime createdAt,
 		LocalDateTime updatedAt,
-		LocalDateTime closedAt) {
+		LocalDateTime closedAt,
+		boolean starred) {
 		return new IssueResponse(
 			id,
 			githubIssueId,
 			state,
 			title,
 			labels,
-			isRead,
-			isStarred,
+			read,
 			createdAt,
 			updatedAt,
-			closedAt
+			closedAt,
+			starred
 		);
 	}
 

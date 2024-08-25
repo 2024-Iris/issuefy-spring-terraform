@@ -10,7 +10,8 @@ VALUES ('githubuser1', 'user1@example.com'),
 INSERT INTO `organization` (name, gh_org_id)
 VALUES ('2024-Iris', 166014585),
        ('Org2', 166014586),
-       ('Org3', 166014587);
+       ('Org3', 166014587),
+       ('elastic', 6764390);
 
 -- Inserting repositories
 INSERT INTO `repository` (org_id, name, gh_repo_id, latest_update_at)
@@ -29,7 +30,7 @@ VALUES (1, 'issuefy-test', 814324604, CURRENT_TIMESTAMP),
        (3, 'django', 814324614, '2024-05-10 13:40:00'),
        (2, 'node', 814324615, '2024-05-11 10:20:00'),
        (1, 'swift', 814324616, '2024-05-12 15:15:00'),
-       (3, 'spring-boot', 814324617, '2024-05-13 11:50:00'),
+       (3, 'jaeger', 814324617, '2024-05-13 11:50:00'),
        (2, 'docker', 814324618, '2024-05-14 09:25:00'),
        (1, 'electron', 814324619, '2024-05-15 14:05:00'),
        (3, 'pytorch', 814324620, '2024-05-16 16:40:00'),
@@ -41,14 +42,15 @@ VALUES (1, 'issuefy-test', 814324604, CURRENT_TIMESTAMP),
        (3, 'scikit-learn', 814324626, '2024-05-22 13:15:00'),
        (2, 'ansible', 814324627, '2024-05-23 11:40:00'),
        (1, 'nginx', 814324628, '2024-05-24 16:20:00'),
-       (3, 'postgresql', 814324629, '2024-05-25 08:05:00');
+       (3, 'postgresql', 814324629, '2024-05-25 08:05:00'),
+       (4, 'elasticsearch', 507775, CURRENT_TIMESTAMP);
 
 -- Inserting issues
-INSERT INTO `issue` (repository_id, title, gh_issue_id, is_read, state, created_at)
-VALUES (1, 'issue-a1-1', 1234, 0, 'open', '2024-06-01 12:30:00'),
-       (1, 'issue-a1-2', 5678, 0, 'open', '2024-06-02 21:00:00'),
-       (2, 'issue-a2-1', 5679, 0, 'open', '2024-06-03 03:14:10'),
-       (3, 'issue-b1-1', 2000, 0, 'open', '2024-06-04 08:29:55');
+INSERT INTO `issue` (repository_id, title, gh_issue_id, is_read, state, created_at, updated_at)
+VALUES (1, 'issue-a1-1', 1234, 0, 'open', '2024-06-01 12:30:00', '2024-05-01 10:30:00'),
+       (1, 'issue-a1-2', 5678, 0, 'open', '2024-06-02 21:00:00', '2024-05-01 10:30:00'),
+       (2, 'issue-a2-1', 5679, 0, 'open', '2024-06-03 03:14:10', '2024-05-01 10:30:00'),
+       (3, 'issue-b1-1', 2000, 0, 'open', '2024-06-04 08:29:55', '2024-05-01 10:30:00');
 
 -- Inserting labels
 INSERT INTO `label` (name, color)
@@ -77,7 +79,7 @@ VALUES (3, 4, 0),
        (3, 11, 0),
        (3, 12, 1),
        (3, 13, 0),
-       (3, 14, 1),
+       (3, 14, 0),
        (3, 15, 0),
        (3, 16, 1),
        (3, 17, 0),
@@ -91,7 +93,8 @@ VALUES (3, 4, 0),
        (3, 25, 0),
        (3, 26, 0),
        (3, 27, 0),
-       (3, 28, 0);
+       (3, 28, 0),
+       (3, 29, 1);
 
 -- Inserting user_issue_star (예시)
 INSERT INTO `user_issue_star` (user_id, issue_id)

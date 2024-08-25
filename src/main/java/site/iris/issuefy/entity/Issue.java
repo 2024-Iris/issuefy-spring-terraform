@@ -1,7 +1,6 @@
 package site.iris.issuefy.entity;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 import jakarta.persistence.Column;
@@ -33,9 +32,6 @@ public class Issue {
 	private String title;
 
 	@Column
-	private boolean isStarred;
-
-	@Column
 	private boolean isRead;
 
 	@Column
@@ -54,14 +50,12 @@ public class Issue {
 	private long ghIssueId;
 
 	@OneToMany(mappedBy = "issue")
-	private List<IssueLabel> issueLabels = new ArrayList<>();
+	private List<IssueLabel> issueLabels;
 
-	private Issue(Repository repository, String title, boolean isStarred, boolean isRead, String state,
-		LocalDateTime createdAt,
+	private Issue(Repository repository, String title, boolean isRead, String state, LocalDateTime createdAt,
 		LocalDateTime updatedAt, LocalDateTime closedAt, long ghIssueId, List<IssueLabel> issueLabels) {
 		this.repository = repository;
 		this.title = title;
-		this.isStarred = isStarred;
 		this.isRead = isRead;
 		this.state = state;
 		this.createdAt = createdAt;
@@ -71,11 +65,9 @@ public class Issue {
 		this.issueLabels = issueLabels;
 	}
 
-	public static Issue of(Repository repository, String title, boolean isStarred, boolean isRead, String state,
-		LocalDateTime createdAt,
+	public static Issue of(Repository repository, String title, boolean isRead, String state, LocalDateTime createdAt,
 		LocalDateTime updatedAt, LocalDateTime closedAt, long ghIssueNumber, List<IssueLabel> issueLabels) {
-		return new Issue(repository, title, isStarred, isRead, state, createdAt, updatedAt, closedAt, ghIssueNumber,
-			issueLabels);
+		return new Issue(repository, title, isRead, state, createdAt, updatedAt, closedAt, ghIssueNumber, issueLabels);
 	}
 }
 

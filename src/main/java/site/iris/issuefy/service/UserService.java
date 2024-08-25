@@ -11,7 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import site.iris.issuefy.entity.User;
-import site.iris.issuefy.exception.code.ErrorCode;
+import site.iris.issuefy.eums.ErrorCode;
 import site.iris.issuefy.exception.github.GithubApiException;
 import site.iris.issuefy.exception.resource.UserNotFoundException;
 import site.iris.issuefy.model.dto.UserDto;
@@ -77,20 +77,20 @@ public class UserService {
 	private void githubDeleteGithubAuth(String githubId) {
 		try {
 			String accessToken = githubTokenService.findAccessToken(githubId);
-			webClient.method(HttpMethod.DELETE)
-				.uri("/applications/{client_id}/grant", clientId)
-				.headers(headers -> {
-					headers.setBasicAuth(clientId, clientSecret);
-					headers.setContentType(MediaType.APPLICATION_JSON);
-					headers.set("Accept", "application/vnd.github+json");
-					headers.set("X-GitHub-Api-Version", "2022-11-28");
-				})
-				.bodyValue(Map.of("access_token", accessToken))
-				.retrieve()
-				.toBodilessEntity()
-				.block();
+			webClient.method(HttpMethod.DELETE).uri("/applications/{client_id}/grant", clientId).headers(headers -> {
+				headers.setBasicAuth(clientId, clientSecret);
+				headers.setContentType(MediaType.APPLICATION_JSON);
+				headers.set("Accept", "application/vnd.github+json");
+				headers.set("X-GitHub-Api-Version", "2022-11-28");
+			}).bodyValue(Map.of("access_token", accessToken)).retrieve().toBodilessEntity().block();
 		} catch (GithubApiException e) {
 			throw new GithubApiException(e.getStatusCode(), e.getGithubMessage());
 		}
+	}
+
+	public User findGithubUser(String githubId) {
+		ErrorCode userError = ErrorCode.NOT_EXIST_USER;
+		return userRepository.findByGithubId(githubId)
+			.orElseThrow(() -> new UserNotFoundException(userError.getMessage(), userError.getStatus(), githubId));
 	}
 }

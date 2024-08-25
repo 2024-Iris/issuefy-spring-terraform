@@ -24,23 +24,20 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import lombok.extern.slf4j.Slf4j;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 import site.iris.issuefy.entity.Org;
 import site.iris.issuefy.entity.Repository;
 import site.iris.issuefy.entity.Subscription;
 import site.iris.issuefy.entity.User;
+import site.iris.issuefy.eums.GithubUrls;
 import site.iris.issuefy.exception.github.GithubApiException;
 import site.iris.issuefy.exception.resource.SubscriptionNotFoundException;
 import site.iris.issuefy.exception.resource.SubscriptionPageNotFoundException;
-import site.iris.issuefy.exception.resource.UserNotFoundException;
 import site.iris.issuefy.model.dto.RepositoryUrlDto;
 import site.iris.issuefy.repository.SubscriptionRepository;
-import site.iris.issuefy.repository.UserRepository;
 import site.iris.issuefy.response.PagedSubscriptionResponse;
 
-@Slf4j
 @ExtendWith(MockitoExtension.class)
 class SubscriptionServiceTest {
 
@@ -48,7 +45,7 @@ class SubscriptionServiceTest {
 	private SubscriptionRepository subscriptionRepository;
 
 	@Mock
-	private UserRepository userRepository;
+	private UserService userService;
 
 	@Mock
 	private OrgService orgService;
@@ -80,13 +77,13 @@ class SubscriptionServiceTest {
 	void getSubscribedRepositories() {
 		// given
 		String githubId = "testUser";
-		User user = new User(githubId, "testuser@example.com");
+		User user = new User(1L, githubId, "testuser@example.com", false);
 		Org org = new Org("testOrg", 123L);
-		Repository repository = new Repository(org, "testRepo", 123L);
+		Repository repository = new Repository(org, "testRepo", 123L, LocalDateTime.now());
 		Subscription subscription = new Subscription(user, repository);
 		Pageable pageable = PageRequest.of(1, 15, Sort.by(Sort.Direction.ASC, "repository.latestUpdateAt"));
 
-		when(userRepository.findByGithubId(githubId)).thenReturn(Optional.of(user));
+		when(userService.findGithubUser(githubId)).thenReturn(user);
 		when(subscriptionRepository.findPageByUserId(user.getId(), pageable)).thenReturn(
 			Optional.of(new PageImpl<>(List.of(subscription))));
 
@@ -106,13 +103,13 @@ class SubscriptionServiceTest {
 	void getStarredRepositories() {
 		// given
 		String githubId = "testUser";
-		User user = new User(githubId, "testuser@example.com");
+		User user = new User(1L, githubId, "testuser@example.com", false);
 		Org org = new Org("testOrg", 123L);
-		Repository repository = new Repository(org, "testRepo", 123L);
+		Repository repository = new Repository(org, "testRepo", 123L, LocalDateTime.now());
 		Subscription subscription = new Subscription(1L, user, repository, true);
 		Pageable pageable = PageRequest.of(1, 15, Sort.by(Sort.Direction.ASC, "repository.latestUpdateAt"));
 
-		when(userRepository.findByGithubId(githubId)).thenReturn(Optional.of(user));
+		when(userService.findGithubUser(githubId)).thenReturn(user);
 		when(subscriptionRepository.findPageByUserIdAndRepoStarredTrue(user.getId(), pageable)).thenReturn(
 			Optional.of(new PageImpl<>(List.of(subscription))));
 
@@ -136,7 +133,7 @@ class SubscriptionServiceTest {
 			"testOrg", "testRepo");
 		String githubId = "githubuser1";
 		Org org = new Org("organization1", 1L);
-		Repository repository = new Repository(org, "repo-a1", 1L);
+		Repository repository = new Repository(org, "repo-a1", 1L, LocalDateTime.now());
 		User user = new User(githubId, "user1@example.com");
 
 		mockWebServer.enqueue(new MockResponse()
@@ -150,13 +147,14 @@ class SubscriptionServiceTest {
 			.setBody("{\"id\":123,\"name\":\"testRepo\"}"));
 
 		String baseUrl = mockWebServer.url("/").toString();
-		ReflectionTestUtils.setField(subscriptionService, "ORG_REQUEST_URL", baseUrl + "orgs/");
-		ReflectionTestUtils.setField(subscriptionService, "REPOSITORY_REQUEST_URL", baseUrl + "repos/");
+
+		ReflectionTestUtils.setField(GithubUrls.ORG_REQUEST_URL, "url", baseUrl + "orgs/");
+		ReflectionTestUtils.setField(GithubUrls.REPOSITORY_REQUEST_URL, "url", baseUrl + "repos/");
 
 		when(githubTokenService.findAccessToken(githubId)).thenReturn("testAccessToken");
 		when(orgService.saveOrg(any(ResponseEntity.class))).thenReturn(org);
 		when(repositoryService.saveRepository(any(ResponseEntity.class), eq(org))).thenReturn(repository);
-		when(userRepository.findByGithubId(githubId)).thenReturn(Optional.of(user));
+		when(userService.findGithubUser(githubId)).thenReturn(user);
 		when(subscriptionRepository.findByUserIdAndRepository_GhRepoId(user.getId(),
 			repository.getGhRepoId())).thenReturn(Optional.empty());
 		when(subscriptionRepository.save(any(Subscription.class))).thenAnswer(invocation -> invocation.getArgument(0));
@@ -187,11 +185,11 @@ class SubscriptionServiceTest {
 		// given
 		String githubId = "testUser";
 		Long ghRepoId = 1L;
-		User user = new User(githubId, "testuser@example.com");
+		User user = new User(1L, githubId, "testuser@example.com", false);
 		Repository repository = new Repository(1L, new Org(), "testRepo", ghRepoId, LocalDateTime.now());
 		Subscription subscription = new Subscription(user, repository);
 
-		when(userRepository.findByGithubId(githubId)).thenReturn(Optional.of(user));
+		when(userService.findGithubUser(githubId)).thenReturn(user);
 		when(subscriptionRepository.findByUserIdAndRepository_GhRepoId(user.getId(), ghRepoId)).thenReturn(
 			Optional.of(subscription));
 
@@ -204,28 +202,14 @@ class SubscriptionServiceTest {
 	}
 
 	@Test
-	@DisplayName("존재하지 않는 사용자의 리포지토리 즐겨찾기 상태를 토글하려고 하면 예외가 발생한다")
-	void toggleRepositoryStar_WithNonExistentUser() {
-		// given
-		String githubId = "nonExistentUser";
-		Long ghRepoId = 1L;
-
-		when(userRepository.findByGithubId(githubId)).thenReturn(Optional.empty());
-
-		// when & then
-		assertThrows(UserNotFoundException.class, () -> subscriptionService.toggleRepositoryStar(githubId, ghRepoId));
-		verify(subscriptionRepository, never()).save(any(Subscription.class));
-	}
-
-	@Test
 	@DisplayName("존재하지 않는 구독에 대해 즐겨찾기 상태를 토글하려고 하면 예외가 발생한다")
 	void toggleRepositoryStar_WithNonExistentSubscription() {
 		// given
 		String githubId = "testUser";
 		Long ghRepoId = 1L;
-		User user = new User(githubId, "testuser@example.com");
+		User user = new User(1L, githubId, "testuser@example.com", false);
 
-		when(userRepository.findByGithubId(githubId)).thenReturn(Optional.of(user));
+		when(userService.findGithubUser(githubId)).thenReturn(user);
 		when(subscriptionRepository.findByUserIdAndRepository_GhRepoId(user.getId(), ghRepoId)).thenReturn(
 			Optional.empty());
 
@@ -244,10 +228,6 @@ class SubscriptionServiceTest {
 		String githubId = "githubuser1";
 
 		mockWebServer.enqueue(new MockResponse().setResponseCode(404));
-
-		String baseUrl = mockWebServer.url("/").toString();
-		ReflectionTestUtils.setField(subscriptionService, "ORG_REQUEST_URL", baseUrl + "orgs/");
-
 		when(githubTokenService.findAccessToken(githubId)).thenReturn("testAccessToken");
 
 		// when & then
@@ -260,10 +240,10 @@ class SubscriptionServiceTest {
 	void getSubscribedRepositories_WithNonExistentPage() {
 		// given
 		String githubId = "testUser";
-		User user = new User(githubId, "testuser@example.com");
+		User user = new User(1L, githubId, "testuser@example.com", false);
 		Pageable pageable = PageRequest.of(1, 15, Sort.by(Sort.Direction.ASC, "repository.latestUpdateAt"));
 
-		when(userRepository.findByGithubId(githubId)).thenReturn(Optional.of(user));
+		when(userService.findGithubUser(githubId)).thenReturn(user);
 		when(subscriptionRepository.findPageByUserId(user.getId(), pageable)).thenReturn(Optional.empty());
 
 		// when & then

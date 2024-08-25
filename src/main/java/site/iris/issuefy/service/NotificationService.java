@@ -19,8 +19,6 @@ import site.iris.issuefy.entity.Notification;
 import site.iris.issuefy.entity.Subscription;
 import site.iris.issuefy.entity.User;
 import site.iris.issuefy.entity.UserNotification;
-import site.iris.issuefy.exception.code.ErrorCode;
-import site.iris.issuefy.exception.resource.UserNotFoundException;
 import site.iris.issuefy.model.dto.NotificationDto;
 import site.iris.issuefy.model.dto.NotificationReadDto;
 import site.iris.issuefy.model.dto.UnreadNotificationDto;
@@ -28,7 +26,6 @@ import site.iris.issuefy.model.dto.UpdateRepositoryDto;
 import site.iris.issuefy.repository.NotificationRepository;
 import site.iris.issuefy.repository.SubscriptionRepository;
 import site.iris.issuefy.repository.UserNotificationRepository;
-import site.iris.issuefy.repository.UserRepository;
 import site.iris.issuefy.util.ContainerIdUtil;
 
 @Service
@@ -39,7 +36,7 @@ public class NotificationService {
 	private static final String EVENT_NAME = "notification";
 	private final UserNotificationRepository userNotificationRepository;
 	private final SubscriptionRepository subscriptionRepository;
-	private final UserRepository userRepository;
+	private final UserService userService;
 	private final NotificationRepository notificationRepository;
 	private final RedisTemplate<String, String> redisTemplate;
 	private final SseService sseService;
@@ -80,7 +77,7 @@ public class NotificationService {
 				Map.of(
 					"githubId", githubId,
 					EVENT_NAME, notificationData,
-					"senderId", ContainerIdUtil.getContainerId()
+					"senderId", ContainerIdUtil.containerId
 				)
 			);
 
@@ -98,7 +95,7 @@ public class NotificationService {
 			String githubId = jsonNode.get("githubId").asText();
 			String senderId = jsonNode.get("senderId").asText();
 
-			if (senderId.equals(ContainerIdUtil.getContainerId())) {
+			if (senderId.equals(ContainerIdUtil.containerId)) {
 				return;
 			}
 
@@ -115,10 +112,7 @@ public class NotificationService {
 	}
 
 	public UnreadNotificationDto getNotification(String githubId) {
-		User user = userRepository.findByGithubId(githubId)
-			.orElseThrow(() -> new UserNotFoundException(ErrorCode.NOT_EXIST_USER.getMessage(),
-				ErrorCode.NOT_EXIST_USER.getStatus(), githubId));
-
+		User user = userService.findGithubUser(githubId);
 		int unreadCount = userNotificationRepository.countByUserIdAndIsReadFalse(user.getId());
 		return new UnreadNotificationDto(unreadCount);
 	}

@@ -15,6 +15,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import site.iris.issuefy.entity.Label;
+import site.iris.issuefy.exception.resource.LabelNotFoundException;
 import site.iris.issuefy.repository.LabelRepository;
 import site.iris.issuefy.response.LabelResponse;
 
@@ -87,12 +88,11 @@ class LabelServiceTest {
 		when(labelRepository.findByIssue_id(testIssueId)).thenReturn(Optional.of(labels));
 
 		// then
-		Optional<List<Label>> result = labelService.getLabelsByIssueId(testIssueId);
-		assertTrue(result.isPresent());
-		assertEquals(labels, result.get());
+		List<Label> result = labelService.getLabelsByIssueId(testIssueId);
+		assertEquals(labels, result);
 	}
 
-	@DisplayName("이슈에 대한 레이블이 없다면 빈 옵셔널을 반환한다")
+	@DisplayName("이슈에 대한 레이블이 없다면 Label 예외가 발생한다.")
 	@Test
 	void getLabelsByIssueId_ReturnsEmpty() {
 		// given
@@ -102,37 +102,25 @@ class LabelServiceTest {
 		when(labelRepository.findByIssue_id(testIssueId)).thenReturn(Optional.empty());
 
 		// then
-		Optional<List<Label>> result = labelService.getLabelsByIssueId(testIssueId);
-		assertFalse(result.isPresent());
+		assertThrows(LabelNotFoundException.class, () -> labelService.getLabelsByIssueId(testIssueId));
+		verify(labelRepository).findByIssue_id(testIssueId);
+
 	}
 
 	@DisplayName("레이블을 Response DTO로 변환한다")
 	@Test
 	void convertLabelsResponse_ReturnsDto() {
 		// given
-		Optional<List<Label>> optionalLabels = Optional.of(List.of(
+		List<Label> labels = List.of(
 			Label.of("test label name1", "000000"),
 			Label.of("test label name2", "111111")
-		));
+		);
 
 		// when
-		List<LabelResponse> result = labelService.convertLabelsResponse(optionalLabels);
+		List<LabelResponse> result = labelService.convertLabelsResponse(labels);
 
 		// then
-		assertEquals(optionalLabels.get().size(), result.size());
-	}
-
-	@DisplayName("옵셔널이 비어있으면 빈 리스트를 반환한다")
-	@Test
-	void convertLabelsResponse_ReturnsEmpty() {
-		// given
-		Optional<List<Label>> optionalLabels = Optional.empty();
-
-		// when
-		List<LabelResponse> result = labelService.convertLabelsResponse(optionalLabels);
-
-		// then
-		assertEquals(0, result.size());
+		assertEquals(labels.size(), result.size());
 	}
 
 	@DisplayName("이슈에 대한 모든 레이블을 저장한다")
