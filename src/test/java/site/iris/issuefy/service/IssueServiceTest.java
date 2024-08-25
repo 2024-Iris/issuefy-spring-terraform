@@ -137,9 +137,6 @@ class IssueServiceTest {
 	void updateExistingIssues_whenGithubIssueIsNewerAndDifferent_shouldUpdate() {
 		// Given
 		Org org = new Org("testOrg", 1L);
-		Repository repository = new Repository(org, "testRepo", 123L, LocalDateTime.now());
-
-		// Repository mock 설정
 		Repository mockedRepository = mock(Repository.class);
 		when(mockedRepository.getId()).thenReturn(1L);
 		when(mockedRepository.getOrg()).thenReturn(org);

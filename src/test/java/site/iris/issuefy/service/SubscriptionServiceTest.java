@@ -148,7 +148,6 @@ class SubscriptionServiceTest {
 
 		String baseUrl = mockWebServer.url("/").toString();
 
-		// GithubUrls의 실제 URL을 MockWebServer의 URL로 대체
 		ReflectionTestUtils.setField(GithubUrls.ORG_REQUEST_URL, "url", baseUrl + "orgs/");
 		ReflectionTestUtils.setField(GithubUrls.REPOSITORY_REQUEST_URL, "url", baseUrl + "repos/");
 
@@ -229,10 +228,6 @@ class SubscriptionServiceTest {
 		String githubId = "githubuser1";
 
 		mockWebServer.enqueue(new MockResponse().setResponseCode(404));
-
-		String baseUrl = mockWebServer.url("/").toString();
-
-		// GithubUrls enum을 모킹하지 않고 실제 값을 사용
 		when(githubTokenService.findAccessToken(githubId)).thenReturn("testAccessToken");
 
 		// when & then
