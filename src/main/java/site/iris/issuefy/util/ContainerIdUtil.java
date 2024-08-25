@@ -11,7 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 @UtilityClass
 @Slf4j
 public class ContainerIdUtil {
-	private static final String METADATA_URI = System.getenv("ECS_CONTAINER_METADATA_URI_V4/task");
+	private static final String METADATA_URI = System.getenv("ECS_CONTAINER_METADATA_URI_V4");
 	private static final String LOCAL_CONTAINER_ID = "local";
 	private static final String UNKNOWN_CONTAINER_ID = "unknown";
 
