@@ -3,14 +3,12 @@ package site.iris.issuefy.service;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -21,11 +19,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.web.reactive.function.client.WebClient;
 
-import lombok.extern.slf4j.Slf4j;
-import okhttp3.mockwebserver.MockResponse;
-import okhttp3.mockwebserver.MockWebServer;
 import reactor.core.publisher.Flux;
 import site.iris.issuefy.entity.Issue;
 import site.iris.issuefy.entity.Org;
@@ -35,148 +31,69 @@ import site.iris.issuefy.model.dto.IssueDto;
 import site.iris.issuefy.model.dto.IssueWithStarStatusDto;
 import site.iris.issuefy.repository.IssueLabelRepository;
 import site.iris.issuefy.repository.IssueRepository;
-import site.iris.issuefy.repository.RepositoryRepository;
-import site.iris.issuefy.repository.UserRepository;
 import site.iris.issuefy.response.PagedRepositoryIssuesResponse;
 
-@Slf4j
 class IssueServiceTest {
-	MockWebServer mockWebServer;
-
-	@Mock
-	private IssueRepository issueRepository;
-
-	@Mock
-	private RepositoryRepository repositoryRepository;
-
-	@Mock
-	private GithubTokenService githubTokenService;
-
-	@Mock
-	private LabelService labelService;
-
-	@Mock
-	private IssueLabelRepository issueLabelRepository;
-
-	@Mock
-	private UserRepository userRepository;
 
 	@Mock
 	private WebClient webClient;
+	@Mock
+	private GithubTokenService githubTokenService;
+	@Mock
+	private IssueRepository issueRepository;
+	@Mock
+	private RepositoryService repositoryService;
+	@Mock
+	private LabelService labelService;
+	@Mock
+	private IssueLabelRepository issueLabelRepository;
+	@Mock
+	private UserService userService;
 
 	@InjectMocks
 	private IssueService issueService;
 
+	@Mock
+	private WebClient.RequestHeadersUriSpec requestHeadersUriSpec;
+	@Mock
+	private WebClient.RequestHeadersSpec requestHeadersSpec;
+	@Mock
+	private WebClient.ResponseSpec responseSpec;
+
 	@BeforeEach
-	@DisplayName("MockWebServer로 GitHub API의 응답을 모킹합니다.")
-	void setUp() throws IOException {
+	void setUp() {
 		MockitoAnnotations.openMocks(this);
-
-		mockWebServer = new MockWebServer();
-		mockWebServer.start();
-		mockWebServer.enqueue(new MockResponse()
-			.setBody(
-				"[{\"title\": \"testIssue\", \"state\": \"open\", \"ghIssueId\": 12345, \"labels\": [{\"name\": \"bug\", \"color\": \"f29513\"}]}]")
-			.addHeader("Content-Type", "application/json")
-			.setResponseCode(200));
-
-		WebClient webClient = WebClient.builder()
-			.baseUrl(mockWebServer.url("/").toString())
-			.build();
-
-		issueService = new IssueService(webClient, githubTokenService, issueRepository, repositoryRepository,
-			labelService, issueLabelRepository, userRepository);
-	}
-
-	@AfterEach
-	void tearDown() throws IOException {
-		mockWebServer.shutdown();
-	}
-
-	@DisplayName("구독한 리포지토리의 오픈되어 있는 good first issue를 저장한다")
-	@Test
-	void getRepositoryIssues_issuesSaved() {
-		// given
-		Org org = new Org("testOrg", 2);
-		Repository repository = new Repository(org, "testRepo", 123, LocalDateTime.now());
-		User user = new User("test", "test@email.test");
-
-		when(repositoryRepository.findByName(anyString())).thenReturn(Optional.of(repository));
-		when(userRepository.findByGithubId(anyString())).thenReturn(Optional.of(user));
-		when(issueRepository.existsById(anyLong())).thenReturn(false);
-
-		// GitHub API 모킹
-		IssueDto mockIssueDto = IssueDto.of(1L, "testTitle", false, "open", LocalDateTime.now().minusDays(2),
-			LocalDateTime.now().minusDays(1), null, new ArrayList<>());
-
-		WebClient.RequestHeadersUriSpec requestHeadersUriSpec = mock(WebClient.RequestHeadersUriSpec.class);
-		WebClient.RequestHeadersSpec requestHeadersSpec = mock(WebClient.RequestHeadersSpec.class);
-		WebClient.ResponseSpec responseSpec = mock(WebClient.ResponseSpec.class);
 
 		when(webClient.get()).thenReturn(requestHeadersUriSpec);
 		when(requestHeadersUriSpec.uri(any(Function.class))).thenReturn(requestHeadersSpec);
 		when(requestHeadersSpec.header(anyString(), anyString())).thenReturn(requestHeadersSpec);
 		when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
-		when(responseSpec.bodyToFlux(IssueDto.class)).thenReturn(Flux.just(mockIssueDto));
-
-		// findIssuesWithStarStatus 모킹
-		Issue mockIssue = Issue.of(repository, "Test Issue", false, "open", LocalDateTime.now(), LocalDateTime.now(),
-			null, 1L, new ArrayList<>());
-
-		IssueWithStarStatusDto mockIssueWithStarStatusDto = new IssueWithStarStatusDto(mockIssue, false);
-		Page<IssueWithStarStatusDto> mockPage = new PageImpl<>(
-			List.of(mockIssueWithStarStatusDto),
-			PageRequest.of(0, 10),
-			1
-		);
-		when(issueRepository.findIssuesWithStarStatus(eq(repository.getId()), eq(user.getId()), any(Pageable.class)))
-			.thenReturn(mockPage);
-
-		// when
-		PagedRepositoryIssuesResponse response = issueService.getRepositoryIssues("testOrg", repository.getName(),
-			user.getGithubId(), 0, 10, "created", "desc");
-
-		// then
-		assertNotNull(response);
-		verify(issueRepository, times(1)).saveAll(anyList());
-		verify(labelService, times(1)).saveAllLabels(anyList());
-		verify(issueLabelRepository, times(1)).saveAll(anyList());
 	}
 
 	@Test
-	@DisplayName("getRepositoryIssues: 새 이슈 추가 테스트")
-	void getRepositoryIssues_whenNoExistingIssues_shouldAddNewIssues() {
+	@DisplayName("getRepositoryIssues: 리포지토리 이슈를 가져오고 동기화한다")
+	void getRepositoryIssues_shouldSynchronizeAndReturnIssues() {
 		// Given
 		String orgName = "testOrg";
 		String repoName = "testRepo";
 		String githubId = "testUser";
+		Repository repository = new Repository(null, repoName, 123L, LocalDateTime.now());
+		User user = new User(githubId, "test@email.com");
 
-		Org org = new Org("testOrg", 2);
-		Repository repository = new Repository(org, "testRepo", 123, LocalDateTime.now());
-		User user = new User("test", "test@email.test");
-
-		when(repositoryRepository.findByName(repoName)).thenReturn(Optional.of(repository));
+		when(repositoryService.findRepositoryByName(repoName)).thenReturn(repository);
+		when(userService.findGithubUser(githubId)).thenReturn(user);
 		when(issueRepository.existsById(repository.getId())).thenReturn(false);
-		when(githubTokenService.findAccessToken(githubId)).thenReturn("testToken");
 
-		// GitHub API 응답 모킹
-		IssueDto mockIssueDto = IssueDto.of(1L, "testTitle", false, "open", LocalDateTime.now().minusDays(2),
-			LocalDateTime.now().minusDays(1), null, new ArrayList<>());
+		IssueDto mockIssueDto = IssueDto.of(1L, "Test Issue", false, "open", LocalDateTime.now().minusDays(1),
+			LocalDateTime.now(), null, new ArrayList<>());
 
-		WebClient.RequestHeadersUriSpec requestHeadersUriSpec = mock(WebClient.RequestHeadersUriSpec.class);
-		WebClient.RequestHeadersSpec requestHeadersSpec = mock(WebClient.RequestHeadersSpec.class);
-		WebClient.ResponseSpec responseSpec = mock(WebClient.ResponseSpec.class);
-
-		when(webClient.get()).thenReturn(requestHeadersUriSpec);
-		when(requestHeadersUriSpec.uri(any(Function.class))).thenReturn(requestHeadersSpec);
-		when(requestHeadersSpec.header(anyString(), anyString())).thenReturn(requestHeadersSpec);
-		when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
 		when(responseSpec.bodyToFlux(IssueDto.class)).thenReturn(Flux.just(mockIssueDto));
 
-		when(userRepository.findByGithubId(githubId)).thenReturn(Optional.of(user));
-
+		Issue mockIssue = Issue.of(repository, "Test Issue", false, "open", LocalDateTime.now().minusDays(1),
+			LocalDateTime.now(), null, 1L, new ArrayList<>());
+		IssueWithStarStatusDto mockIssueWithStatus = new IssueWithStarStatusDto(mockIssue, false);
 		Page<IssueWithStarStatusDto> mockPage = new PageImpl<>(
-			List.of(new IssueWithStarStatusDto(new Issue(), false)),
+			List.of(mockIssueWithStatus),
 			PageRequest.of(0, 10),
 			1
 		);
@@ -192,5 +109,133 @@ class IssueServiceTest {
 		verify(issueRepository, times(1)).saveAll(anyList());
 		verify(labelService, times(1)).saveAllLabels(anyList());
 		verify(issueLabelRepository, times(1)).saveAll(anyList());
+	}
+
+	@Test
+	@DisplayName("synchronizeRepositoryIssues: 새 이슈를 추가한다")
+	void synchronizeRepositoryIssues_whenNoExistingIssues_shouldAddNewIssues() {
+		// Given
+		Repository repository = new Repository(null, "testRepo", 123L, LocalDateTime.now());
+		when(issueRepository.existsById(repository.getId())).thenReturn(false);
+
+		IssueDto mockIssueDto = IssueDto.of(1L, "Test Issue", false, "open", LocalDateTime.now().minusDays(1),
+			LocalDateTime.now(), null, new ArrayList<>());
+
+		when(responseSpec.bodyToFlux(IssueDto.class)).thenReturn(Flux.just(mockIssueDto));
+
+		// When
+		issueService.synchronizeRepositoryIssues(repository, "testOrg", "testRepo", "testUser");
+
+		// Then
+		verify(issueRepository, times(1)).saveAll(anyList());
+		verify(labelService, times(1)).saveAllLabels(anyList());
+		verify(issueLabelRepository, times(1)).saveAll(anyList());
+	}
+
+	@Test
+	@DisplayName("updateExistingIssues: GitHub에서 가져온 이슈가 로컬 이슈보다 최신이고 다른 이슈일 때 업데이트한다")
+	void updateExistingIssues_whenGithubIssueIsNewerAndDifferent_shouldUpdate() {
+		// Given
+		Org org = new Org("testOrg", 1L);
+		Repository repository = new Repository(org, "testRepo", 123L, LocalDateTime.now());
+
+		// Repository mock 설정
+		Repository mockedRepository = mock(Repository.class);
+		when(mockedRepository.getId()).thenReturn(1L);
+		when(mockedRepository.getOrg()).thenReturn(org);
+		when(mockedRepository.getName()).thenReturn("testRepo");
+		when(mockedRepository.getGhRepoId()).thenReturn(123L);
+		when(mockedRepository.getLatestUpdateAt()).thenReturn(LocalDateTime.now());
+
+		LocalDateTime oldDate = LocalDateTime.now().minusDays(2);
+		LocalDateTime newDate = LocalDateTime.now().minusDays(1);
+
+		Issue localIssue = Issue.of(mockedRepository, "Old Issue", false, "open", oldDate,
+			oldDate, null, 1L, new ArrayList<>());
+		when(issueRepository.findFirstByRepositoryIdOrderByUpdatedAtDesc(mockedRepository.getId()))
+			.thenReturn(Optional.of(localIssue));
+
+		IssueDto newerGithubIssue = IssueDto.of(2L, "Updated Issue", false, "open", newDate,
+			newDate, null, new ArrayList<>());
+
+		when(githubTokenService.findAccessToken(anyString())).thenReturn("testToken");
+		when(responseSpec.bodyToFlux(IssueDto.class)).thenReturn(Flux.just(newerGithubIssue));
+
+		// When
+		issueService.updateExistingIssues("testOrg", "testRepo", "testUser", mockedRepository);
+
+		// Then
+		verify(issueRepository, times(1)).saveAll(anyList());
+		verify(issueLabelRepository, times(1)).saveAll(anyList());
+	}
+
+	@Test
+	@DisplayName("updateExistingIssues: GitHub에서 가져온 이슈가 로컬 이슈보다 최신이지만 같은 이슈일 때 업데이트하지 않는다")
+	void updateExistingIssues_whenGithubIssueIsNewerButSame_shouldNotUpdate() {
+		// Given
+		Org org = new Org("testOrg", 1L);
+
+		// Repository mock 설정
+		Repository mockedRepository = mock(Repository.class);
+		when(mockedRepository.getId()).thenReturn(1L);
+		when(mockedRepository.getOrg()).thenReturn(org);
+		when(mockedRepository.getName()).thenReturn("testRepo");
+		when(mockedRepository.getGhRepoId()).thenReturn(123L);
+		when(mockedRepository.getLatestUpdateAt()).thenReturn(LocalDateTime.now());
+
+		LocalDateTime oldDate = LocalDateTime.now().minusDays(2);
+		LocalDateTime newDate = LocalDateTime.now().minusDays(1);
+
+		Issue localIssue = Issue.of(mockedRepository, "Old Issue", false, "open", oldDate,
+			oldDate, null, 1L, new ArrayList<>());
+		when(issueRepository.findFirstByRepositoryIdOrderByUpdatedAtDesc(mockedRepository.getId()))
+			.thenReturn(Optional.of(localIssue));
+
+		IssueDto newerGithubIssue = IssueDto.of(1L, "Updated Issue", false, "open", newDate,
+			newDate, null, new ArrayList<>());
+
+		when(githubTokenService.findAccessToken(anyString())).thenReturn("testToken");
+		when(responseSpec.bodyToFlux(IssueDto.class)).thenReturn(Flux.just(newerGithubIssue));
+
+		// When
+		issueService.updateExistingIssues("testOrg", "testRepo", "testUser", mockedRepository);
+
+		// Then
+		verify(issueRepository, never()).saveAll(anyList());
+		verify(issueLabelRepository, never()).saveAll(anyList());
+	}
+
+	@Test
+	@DisplayName("createPagedRepositoryIssuesResponse: 페이지네이션된 이슈 응답을 생성한다")
+	void createPagedRepositoryIssuesResponse_shouldReturnPagedResponse() {
+		// Given
+		Repository repository = new Repository(null, "testRepo", 123L, LocalDateTime.now());
+		User user = new User("testUser", "test@email.com");
+		Issue issue = Issue.of(repository, "Test Issue", false, "open", LocalDateTime.now().minusDays(1),
+			LocalDateTime.now(), null, 100L, new ArrayList<>());
+
+		IssueWithStarStatusDto issueWithStatus = new IssueWithStarStatusDto(issue, false);
+		Page<IssueWithStarStatusDto> mockPage = new PageImpl<>(
+			List.of(issueWithStatus),
+			PageRequest.of(0, 10, Sort.by(Sort.Direction.DESC, "created")),
+			1
+		);
+
+		when(userService.findGithubUser("testUser")).thenReturn(user);
+		when(issueRepository.findIssuesWithStarStatus(eq(repository.getId()), eq(user.getId()), any(Pageable.class)))
+			.thenReturn(mockPage);
+		when(labelService.getLabelsByIssueId(issue.getId())).thenReturn(new ArrayList<>());
+
+		// When
+		PagedRepositoryIssuesResponse response = issueService.createPagedRepositoryIssuesResponse(
+			repository, "created", "desc", "testUser", 0, 10);
+
+		// Then
+		assertNotNull(response);
+		assertEquals(0, response.getCurrentPage());
+		assertEquals(1, response.getTotalElements());
+		assertEquals(1, response.getTotalPages());
+		assertEquals("testRepo", response.getRepositoryName());
+		assertEquals(1, response.getIssues().size());
 	}
 }

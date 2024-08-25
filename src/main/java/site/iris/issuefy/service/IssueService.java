@@ -197,7 +197,7 @@ public class IssueService {
 		return issue;
 	}
 
-	private PagedRepositoryIssuesResponse createPagedRepositoryIssuesResponse(Repository repository, String sort,
+	public PagedRepositoryIssuesResponse createPagedRepositoryIssuesResponse(Repository repository, String sort,
 		String order, String githubId, int page, int pageSize) {
 		Sort.Direction direction = Sort.Direction.fromString(order);
 		Sort sorting = Sort.by(direction, sort);

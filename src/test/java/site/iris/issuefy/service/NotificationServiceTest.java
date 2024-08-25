@@ -16,6 +16,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.data.redis.core.RedisTemplate;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import site.iris.issuefy.entity.Notification;
@@ -24,7 +25,6 @@ import site.iris.issuefy.entity.Repository;
 import site.iris.issuefy.entity.Subscription;
 import site.iris.issuefy.entity.User;
 import site.iris.issuefy.entity.UserNotification;
-import site.iris.issuefy.exception.resource.UserNotFoundException;
 import site.iris.issuefy.model.dto.NotificationDto;
 import site.iris.issuefy.model.dto.NotificationReadDto;
 import site.iris.issuefy.model.dto.UnreadNotificationDto;
@@ -32,7 +32,6 @@ import site.iris.issuefy.model.dto.UpdateRepositoryDto;
 import site.iris.issuefy.repository.NotificationRepository;
 import site.iris.issuefy.repository.SubscriptionRepository;
 import site.iris.issuefy.repository.UserNotificationRepository;
-import site.iris.issuefy.repository.UserRepository;
 
 class NotificationServiceTest {
 
@@ -44,7 +43,7 @@ class NotificationServiceTest {
 	@Mock
 	private SubscriptionRepository subscriptionRepository;
 	@Mock
-	private UserRepository userRepository;
+	private UserService userService;
 	@Mock
 	private NotificationRepository notificationRepository;
 	@Mock
@@ -69,8 +68,8 @@ class NotificationServiceTest {
 
 		when(subscriptionRepository.findByRepositoryId(anyLong())).thenReturn(Optional.of(List.of(subscription)));
 		when(sseService.isConnected(anyString())).thenReturn(false);
-		when(userRepository.findByGithubId(anyString())).thenReturn(Optional.of(user));  // 이 줄 추가
-		when(userNotificationRepository.countByUserIdAndIsReadFalse(anyLong())).thenReturn(0);  // 이 줄 추가
+		when(userService.findGithubUser(anyString())).thenReturn(user);
+		when(userNotificationRepository.countByUserIdAndIsReadFalse(anyLong())).thenReturn(0);
 
 		notificationService.handleUpdateRepositoryDto(dto);
 
@@ -83,9 +82,9 @@ class NotificationServiceTest {
 	@DisplayName("유저의 읽지 않은 알림 개수를 반환한다.")
 	void getNotification() {
 		String githubId = "testUser";
-		User user = new User(1L, "testId", "test@email.com", false);
+		User user = new User(1L, "testUser", "test@email.com", false);
 
-		when(userRepository.findByGithubId(githubId)).thenReturn(Optional.of(user));
+		when(userService.findGithubUser(githubId)).thenReturn(user);
 		when(userNotificationRepository.countByUserIdAndIsReadFalse(1L)).thenReturn(5);
 
 		UnreadNotificationDto result = notificationService.getNotification(githubId);
@@ -127,22 +126,16 @@ class NotificationServiceTest {
 	}
 
 	@Test
-	@DisplayName("존재하지 않는 사용자에 대해 UserNotFoundException을 던진다.")
-	void getNotification_throwsUserNotFoundException() {
-		String githubId = "nonExistentUser";
-
-		when(userRepository.findByGithubId(githubId)).thenReturn(Optional.empty());
-
-		assertThrows(UserNotFoundException.class, () -> notificationService.getNotification(githubId));
-	}
-
-	@Test
 	@DisplayName("Redis 메시지를 처리하고 연결된 클라이언트에게 알림을 전송한다.")
 	void handleRedisMessage_connectedClient() throws Exception {
 		String message = "{\"githubId\":\"testUser\",\"notification\":{\"unreadCount\":5},\"senderId\":\"sender1\"}";
 		ObjectMapper realObjectMapper = new ObjectMapper();
-		when(objectMapper.readTree(message)).thenReturn(realObjectMapper.readTree(message));
+		JsonNode jsonNode = realObjectMapper.readTree(message);
+
+		when(objectMapper.readTree(message)).thenReturn(jsonNode);
 		when(sseService.isConnected("testUser")).thenReturn(true);
+		when(objectMapper.treeToValue(any(JsonNode.class), eq(UnreadNotificationDto.class)))
+			.thenReturn(new UnreadNotificationDto(5));
 
 		notificationService.handleRedisMessage(message);
 
@@ -150,12 +143,16 @@ class NotificationServiceTest {
 	}
 
 	@Test
-	@DisplayName("Redis 메시지를 처리할 때 연결되지 않은 클라이언트에게는 알림을 전송하지 않는다.")
-	void handleRedisMessage_disconnectedClient() throws Exception {
-		String message = "{\"githubId\":\"testUser\",\"notification\":{\"unreadCount\":5},\"senderId\":\"sender1\"}";
+	@DisplayName("Redis 메시지를 처리할 때 같은 컨테이너에서 보낸 메시지는 무시한다.")
+	void handleRedisMessage_ignoreOwnMessage() throws Exception {
+		String containerId = "container1";
+
+		String message = String.format(
+			"{\"githubId\":\"testUser\",\"notification\":{\"unreadCount\":5},\"senderId\":\"%s\"}", containerId);
 		ObjectMapper realObjectMapper = new ObjectMapper();
-		when(objectMapper.readTree(message)).thenReturn(realObjectMapper.readTree(message));
-		when(sseService.isConnected("testUser")).thenReturn(false);
+		JsonNode jsonNode = realObjectMapper.readTree(message);
+
+		when(objectMapper.readTree(message)).thenReturn(jsonNode);
 
 		notificationService.handleRedisMessage(message);
 
