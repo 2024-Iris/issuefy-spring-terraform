@@ -19,7 +19,7 @@ import site.iris.issuefy.entity.Notification;
 import site.iris.issuefy.entity.Subscription;
 import site.iris.issuefy.entity.User;
 import site.iris.issuefy.entity.UserNotification;
-import site.iris.issuefy.exception.code.ErrorCode;
+import site.iris.issuefy.eums.ErrorCode;
 import site.iris.issuefy.exception.resource.UserNotFoundException;
 import site.iris.issuefy.model.dto.NotificationDto;
 import site.iris.issuefy.model.dto.NotificationReadDto;

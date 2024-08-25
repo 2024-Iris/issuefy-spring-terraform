@@ -16,7 +16,7 @@ import org.springframework.mock.web.MockHttpServletResponse;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.ServletException;
 import site.iris.issuefy.component.LambdaKey;
-import site.iris.issuefy.exception.code.ErrorCode;
+import site.iris.issuefy.eums.ErrorCode;
 import site.iris.issuefy.service.TokenProvider;
 
 class JwtAuthenticationFilterTest {

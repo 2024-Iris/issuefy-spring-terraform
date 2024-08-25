@@ -1,4 +1,4 @@
-package site.iris.issuefy.exception.code;
+package site.iris.issuefy.eums;
 
 import org.springframework.http.HttpStatus;
 

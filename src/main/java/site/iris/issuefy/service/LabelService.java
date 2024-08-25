@@ -6,7 +6,7 @@ import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
 import site.iris.issuefy.entity.Label;
-import site.iris.issuefy.exception.code.ErrorCode;
+import site.iris.issuefy.eums.ErrorCode;
 import site.iris.issuefy.exception.resource.LabelNotFoundException;
 import site.iris.issuefy.mapper.LabelMapper;
 import site.iris.issuefy.repository.LabelRepository;

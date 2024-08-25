@@ -1,4 +1,4 @@
-package site.iris.issuefy.model;
+package site.iris.issuefy.eums;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
