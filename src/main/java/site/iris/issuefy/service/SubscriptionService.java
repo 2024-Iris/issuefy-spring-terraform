@@ -21,11 +21,11 @@ import site.iris.issuefy.entity.Repository;
 import site.iris.issuefy.entity.Subscription;
 import site.iris.issuefy.entity.User;
 import site.iris.issuefy.eums.ErrorCode;
+import site.iris.issuefy.eums.GithubUrls;
+import site.iris.issuefy.eums.SortProperty;
 import site.iris.issuefy.exception.github.GithubApiException;
 import site.iris.issuefy.exception.resource.SubscriptionNotFoundException;
 import site.iris.issuefy.exception.resource.SubscriptionPageNotFoundException;
-import site.iris.issuefy.eums.GithubUrls;
-import site.iris.issuefy.eums.SortProperty;
 import site.iris.issuefy.model.dto.GithubOrgDto;
 import site.iris.issuefy.model.dto.GithubRepositoryDto;
 import site.iris.issuefy.model.dto.RepositoryUrlDto;
@@ -114,7 +114,7 @@ public class SubscriptionService {
 		try {
 			return WebClient.create()
 				.get()
-				.uri(GithubUrls.ORG_REQUEST_URL + repositoryUrlDto.getOrgName())
+				.uri(GithubUrls.ORG_REQUEST_URL.getUrl() + repositoryUrlDto.getOrgName())
 				.headers(headers -> {
 					headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
 					headers.setBearerAuth(accessToken);
@@ -133,7 +133,7 @@ public class SubscriptionService {
 			return WebClient.create()
 				.get()
 				.uri(
-					GithubUrls.REPOSITORY_REQUEST_URL + repositoryUrlDto.getOrgName() + "/"
+					GithubUrls.REPOSITORY_REQUEST_URL.getUrl() + repositoryUrlDto.getOrgName() + "/"
 						+ repositoryUrlDto.getRepositoryName())
 				.headers(headers -> {
 					headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
