@@ -20,17 +20,13 @@ import site.iris.issuefy.entity.IssueLabel;
 import site.iris.issuefy.entity.Label;
 import site.iris.issuefy.entity.Repository;
 import site.iris.issuefy.entity.User;
-import site.iris.issuefy.exception.code.ErrorCode;
+import site.iris.issuefy.eums.ErrorCode;
 import site.iris.issuefy.exception.github.GithubApiException;
 import site.iris.issuefy.exception.resource.IssueNotFoundException;
-import site.iris.issuefy.exception.resource.RepositoryNotFoundException;
-import site.iris.issuefy.exception.resource.UserNotFoundException;
 import site.iris.issuefy.model.dto.IssueDto;
 import site.iris.issuefy.model.dto.IssueWithStarStatusDto;
 import site.iris.issuefy.repository.IssueLabelRepository;
 import site.iris.issuefy.repository.IssueRepository;
-import site.iris.issuefy.repository.RepositoryRepository;
-import site.iris.issuefy.repository.UserRepository;
 import site.iris.issuefy.response.IssueResponse;
 import site.iris.issuefy.response.PagedRepositoryIssuesResponse;
 
@@ -41,36 +37,29 @@ public class IssueService {
 	private final WebClient webClient;
 	private final GithubTokenService githubTokenService;
 	private final IssueRepository issueRepository;
-	private final RepositoryRepository repositoryRepository;
+	private final RepositoryService repositoryService;
 	private final LabelService labelService;
 	private final IssueLabelRepository issueLabelRepository;
-	private final UserRepository userRepository;
+	private final UserService userService;
 
 	public IssueService(@Qualifier("apiWebClient") WebClient webClient, GithubTokenService githubTokenService,
-		IssueRepository issueRepository, RepositoryRepository repositoryRepository, LabelService labelService,
-		IssueLabelRepository issueLabelRepository, UserRepository userRepository) {
+		IssueRepository issueRepository, RepositoryService repositoryService, LabelService labelService,
+		IssueLabelRepository issueLabelRepository, UserService userService) {
 		this.webClient = webClient;
 		this.githubTokenService = githubTokenService;
 		this.issueRepository = issueRepository;
-		this.repositoryRepository = repositoryRepository;
+		this.repositoryService = repositoryService;
 		this.labelService = labelService;
 		this.issueLabelRepository = issueLabelRepository;
-		this.userRepository = userRepository;
+		this.userService = userService;
 	}
 
 	@Transactional
 	public PagedRepositoryIssuesResponse getRepositoryIssues(String orgName, String repoName, String githubId, int page,
 		int pageSize, String sort, String order) {
-		Repository repository = findRepositoryByName(repoName);
+		Repository repository = repositoryService.findRepositoryByName(repoName);
 		synchronizeRepositoryIssues(repository, orgName, repoName, githubId);
 		return createPagedRepositoryIssuesResponse(repository, sort, order, githubId, page, pageSize);
-	}
-
-	// TODO repositoryRepository를 서비스를 이용하는것이 필요
-	private Repository findRepositoryByName(String repositoryName) {
-		return repositoryRepository.findByName(repositoryName)
-			.orElseThrow(() -> new RepositoryNotFoundException(ErrorCode.NOT_EXIST_REPOSITORY.getMessage(),
-				ErrorCode.NOT_EXIST_REPOSITORY.getStatus(), repositoryName));
 	}
 
 	@Transactional
@@ -208,16 +197,13 @@ public class IssueService {
 		return issue;
 	}
 
-	// TODO userRepository User Service로 분리
 	private PagedRepositoryIssuesResponse createPagedRepositoryIssuesResponse(Repository repository, String sort,
 		String order, String githubId, int page, int pageSize) {
 		Sort.Direction direction = Sort.Direction.fromString(order);
 		Sort sorting = Sort.by(direction, sort);
 		Pageable pageable = PageRequest.of(page, pageSize, sorting);
 
-		ErrorCode userError = ErrorCode.NOT_EXIST_USER;
-		User user = userRepository.findByGithubId(githubId)
-			.orElseThrow(() -> new UserNotFoundException(userError.getMessage(), userError.getStatus(), githubId));
+		User user = userService.findGithubUser(githubId);
 		Page<IssueWithStarStatusDto> issuePage = issueRepository.findIssuesWithStarStatus(repository.getId(),
 			user.getId(), pageable);
 

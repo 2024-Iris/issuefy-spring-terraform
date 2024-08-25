@@ -8,7 +8,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import site.iris.issuefy.entity.Org;
 import site.iris.issuefy.entity.Repository;
-import site.iris.issuefy.exception.code.ErrorCode;
+import site.iris.issuefy.eums.ErrorCode;
+import site.iris.issuefy.exception.resource.RepositoryNotFoundException;
 import site.iris.issuefy.exception.validation.EmptyBodyException;
 import site.iris.issuefy.model.dto.GithubRepositoryDto;
 import site.iris.issuefy.repository.RepositoryRepository;
@@ -36,5 +37,11 @@ public class RepositoryService {
 					repoDto.getUpdated_at());
 				return repositoryRepository.save(newRepository);
 			});
+	}
+
+	public Repository findRepositoryByName(String repositoryName) {
+		return repositoryRepository.findByName(repositoryName)
+			.orElseThrow(() -> new RepositoryNotFoundException(ErrorCode.NOT_EXIST_REPOSITORY.getMessage(),
+				ErrorCode.NOT_EXIST_REPOSITORY.getStatus(), repositoryName));
 	}
 }
