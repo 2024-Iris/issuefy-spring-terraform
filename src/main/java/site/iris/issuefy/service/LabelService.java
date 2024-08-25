@@ -25,7 +25,7 @@ public class LabelService {
 	}
 
 	public List<Label> getLabelsByIssueId(Long issueId) {
-		ErrorCode errorCode = ErrorCode.NOT_EXIST_Label;
+		ErrorCode errorCode = ErrorCode.NOT_EXIST_LABEL;
 		return labelRepository.findByIssue_id(issueId)
 			.orElseThrow(() -> new LabelNotFoundException(errorCode.getMessage(), errorCode.getStatus(),
 				String.valueOf(issueId)));

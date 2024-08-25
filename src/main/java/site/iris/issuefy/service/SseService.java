@@ -21,7 +21,6 @@ import site.iris.issuefy.util.ContainerIdUtil;
 @RequiredArgsConstructor
 public class SseService {
 
-	private static final String CONTAINER_ID = ContainerIdUtil.getContainerId();
 	private static final String PREFIX_EMITTER = "emitter:";
 	private final ObjectMapper objectMapper;
 	private final RedisTemplate<String, String> redisTemplate;
@@ -30,7 +29,7 @@ public class SseService {
 	public SseEmitter connect(String githubId) {
 		String currentContainer = redisTemplate.opsForValue().get(PREFIX_EMITTER + githubId);
 
-		if (currentContainer != null && !currentContainer.equals(CONTAINER_ID)) {
+		if (currentContainer != null && !currentContainer.equals(ContainerIdUtil.containerId)) {
 			redisTemplate.convertAndSend("disconnect", githubId);
 		}
 
@@ -57,7 +56,7 @@ public class SseService {
 	}
 
 	public void addEmitter(String githubId, SseEmitter emitter) {
-		redisTemplate.opsForValue().set(PREFIX_EMITTER + githubId, CONTAINER_ID);
+		redisTemplate.opsForValue().set(PREFIX_EMITTER + githubId, ContainerIdUtil.containerId);
 		emitters.put(githubId, emitter);
 	}
 

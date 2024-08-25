@@ -57,7 +57,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 		String clientIP = getClientIp(request);
 		String path = request.getRequestURI();
 
-		MDC.put("containerId", ContainerIdUtil.getContainerId());
+		MDC.put("containerId", ContainerIdUtil.containerId);
 		MDC.put("requestId", requestId);
 		MDC.put("requestURL", path);
 

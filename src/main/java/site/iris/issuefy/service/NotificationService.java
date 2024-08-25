@@ -77,7 +77,7 @@ public class NotificationService {
 				Map.of(
 					"githubId", githubId,
 					EVENT_NAME, notificationData,
-					"senderId", ContainerIdUtil.getContainerId()
+					"senderId", ContainerIdUtil.containerId
 				)
 			);
 
@@ -95,7 +95,7 @@ public class NotificationService {
 			String githubId = jsonNode.get("githubId").asText();
 			String senderId = jsonNode.get("senderId").asText();
 
-			if (senderId.equals(ContainerIdUtil.getContainerId())) {
+			if (senderId.equals(ContainerIdUtil.containerId)) {
 				return;
 			}
 
