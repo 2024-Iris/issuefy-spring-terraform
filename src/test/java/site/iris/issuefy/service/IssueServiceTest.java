@@ -163,7 +163,7 @@ class IssueServiceTest {
 
 		// Then
 		verify(issueRepository, times(1)).saveAll(anyList());
-		verify(issueLabelRepository, times(1)).saveAll(anyList());
+		verify(issueLabelRepository, times(1)).saveAll(anySet());
 	}
 
 	@Test
@@ -204,7 +204,7 @@ class IssueServiceTest {
 
 	@Test
 	@DisplayName("createPagedRepositoryIssuesResponse: 페이지네이션된 이슈 응답을 생성한다")
-	void createPagedRepositoryIssuesResponse_shouldReturnPagedResponse() {
+	void getPagedRepositoryIssuesResponse_shouldReturnPagedResponse() {
 		// Given
 		Repository repository = new Repository(null, "testRepo", 123L, LocalDateTime.now());
 		User user = new User("testUser", "test@email.com");
@@ -224,7 +224,7 @@ class IssueServiceTest {
 		when(labelService.getLabelsByIssueId(issue.getId())).thenReturn(new ArrayList<>());
 
 		// When
-		PagedRepositoryIssuesResponse response = issueService.createPagedRepositoryIssuesResponse(
+		PagedRepositoryIssuesResponse response = issueService.getPagedRepositoryIssuesResponse(
 			repository, "created", "desc", "testUser", 0, 10);
 
 		// Then
