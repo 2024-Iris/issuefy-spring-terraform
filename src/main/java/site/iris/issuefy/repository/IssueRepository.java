@@ -1,7 +1,9 @@
 package site.iris.issuefy.repository;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -14,6 +16,11 @@ import site.iris.issuefy.model.dto.IssueWithStarStatusDto;
 
 public interface IssueRepository extends CrudRepository<Issue, Long> {
 	Optional<Page<Issue>> findAllByRepository_Id(Long id, Pageable pageable);
+
+	@Query("SELECT i.ghIssueId FROM Issue i WHERE i.repository.id = :repositoryId")
+	Set<Long> findGhIssueIdByRepositoryId(Long repositoryId);
+
+	Optional<Issue> findByGhIssueId(Long githubId);
 
 	Optional<Issue> findFirstByRepositoryIdOrderByUpdatedAtDesc(Long id);
 
