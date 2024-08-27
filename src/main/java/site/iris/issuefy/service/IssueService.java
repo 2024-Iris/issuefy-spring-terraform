@@ -1,8 +1,11 @@
 package site.iris.issuefy.service;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Page;
@@ -23,6 +26,7 @@ import site.iris.issuefy.entity.User;
 import site.iris.issuefy.eums.ErrorCode;
 import site.iris.issuefy.exception.github.GithubApiException;
 import site.iris.issuefy.exception.resource.IssueNotFoundException;
+import site.iris.issuefy.mapper.IssueMapper;
 import site.iris.issuefy.model.dto.IssueDto;
 import site.iris.issuefy.model.dto.IssueWithStarStatusDto;
 import site.iris.issuefy.repository.IssueLabelRepository;
@@ -59,7 +63,7 @@ public class IssueService {
 		int pageSize, String sort, String order) {
 		Repository repository = repositoryService.findRepositoryByName(repoName);
 		synchronizeRepositoryIssues(repository, orgName, repoName, githubId);
-		return createPagedRepositoryIssuesResponse(repository, sort, order, githubId, page, pageSize);
+		return getPagedRepositoryIssuesResponse(repository, sort, order, githubId, page, pageSize);
 	}
 
 	@Transactional
@@ -86,7 +90,9 @@ public class IssueService {
 			.map(dto -> createIssueEntityFromDto(repository, dto, allLabels, issueLabels))
 			.toList();
 
-		saveIssuesToDatabase(issues, issueLabels, allLabels);
+		issueRepository.saveAll(issues);
+		labelService.saveAllLabels(allLabels);
+		issueLabelRepository.saveAll(issueLabels);
 	}
 
 	private Optional<List<IssueDto>> fetchOpenGoodFirstIssuesFromGithub(String orgName, String repoName,
@@ -130,12 +136,6 @@ public class IssueService {
 		return issue;
 	}
 
-	private void saveIssuesToDatabase(List<Issue> issues, List<IssueLabel> issueLabels, List<Label> allLabels) {
-		issueRepository.saveAll(issues);
-		labelService.saveAllLabels(allLabels);
-		issueLabelRepository.saveAll(issueLabels);
-	}
-
 	@Transactional
 	public void updateExistingIssues(String orgName, String repoName, String githubId, Repository repository) {
 		List<IssueDto> githubIssues = fetchOpenGoodFirstIssuesFromGithub(orgName, repoName, githubId).orElseThrow(
@@ -143,10 +143,10 @@ public class IssueService {
 				ErrorCode.GITHUB_RESPONSE_BODY_EMPTY.getMessage()));
 
 		Issue mostRecentLocalIssue = findMostRecentLocalIssue(repository.getId());
-		boolean needUpdateIssue = shouldUpdateIssues(githubIssues, mostRecentLocalIssue);
+		boolean needUpdateIssue = needIssuesUpdate(githubIssues, mostRecentLocalIssue);
 
 		if (needUpdateIssue) {
-			updateLocalIssuesWithGithubData(githubIssues, repository);
+			synchronizeIssuesWithGithub(githubIssues, repository);
 		}
 	}
 
@@ -157,14 +157,14 @@ public class IssueService {
 					repositoryId.toString()));
 	}
 
-	private boolean shouldUpdateIssues(List<IssueDto> githubIssues, Issue mostRecentLocalIssue) {
+	private boolean needIssuesUpdate(List<IssueDto> githubIssues, Issue mostRecentLocalIssue) {
 		return githubIssues.stream()
 			.findFirst()
-			.map(firstDto -> isIssueUpdateRequired(firstDto, mostRecentLocalIssue))
+			.map(firstDto -> isGithubIssueNewer(firstDto, mostRecentLocalIssue))
 			.orElse(false);
 	}
 
-	private boolean isIssueUpdateRequired(IssueDto latestGithubIssue, Issue latestDbIssue) {
+	private boolean isGithubIssueNewer(IssueDto latestGithubIssue, Issue latestDbIssue) {
 		boolean isGithubIssueNewer = latestGithubIssue.getUpdatedAt().isAfter(latestDbIssue.getUpdatedAt());
 		boolean isSameIssue = latestGithubIssue.getGhIssueId().equals(latestDbIssue.getGhIssueId());
 
@@ -172,17 +172,37 @@ public class IssueService {
 	}
 
 	@Transactional
-	public void updateLocalIssuesWithGithubData(List<IssueDto> githubIssues, Repository repository) {
-		List<Issue> updatedIssues = githubIssues.stream().map(dto -> createIssueFromDto(dto, repository)).toList();
-		issueRepository.saveAll(updatedIssues);
+	public void synchronizeIssuesWithGithub(List<IssueDto> githubIssues, Repository repository) {
+		List<Issue> newIssues = new ArrayList<>();
+		List<Issue> updatedIssues = new ArrayList<>();
+		Set<Long> existingIssueIds = new HashSet<>(issueRepository.findGhIssueIdByRepositoryId(repository.getId()));
+		Set<IssueLabel> allIssueLabels = new HashSet<>();
 
-		List<IssueLabel> allIssueLabels = updatedIssues.stream()
-			.flatMap(issue -> issue.getIssueLabels().stream())
-			.toList();
+		githubIssues.forEach(githubIssue -> {
+			if (existingIssueIds.contains(githubIssue.getGhIssueId())) {
+				updatedIssues.add(updateExistingIssue(githubIssue));
+				return;
+			}
+			newIssues.add(createNewIssueFromDto(githubIssue, repository));
+		});
+
+		issueRepository.saveAll(newIssues);
+		allIssueLabels.addAll(collectUniqueIssueLabels(newIssues));
+		allIssueLabels.addAll(collectUniqueIssueLabels(updatedIssues));
 		issueLabelRepository.saveAll(allIssueLabels);
 	}
 
-	private Issue createIssueFromDto(IssueDto dto, Repository repository) {
+	@Transactional
+	public Issue updateExistingIssue(IssueDto dto) {
+		ErrorCode issueError = ErrorCode.NOT_EXIST_ISSUE;
+		Issue issue = issueRepository.findByGhIssueId(dto.getGhIssueId())
+			.orElseThrow(() -> new IssueNotFoundException(issueError.getMessage(), issueError.getStatus(),
+				String.valueOf(dto.getGhIssueId())));
+		IssueMapper.INSTANCE.updateIssueFromDto(dto, issue);
+		return issue;
+	}
+
+	private Issue createNewIssueFromDto(IssueDto dto, Repository repository) {
 		List<IssueLabel> issueLabels = new ArrayList<>();
 
 		Issue issue = Issue.of(repository, dto.getTitle(), false, dto.getState(), dto.getCreatedAt(),
@@ -197,7 +217,13 @@ public class IssueService {
 		return issue;
 	}
 
-	public PagedRepositoryIssuesResponse createPagedRepositoryIssuesResponse(Repository repository, String sort,
+	private Set<IssueLabel> collectUniqueIssueLabels(List<Issue> issues) {
+		return issues.stream()
+			.flatMap(issue -> issue.getIssueLabels().stream())
+			.collect(Collectors.toSet());
+	}
+
+	public PagedRepositoryIssuesResponse getPagedRepositoryIssuesResponse(Repository repository, String sort,
 		String order, String githubId, int page, int pageSize) {
 		Sort.Direction direction = Sort.Direction.fromString(order);
 		Sort sorting = Sort.by(direction, sort);
