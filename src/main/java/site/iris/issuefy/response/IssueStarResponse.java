@@ -10,6 +10,7 @@ import lombok.Data;
 @AllArgsConstructor
 public class IssueStarResponse {
 	private Long id;
+	private String orgName;
 	private String repositoryName;
 	private Long githubIssueId;
 	private String state;
@@ -23,6 +24,7 @@ public class IssueStarResponse {
 
 	public static IssueStarResponse of(
 		Long id,
+		String orgName,
 		String repositoryName,
 		Long githubIssueId,
 		String state,
@@ -35,6 +37,7 @@ public class IssueStarResponse {
 		boolean starred) {
 		return new IssueStarResponse(
 			id,
+			orgName,
 			repositoryName,
 			githubIssueId,
 			state,

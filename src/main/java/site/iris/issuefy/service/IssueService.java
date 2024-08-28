@@ -287,7 +287,7 @@ public class IssueService {
 
 	private IssueStarResponse createIssueStarResponse(IssueWithStarDto issueDto) {
 		List<Label> labels = labelService.getLabelsByIssueId(issueDto.getIssue().getId());
-		return IssueStarResponse.of(issueDto.getIssue().getId(), issueDto.getRepositoryName(),
+		return IssueStarResponse.of(issueDto.getIssue().getId(), issueDto.getOrgName(), issueDto.getRepositoryName(),
 			issueDto.getIssue().getGhIssueId(),
 			issueDto.getIssue().getState(), issueDto.getIssue().getTitle(), labelService.convertLabelsResponse(labels),
 			issueDto.getIssue().isRead(), issueDto.getIssue().getCreatedAt(), issueDto.getIssue().getUpdatedAt(),

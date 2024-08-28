@@ -38,9 +38,10 @@ public interface IssueRepository extends CrudRepository<Issue, Long> {
 		@Param("userId") Long userId,
 		Pageable pageable);
 
-	@Query("SELECT new site.iris.issuefy.model.dto.IssueWithStarDto(i, true, r.name) " +
+	@Query("SELECT new site.iris.issuefy.model.dto.IssueWithStarDto(i, true, o.name, r.name) " +
 		"FROM Issue i " +
 		"JOIN i.repository r " +
+		"JOIN r.org o " +
 		"JOIN Subscription s ON s.repository = r " +
 		"JOIN IssueStar is ON is.issue = i AND is.user.id = :userId " +
 		"WHERE s.user.id = :userId " +

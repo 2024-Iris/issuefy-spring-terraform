@@ -11,5 +11,6 @@ import site.iris.issuefy.entity.Issue;
 public class IssueWithStarDto {
 	private Issue issue;
 	private boolean isStarred;
+	private String orgName;
 	private String repositoryName;
 }
