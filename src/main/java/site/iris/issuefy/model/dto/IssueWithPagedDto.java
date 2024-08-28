@@ -8,7 +8,7 @@ import site.iris.issuefy.entity.Issue;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class IssueWithStarStatusDto {
+public class IssueWithPagedDto {
 	private Issue issue;
 	private boolean isStarred;
 }
