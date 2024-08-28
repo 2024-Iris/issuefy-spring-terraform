@@ -16,10 +16,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import site.iris.issuefy.entity.Issue;
 import site.iris.issuefy.entity.IssueLabel;
+import site.iris.issuefy.entity.IssueStar;
 import site.iris.issuefy.entity.Label;
 import site.iris.issuefy.entity.Repository;
 import site.iris.issuefy.entity.User;
@@ -28,11 +30,15 @@ import site.iris.issuefy.exception.github.GithubApiException;
 import site.iris.issuefy.exception.resource.IssueNotFoundException;
 import site.iris.issuefy.mapper.IssueMapper;
 import site.iris.issuefy.model.dto.IssueDto;
-import site.iris.issuefy.model.dto.IssueWithStarStatusDto;
+import site.iris.issuefy.model.dto.IssueWithPagedDto;
+import site.iris.issuefy.model.dto.IssueWithStarDto;
 import site.iris.issuefy.repository.IssueLabelRepository;
 import site.iris.issuefy.repository.IssueRepository;
+import site.iris.issuefy.repository.IssueStarRepository;
 import site.iris.issuefy.response.IssueResponse;
+import site.iris.issuefy.response.IssueStarResponse;
 import site.iris.issuefy.response.PagedRepositoryIssuesResponse;
+import site.iris.issuefy.response.StarRepositoryIssuesResponse;
 
 @Slf4j
 @Service
@@ -45,10 +51,11 @@ public class IssueService {
 	private final LabelService labelService;
 	private final IssueLabelRepository issueLabelRepository;
 	private final UserService userService;
+	private final IssueStarRepository issueStarRepository;
 
 	public IssueService(@Qualifier("apiWebClient") WebClient webClient, GithubTokenService githubTokenService,
 		IssueRepository issueRepository, RepositoryService repositoryService, LabelService labelService,
-		IssueLabelRepository issueLabelRepository, UserService userService) {
+		IssueLabelRepository issueLabelRepository, UserService userService, IssueStarRepository issueStarRepository) {
 		this.webClient = webClient;
 		this.githubTokenService = githubTokenService;
 		this.issueRepository = issueRepository;
@@ -56,6 +63,7 @@ public class IssueService {
 		this.labelService = labelService;
 		this.issueLabelRepository = issueLabelRepository;
 		this.userService = userService;
+		this.issueStarRepository = issueStarRepository;
 	}
 
 	@Transactional
@@ -143,7 +151,7 @@ public class IssueService {
 				ErrorCode.GITHUB_RESPONSE_BODY_EMPTY.getMessage()));
 
 		Issue mostRecentLocalIssue = findMostRecentLocalIssue(repository.getId());
-		boolean needUpdateIssue = needIssuesUpdate(githubIssues, mostRecentLocalIssue);
+		boolean needUpdateIssue = shouldUpdateIssues(githubIssues, mostRecentLocalIssue);
 
 		if (needUpdateIssue) {
 			synchronizeIssuesWithGithub(githubIssues, repository);
@@ -157,7 +165,7 @@ public class IssueService {
 					repositoryId.toString()));
 	}
 
-	private boolean needIssuesUpdate(List<IssueDto> githubIssues, Issue mostRecentLocalIssue) {
+	private boolean shouldUpdateIssues(List<IssueDto> githubIssues, Issue mostRecentLocalIssue) {
 		return githubIssues.stream()
 			.findFirst()
 			.map(firstDto -> isGithubIssueNewer(firstDto, mostRecentLocalIssue))
@@ -230,7 +238,7 @@ public class IssueService {
 		Pageable pageable = PageRequest.of(page, pageSize, sorting);
 
 		User user = userService.findGithubUser(githubId);
-		Page<IssueWithStarStatusDto> issuePage = issueRepository.findIssuesWithStarStatus(repository.getId(),
+		Page<IssueWithPagedDto> issuePage = issueRepository.findIssuesWithPaged(repository.getId(),
 			user.getId(), pageable);
 
 		List<IssueResponse> issueResponseList = issuePage.getContent().stream().map(this::createIssueResponse).toList();
@@ -239,9 +247,47 @@ public class IssueService {
 			issuePage.getTotalElements(), issuePage.getTotalPages(), repository.getName(), issueResponseList);
 	}
 
-	private IssueResponse createIssueResponse(IssueWithStarStatusDto issueDto) {
+	public StarRepositoryIssuesResponse getStaredRepositoryIssuesResponse(String githubId) {
+		User user = userService.findGithubUser(githubId);
+		List<IssueWithStarDto> issues = issueRepository.findTop5StarredIssuesForUserWithLabels(user.getId())
+			.stream()
+			.limit(5)
+			.toList();
+
+		List<IssueStarResponse> issueResponseList = issues.stream()
+			.map(this::createIssueStarResponse)
+			.toList();
+
+		return StarRepositoryIssuesResponse.of(issueResponseList);
+	}
+
+	@Transactional
+	public void toggleIssueStar(String githubId, Long issueId) {
+		User user = userService.findGithubUser(githubId);
+		Issue issue = issueRepository.findByGhIssueId(issueId)
+			.orElseThrow(() -> new EntityNotFoundException("Issue not found"));
+
+		Optional<IssueStar> issueStar = issueStarRepository.findByUserAndIssue(user, issue);
+
+		if (issueStar.isPresent()) {
+			issueStarRepository.delete(issueStar.get());
+			return;
+		}
+		issueStarRepository.save(IssueStar.of(user, issue));
+	}
+
+	private IssueResponse createIssueResponse(IssueWithPagedDto issueDto) {
 		List<Label> labels = labelService.getLabelsByIssueId(issueDto.getIssue().getId());
 		return IssueResponse.of(issueDto.getIssue().getId(), issueDto.getIssue().getGhIssueId(),
+			issueDto.getIssue().getState(), issueDto.getIssue().getTitle(), labelService.convertLabelsResponse(labels),
+			issueDto.getIssue().isRead(), issueDto.getIssue().getCreatedAt(), issueDto.getIssue().getUpdatedAt(),
+			issueDto.getIssue().getClosedAt(), issueDto.isStarred());
+	}
+
+	private IssueStarResponse createIssueStarResponse(IssueWithStarDto issueDto) {
+		List<Label> labels = labelService.getLabelsByIssueId(issueDto.getIssue().getId());
+		return IssueStarResponse.of(issueDto.getIssue().getId(), issueDto.getRepositoryName(),
+			issueDto.getIssue().getGhIssueId(),
 			issueDto.getIssue().getState(), issueDto.getIssue().getTitle(), labelService.convertLabelsResponse(labels),
 			issueDto.getIssue().isRead(), issueDto.getIssue().getCreatedAt(), issueDto.getIssue().getUpdatedAt(),
 			issueDto.getIssue().getClosedAt(), issueDto.isStarred());
