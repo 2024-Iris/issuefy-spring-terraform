@@ -34,8 +34,6 @@ import site.iris.issuefy.model.dto.IssueWithStarDto;
 import site.iris.issuefy.repository.IssueLabelRepository;
 import site.iris.issuefy.repository.IssueRepository;
 import site.iris.issuefy.repository.IssueStarRepository;
-import site.iris.issuefy.response.IssueResponse;
-import site.iris.issuefy.response.IssueStarResponse;
 import site.iris.issuefy.response.PagedRepositoryIssuesResponse;
 import site.iris.issuefy.response.StarRepositoryIssuesResponse;
 
@@ -255,7 +253,7 @@ class IssueServiceTest {
 			LocalDateTime.now(), null, 100L, new ArrayList<>());
 
 		List<IssueWithStarDto> starredIssues = List.of(
-			new IssueWithStarDto(issue, true, "testRepo")
+			new IssueWithStarDto(issue, true, "testRepo", "testOrg")
 		);
 
 		when(userService.findGithubUser(githubId)).thenReturn(user);
@@ -269,7 +267,7 @@ class IssueServiceTest {
 		assertNotNull(response);
 		assertEquals(1, response.getIssues().size());
 		assertTrue(response.getIssues().get(0).isStarred());
-		assertEquals("testRepo", response.getIssues().get(0).getRepositoryName());
+		assertEquals("testOrg", response.getIssues().get(0).getRepositoryName());
 	}
 
 	@Test
