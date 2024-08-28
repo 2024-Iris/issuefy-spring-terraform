@@ -19,6 +19,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 
 import site.iris.issuefy.response.PagedRepositoryIssuesResponse;
+import site.iris.issuefy.response.StarRepositoryIssuesResponse;
 import site.iris.issuefy.service.IssueService;
 
 @WebMvcTest(IssueController.class)
@@ -70,6 +71,51 @@ class IssueControllerTest {
 					parameterWithName("size").description("페이지 크기").optional(),
 					parameterWithName("sort").description("정렬 기준").optional(),
 					parameterWithName("order").description("정렬 순서").optional()
+				)
+			));
+	}
+
+	@DisplayName("사용자가 스타를 준 이슈 목록을 조회한다.")
+	@Test
+	void getIssueStar() throws Exception {
+		// given
+		String githubId = "dokkisan";
+		StarRepositoryIssuesResponse response = new StarRepositoryIssuesResponse(new ArrayList<>());
+
+		// when
+		when(issueService.getStaredRepositoryIssuesResponse(githubId)).thenReturn(response);
+		ResultActions result = mockMvc.perform(
+			get("/api/subscriptions/issue_star")
+				.requestAttr("githubId", githubId));
+
+		// then
+		result.andExpect(status().isOk())
+			.andDo(document("issuefy/issues/get-star",
+				getDocumentRequest(),
+				getDocumentResponse()
+			));
+	}
+
+	@DisplayName("이슈의 스타 상태를 토글한다.")
+	@Test
+	void updateIssueStar() throws Exception {
+		// given
+		String githubId = "dokkisan";
+		Long issueId = 123L;
+
+		// when
+		doNothing().when(issueService).toggleIssueStar(githubId, issueId);
+		ResultActions result = mockMvc.perform(
+			put("/api/subscriptions/issue_star/{gh_issue_id}", issueId)
+				.requestAttr("githubId", githubId));
+
+		// then
+		result.andExpect(status().isNoContent())
+			.andDo(document("issuefy/issues/update-star",
+				getDocumentRequest(),
+				getDocumentResponse(),
+				pathParameters(
+					parameterWithName("gh_issue_id").description("GitHub 이슈 ID")
 				)
 			));
 	}

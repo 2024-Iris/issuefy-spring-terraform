@@ -24,14 +24,20 @@ import org.springframework.web.reactive.function.client.WebClient;
 
 import reactor.core.publisher.Flux;
 import site.iris.issuefy.entity.Issue;
+import site.iris.issuefy.entity.IssueStar;
 import site.iris.issuefy.entity.Org;
 import site.iris.issuefy.entity.Repository;
 import site.iris.issuefy.entity.User;
 import site.iris.issuefy.model.dto.IssueDto;
-import site.iris.issuefy.model.dto.IssueWithStarStatusDto;
+import site.iris.issuefy.model.dto.IssueWithPagedDto;
+import site.iris.issuefy.model.dto.IssueWithStarDto;
 import site.iris.issuefy.repository.IssueLabelRepository;
 import site.iris.issuefy.repository.IssueRepository;
+import site.iris.issuefy.repository.IssueStarRepository;
+import site.iris.issuefy.response.IssueResponse;
+import site.iris.issuefy.response.IssueStarResponse;
 import site.iris.issuefy.response.PagedRepositoryIssuesResponse;
+import site.iris.issuefy.response.StarRepositoryIssuesResponse;
 
 class IssueServiceTest {
 
@@ -49,6 +55,8 @@ class IssueServiceTest {
 	private IssueLabelRepository issueLabelRepository;
 	@Mock
 	private UserService userService;
+	@Mock
+	private IssueStarRepository issueStarRepository;
 
 	@InjectMocks
 	private IssueService issueService;
@@ -91,13 +99,13 @@ class IssueServiceTest {
 
 		Issue mockIssue = Issue.of(repository, "Test Issue", false, "open", LocalDateTime.now().minusDays(1),
 			LocalDateTime.now(), null, 1L, new ArrayList<>());
-		IssueWithStarStatusDto mockIssueWithStatus = new IssueWithStarStatusDto(mockIssue, false);
-		Page<IssueWithStarStatusDto> mockPage = new PageImpl<>(
+		IssueWithPagedDto mockIssueWithStatus = new IssueWithPagedDto(mockIssue, false);
+		Page<IssueWithPagedDto> mockPage = new PageImpl<>(
 			List.of(mockIssueWithStatus),
 			PageRequest.of(0, 10),
 			1
 		);
-		when(issueRepository.findIssuesWithStarStatus(eq(repository.getId()), eq(user.getId()), any(Pageable.class)))
+		when(issueRepository.findIssuesWithPaged(eq(repository.getId()), eq(user.getId()), any(Pageable.class)))
 			.thenReturn(mockPage);
 
 		// When
@@ -211,15 +219,15 @@ class IssueServiceTest {
 		Issue issue = Issue.of(repository, "Test Issue", false, "open", LocalDateTime.now().minusDays(1),
 			LocalDateTime.now(), null, 100L, new ArrayList<>());
 
-		IssueWithStarStatusDto issueWithStatus = new IssueWithStarStatusDto(issue, false);
-		Page<IssueWithStarStatusDto> mockPage = new PageImpl<>(
+		IssueWithPagedDto issueWithStatus = new IssueWithPagedDto(issue, false);
+		Page<IssueWithPagedDto> mockPage = new PageImpl<>(
 			List.of(issueWithStatus),
 			PageRequest.of(0, 10, Sort.by(Sort.Direction.DESC, "created")),
 			1
 		);
 
 		when(userService.findGithubUser("testUser")).thenReturn(user);
-		when(issueRepository.findIssuesWithStarStatus(eq(repository.getId()), eq(user.getId()), any(Pageable.class)))
+		when(issueRepository.findIssuesWithPaged(eq(repository.getId()), eq(user.getId()), any(Pageable.class)))
 			.thenReturn(mockPage);
 		when(labelService.getLabelsByIssueId(issue.getId())).thenReturn(new ArrayList<>());
 
@@ -234,5 +242,67 @@ class IssueServiceTest {
 		assertEquals(1, response.getTotalPages());
 		assertEquals("testRepo", response.getRepositoryName());
 		assertEquals(1, response.getIssues().size());
+	}
+
+	@Test
+	@DisplayName("getStaredRepositoryIssuesResponse: 사용자가 스타를 준 상위 5개 이슈를 반환한다")
+	void getStaredRepositoryIssuesResponse_shouldReturnTop5StarredIssues() {
+		// Given
+		String githubId = "testUser";
+		User user = new User(githubId, "test@email.com");
+		Repository repository = new Repository(null, "testRepo", 123L, LocalDateTime.now());
+		Issue issue = Issue.of(repository, "Test Issue", false, "open", LocalDateTime.now().minusDays(1),
+			LocalDateTime.now(), null, 100L, new ArrayList<>());
+
+		List<IssueWithStarDto> starredIssues = List.of(
+			new IssueWithStarDto(issue, true, "testRepo")
+		);
+
+		when(userService.findGithubUser(githubId)).thenReturn(user);
+		when(issueRepository.findTop5StarredIssuesForUserWithLabels(user.getId())).thenReturn(starredIssues);
+		when(labelService.getLabelsByIssueId(issue.getId())).thenReturn(new ArrayList<>());
+
+		// When
+		StarRepositoryIssuesResponse response = issueService.getStaredRepositoryIssuesResponse(githubId);
+
+		// Then
+		assertNotNull(response);
+		assertEquals(1, response.getIssues().size());
+		assertTrue(response.getIssues().get(0).isStarred());
+		assertEquals("testRepo", response.getIssues().get(0).getRepositoryName());
+	}
+
+	@Test
+	@DisplayName("toggleIssueStar: 이슈 스타를 토글한다")
+	void toggleIssueStar_shouldToggleIssueStar() {
+		// Given
+		String githubId = "testUser";
+		Long issueId = 100L;
+		User user = new User(githubId, "test@email.com");
+		Repository repository = new Repository(null, "testRepo", 123L, LocalDateTime.now());
+		Issue issue = Issue.of(repository, "Test Issue", false, "open", LocalDateTime.now().minusDays(1),
+			LocalDateTime.now(), null, issueId, new ArrayList<>());
+
+		when(userService.findGithubUser(githubId)).thenReturn(user);
+		when(issueRepository.findByGhIssueId(issueId)).thenReturn(Optional.of(issue));
+
+		// Case 1: Star does not exist
+		when(issueStarRepository.findByUserAndIssue(user, issue)).thenReturn(Optional.empty());
+
+		// When
+		issueService.toggleIssueStar(githubId, issueId);
+
+		// Then
+		verify(issueStarRepository).save(any());
+
+		// Case 2: Star exists
+		IssueStar issueStar = IssueStar.of(user, issue);
+		when(issueStarRepository.findByUserAndIssue(user, issue)).thenReturn(Optional.of(issueStar));
+
+		// When
+		issueService.toggleIssueStar(githubId, issueId);
+
+		// Then
+		verify(issueStarRepository).delete(issueStar);
 	}
 }
