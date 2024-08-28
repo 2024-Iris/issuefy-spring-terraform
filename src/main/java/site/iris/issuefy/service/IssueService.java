@@ -16,7 +16,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 
-import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import site.iris.issuefy.entity.Issue;
@@ -264,8 +263,10 @@ public class IssueService {
 	@Transactional
 	public void toggleIssueStar(String githubId, Long issueId) {
 		User user = userService.findGithubUser(githubId);
+		ErrorCode errorCode = ErrorCode.NOT_EXIST_ISSUE;
 		Issue issue = issueRepository.findByGhIssueId(issueId)
-			.orElseThrow(() -> new EntityNotFoundException("Issue not found"));
+			.orElseThrow(() -> new IssueNotFoundException(errorCode.getMessage(), errorCode.getStatus(),
+				String.valueOf(issueId)));
 
 		Optional<IssueStar> issueStar = issueStarRepository.findByUserAndIssue(user, issue);
 
