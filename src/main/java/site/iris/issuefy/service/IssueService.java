@@ -43,6 +43,7 @@ import site.iris.issuefy.response.StarRepositoryIssuesResponse;
 @Service
 public class IssueService {
 	private static final ErrorCode ISSUE_NOT_FOUND_ERROR = ErrorCode.NOT_EXIST_ISSUE;
+	private static final int ISSUE_STAR_SIZE = 5;
 	private final WebClient webClient;
 	private final GithubTokenService githubTokenService;
 	private final IssueRepository issueRepository;
@@ -250,7 +251,7 @@ public class IssueService {
 		User user = userService.findGithubUser(githubId);
 		List<IssueWithStarDto> issues = issueRepository.findTop5StarredIssuesForUserWithLabels(user.getId())
 			.stream()
-			.limit(5)
+			.limit(ISSUE_STAR_SIZE)
 			.toList();
 
 		List<IssueStarResponse> issueResponseList = issues.stream()
