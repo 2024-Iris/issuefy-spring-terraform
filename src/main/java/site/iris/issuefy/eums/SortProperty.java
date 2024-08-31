@@ -16,7 +16,7 @@ public enum SortProperty {
 
 	public static String fromString(String text) {
 		return Arrays.stream(values())
-			.filter(sortProperty -> sortProperty.name().equalsIgnoreCase(text))
+			.filter(sortProperty -> sortProperty.name().replace("_", "").equalsIgnoreCase(text))
 			.findFirst()
 			.map(SortProperty::getValue)
 			.orElse(LATEST_UPDATE.getValue());
