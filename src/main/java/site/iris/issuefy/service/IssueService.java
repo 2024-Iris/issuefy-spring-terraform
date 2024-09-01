@@ -28,12 +28,15 @@ import site.iris.issuefy.eums.ErrorCode;
 import site.iris.issuefy.exception.github.GithubApiException;
 import site.iris.issuefy.exception.resource.IssueNotFoundException;
 import site.iris.issuefy.mapper.IssueMapper;
+import site.iris.issuefy.model.dto.CommentsDto;
+import site.iris.issuefy.model.dto.IssueDetailDto;
 import site.iris.issuefy.model.dto.IssueDto;
 import site.iris.issuefy.model.dto.IssueWithPagedDto;
 import site.iris.issuefy.model.dto.IssueWithStarDto;
 import site.iris.issuefy.repository.IssueLabelRepository;
 import site.iris.issuefy.repository.IssueRepository;
 import site.iris.issuefy.repository.IssueStarRepository;
+import site.iris.issuefy.response.IssueDetailAndCommentsResponse;
 import site.iris.issuefy.response.IssueResponse;
 import site.iris.issuefy.response.IssueStarResponse;
 import site.iris.issuefy.response.PagedRepositoryIssuesResponse;
@@ -226,9 +229,7 @@ public class IssueService {
 	}
 
 	private Set<IssueLabel> collectUniqueIssueLabels(List<Issue> issues) {
-		return issues.stream()
-			.flatMap(issue -> issue.getIssueLabels().stream())
-			.collect(Collectors.toSet());
+		return issues.stream().flatMap(issue -> issue.getIssueLabels().stream()).collect(Collectors.toSet());
 	}
 
 	public PagedRepositoryIssuesResponse getPagedRepositoryIssuesResponse(Repository repository, String sort,
@@ -238,8 +239,8 @@ public class IssueService {
 		Pageable pageable = PageRequest.of(page, pageSize, sorting);
 
 		User user = userService.findGithubUser(githubId);
-		Page<IssueWithPagedDto> issuePage = issueRepository.findIssuesWithPaged(repository.getId(),
-			user.getId(), pageable);
+		Page<IssueWithPagedDto> issuePage = issueRepository.findIssuesWithPaged(repository.getId(), user.getId(),
+			pageable);
 
 		List<IssueResponse> issueResponseList = issuePage.getContent().stream().map(this::createIssueResponse).toList();
 
@@ -254,9 +255,7 @@ public class IssueService {
 			.limit(ISSUE_STAR_SIZE)
 			.toList();
 
-		List<IssueStarResponse> issueResponseList = issues.stream()
-			.map(this::createIssueStarResponse)
-			.toList();
+		List<IssueStarResponse> issueResponseList = issues.stream().map(this::createIssueStarResponse).toList();
 
 		return StarRepositoryIssuesResponse.of(issueResponseList);
 	}
@@ -278,6 +277,46 @@ public class IssueService {
 		issueStarRepository.save(IssueStar.of(user, issue));
 	}
 
+	public IssueDetailAndCommentsResponse getIssueDetailAndComments(String orgName, String repoName, String issueNumber, String githubId) {
+		String accessToken = githubTokenService.findAccessToken(githubId);
+		IssueDetailDto issueDetailDto = getGithubIssueDetail(orgName, repoName, issueNumber, accessToken);
+		List<CommentsDto> commentsDtoList = getGithubIssueComments(orgName, repoName, issueNumber, accessToken);
+		return IssueDetailAndCommentsResponse.of(issueDetailDto, commentsDtoList);
+	}
+
+	private IssueDetailDto getGithubIssueDetail(String orgName, String repoName, String issueNumber,
+		String accessToken) {
+		try {
+			return webClient.get()
+				.uri(uriBuilder -> uriBuilder.path("/repos/{owner}/{repo}/issues/{issue_number}")
+					.build(orgName, repoName, issueNumber))
+				.header("accept", "application/vnd.github+json")
+				.header("Authorization", "Bearer " + accessToken)
+				.retrieve()
+				.bodyToMono(IssueDetailDto.class)
+				.block();
+		} catch (WebClientResponseException e) {
+			throw new GithubApiException(e.getStatusCode(), e.getResponseBodyAsString());
+		}
+	}
+
+	private List<CommentsDto> getGithubIssueComments(String orgName, String repoName, String issueNumber,
+		String accessToken) {
+		try {
+			return webClient.get()
+				.uri(uriBuilder -> uriBuilder.path("/repos/{owner}/{repo}/issues/{issue_number}/comments")
+					.build(orgName, repoName, issueNumber))
+				.header("accept", "application/vnd.github+json")
+				.header("Authorization", "Bearer " + accessToken)
+				.retrieve()
+				.bodyToFlux(CommentsDto.class)
+				.collectList()
+				.block();
+		} catch (WebClientResponseException e) {
+			throw new GithubApiException(e.getStatusCode(), e.getResponseBodyAsString());
+		}
+	}
+
 	private IssueResponse createIssueResponse(IssueWithPagedDto issueDto) {
 		List<Label> labels = labelService.getLabelsByIssueId(issueDto.getIssue().getId());
 		return IssueResponse.of(issueDto.getIssue().getId(), issueDto.getIssue().getGhIssueId(),
@@ -289,9 +328,9 @@ public class IssueService {
 	private IssueStarResponse createIssueStarResponse(IssueWithStarDto issueDto) {
 		List<Label> labels = labelService.getLabelsByIssueId(issueDto.getIssue().getId());
 		return IssueStarResponse.of(issueDto.getIssue().getId(), issueDto.getOrgName(), issueDto.getRepositoryName(),
-			issueDto.getIssue().getGhIssueId(),
-			issueDto.getIssue().getState(), issueDto.getIssue().getTitle(), labelService.convertLabelsResponse(labels),
-			issueDto.getIssue().isRead(), issueDto.getIssue().getCreatedAt(), issueDto.getIssue().getUpdatedAt(),
-			issueDto.getIssue().getClosedAt(), issueDto.isStarred());
+			issueDto.getIssue().getGhIssueId(), issueDto.getIssue().getState(), issueDto.getIssue().getTitle(),
+			labelService.convertLabelsResponse(labels), issueDto.getIssue().isRead(),
+			issueDto.getIssue().getCreatedAt(), issueDto.getIssue().getUpdatedAt(), issueDto.getIssue().getClosedAt(),
+			issueDto.isStarred());
 	}
 }
