@@ -13,7 +13,7 @@ public class IssueDetailAndCommentsResponse {
 	private IssueDetailDto issueDetailDto;
 	private List<CommentsDto> comments;
 
-	public static IssueDetailAndCommentsResponse of(IssueDetailDto issueDetailDto , List<CommentsDto> comments) {
+	public static IssueDetailAndCommentsResponse of(IssueDetailDto issueDetailDto, List<CommentsDto> comments) {
 		return new IssueDetailAndCommentsResponse(issueDetailDto, comments);
 	}
 }

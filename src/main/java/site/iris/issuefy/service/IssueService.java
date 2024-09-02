@@ -277,7 +277,8 @@ public class IssueService {
 		issueStarRepository.save(IssueStar.of(user, issue));
 	}
 
-	public IssueDetailAndCommentsResponse getIssueDetailAndComments(String orgName, String repoName, String issueNumber, String githubId) {
+	public IssueDetailAndCommentsResponse getIssueDetailAndComments(String orgName, String repoName, String issueNumber,
+		String githubId) {
 		String accessToken = githubTokenService.findAccessToken(githubId);
 		IssueDetailDto issueDetailDto = getGithubIssueDetail(orgName, repoName, issueNumber, accessToken);
 		List<CommentsDto> commentsDtoList = getGithubIssueComments(orgName, repoName, issueNumber, accessToken);
