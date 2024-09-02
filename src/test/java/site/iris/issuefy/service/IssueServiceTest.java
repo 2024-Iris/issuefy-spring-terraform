@@ -23,17 +23,21 @@ import org.springframework.data.domain.Sort;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 import site.iris.issuefy.entity.Issue;
 import site.iris.issuefy.entity.IssueStar;
 import site.iris.issuefy.entity.Org;
 import site.iris.issuefy.entity.Repository;
 import site.iris.issuefy.entity.User;
+import site.iris.issuefy.model.dto.CommentsDto;
+import site.iris.issuefy.model.dto.IssueDetailDto;
 import site.iris.issuefy.model.dto.IssueDto;
 import site.iris.issuefy.model.dto.IssueWithPagedDto;
 import site.iris.issuefy.model.dto.IssueWithStarDto;
 import site.iris.issuefy.repository.IssueLabelRepository;
 import site.iris.issuefy.repository.IssueRepository;
 import site.iris.issuefy.repository.IssueStarRepository;
+import site.iris.issuefy.response.IssueDetailAndCommentsResponse;
 import site.iris.issuefy.response.PagedRepositoryIssuesResponse;
 import site.iris.issuefy.response.StarRepositoryIssuesResponse;
 
@@ -302,5 +306,45 @@ class IssueServiceTest {
 
 		// Then
 		verify(issueStarRepository).delete(issueStar);
+	}
+
+	@Test
+	@DisplayName("이슈 상세 정보와 코멘트를 가져온다.")
+	void getIssueDetailAndComments_shouldReturnIssueDetailAndComments() {
+		// Given
+		String orgName = "testOrg";
+		String repoName = "testRepo";
+		String issueNumber = "1";
+		String githubId = "testUser";
+		String accessToken = "testToken";
+
+		IssueDetailDto mockIssueDetail = new IssueDetailDto();
+		mockIssueDetail.setTitle("Test Issue");
+		mockIssueDetail.setBody("This is a test issue");
+
+		CommentsDto mockComment = new CommentsDto();
+		mockComment.setBody("This is a test comment");
+
+		when(githubTokenService.findAccessToken(githubId)).thenReturn(accessToken);
+		when(responseSpec.bodyToMono(IssueDetailDto.class)).thenReturn(Mono.just(mockIssueDetail));
+		when(responseSpec.bodyToFlux(CommentsDto.class)).thenReturn(Flux.just(mockComment));
+
+		// When
+		IssueDetailAndCommentsResponse response = issueService.getIssueDetailAndComments(orgName, repoName, issueNumber,
+			githubId);
+
+		// Then
+		assertNotNull(response);
+		assertEquals("Test Issue", response.getIssueDetailDto().getTitle());
+		assertEquals("This is a test issue", response.getIssueDetailDto().getBody());
+		assertEquals(1, response.getComments().size());
+		assertEquals("This is a test comment", response.getComments().get(0).getBody());
+
+		verify(githubTokenService).findAccessToken(githubId);
+		verify(webClient, times(2)).get();
+		verify(requestHeadersSpec, times(4)).header(anyString(), anyString());
+		verify(requestHeadersSpec, times(2)).retrieve();
+		verify(responseSpec).bodyToMono(IssueDetailDto.class);
+		verify(responseSpec).bodyToFlux(CommentsDto.class);
 	}
 }
