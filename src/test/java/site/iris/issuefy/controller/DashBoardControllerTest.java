@@ -7,6 +7,8 @@ import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuild
 import static org.springframework.restdocs.payload.PayloadDocumentation.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+import java.time.LocalDate;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -46,7 +48,9 @@ class DashBoardControllerTest {
 	@Test
 	@DisplayName("대시보드에 필요한 랭크, 주간방문수, 리포지토리 추가 횟수를 반환한다.")
 	void dashboard() throws Exception {
-		DashBoardResponse mockResponse = DashBoardResponse.of("A", "10", "5");
+		LocalDate endDate = LocalDate.now();
+		LocalDate startDate = endDate.minusDays(6);
+		DashBoardResponse mockResponse = DashBoardResponse.of(startDate, endDate, "A", "10", "5");
 
 		when(dashBoardService.getDashBoardFromLoki(anyString())).thenReturn(mockResponse);
 
@@ -55,6 +59,8 @@ class DashBoardControllerTest {
 			.andExpect(status().isOk())
 			.andDo(document("dashboard",
 				responseFields(
+					fieldWithPath("startDate").description("Start date of the dashboard data"),
+					fieldWithPath("endDate").description("End date of the dashboard data"),
 					fieldWithPath("rank").description("User's rank based on activity"),
 					fieldWithPath("visitCount").description("Number of visits in the last week"),
 					fieldWithPath("addRepositoryCount").description("Number of repositories added in the last week")
