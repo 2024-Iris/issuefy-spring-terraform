@@ -1,6 +1,7 @@
 package site.iris.issuefy.service;
 
 import java.time.LocalDate;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
@@ -34,9 +35,13 @@ public class DashBoardService {
 		LocalDate today = LocalDate.now();
 		LocalDate startWeek = today.minusDays(MINUS_DAYS);
 
-		String visitCount = getNumberOfWeeklyVisit(githubId, lokiError, startWeek, today).getVisitCount();
-		String addRepositoryCount = getNumberOfWeeklyRepositoryAdded(githubId, lokiError, startWeek,
-			today).getAddRepositoryCount();
+		String visitCount = Optional.ofNullable(getNumberOfWeeklyVisit(githubId, lokiError, startWeek, today))
+			.map(LokiQueryVisitDto::getVisitCount)
+			.orElse("0");
+		String addRepositoryCount = Optional.ofNullable(
+				getNumberOfWeeklyRepositoryAdded(githubId, lokiError, startWeek, today))
+			.map(LokiQueryAddRepositoryDto::getAddRepositoryCount)
+			.orElse("0");
 		String rank = calculateRank(visitCount, addRepositoryCount);
 
 		return DashBoardResponse.of(startWeek, today, rank, visitCount, addRepositoryCount);
