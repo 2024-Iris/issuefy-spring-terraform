@@ -47,6 +47,11 @@ import site.iris.issuefy.response.StarRepositoryIssuesResponse;
 public class IssueService {
 	private static final ErrorCode ISSUE_NOT_FOUND_ERROR = ErrorCode.NOT_EXIST_ISSUE;
 	private static final int ISSUE_STAR_SIZE = 5;
+	private static final String ACCEPT_HEADER = "accept";
+	private static final String ACCEPT_HEADER_VALUE = "application/vnd.github+json";
+	private static final String AUTHORIZATION_HEADER = "Authorization";
+	private static final String BEARER_PREFIX = "Bearer ";
+
 	private final WebClient webClient;
 	private final GithubTokenService githubTokenService;
 	private final IssueRepository issueRepository;
@@ -117,8 +122,8 @@ public class IssueService {
 					.queryParam("direction", "desc")
 					.queryParam("labels", "good first issue")
 					.build(orgName, repoName))
-				.header("accept", "application/vnd.github+json")
-				.header("Authorization", "Bearer " + accessToken)
+				.header(ACCEPT_HEADER, ACCEPT_HEADER_VALUE)
+				.header(AUTHORIZATION_HEADER, BEARER_PREFIX + accessToken)
 				.retrieve()
 				.bodyToFlux(IssueDto.class)
 				.collectList()
@@ -291,8 +296,8 @@ public class IssueService {
 			return webClient.get()
 				.uri(uriBuilder -> uriBuilder.path("/repos/{owner}/{repo}/issues/{issue_number}")
 					.build(orgName, repoName, issueNumber))
-				.header("accept", "application/vnd.github+json")
-				.header("Authorization", "Bearer " + accessToken)
+				.header(ACCEPT_HEADER, ACCEPT_HEADER_VALUE)
+				.header(AUTHORIZATION_HEADER, BEARER_PREFIX + accessToken)
 				.retrieve()
 				.bodyToMono(IssueDetailDto.class)
 				.block();
@@ -307,8 +312,8 @@ public class IssueService {
 			return webClient.get()
 				.uri(uriBuilder -> uriBuilder.path("/repos/{owner}/{repo}/issues/{issue_number}/comments")
 					.build(orgName, repoName, issueNumber))
-				.header("accept", "application/vnd.github+json")
-				.header("Authorization", "Bearer " + accessToken)
+				.header(ACCEPT_HEADER, ACCEPT_HEADER_VALUE)
+				.header(AUTHORIZATION_HEADER, BEARER_PREFIX + accessToken)
 				.retrieve()
 				.bodyToFlux(CommentsDto.class)
 				.collectList()
