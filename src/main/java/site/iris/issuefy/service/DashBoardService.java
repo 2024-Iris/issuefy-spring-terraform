@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import lombok.extern.slf4j.Slf4j;
+import site.iris.issuefy.eums.DashBoardRank;
 import site.iris.issuefy.eums.ErrorCode;
 import site.iris.issuefy.eums.LokiQuery;
 import site.iris.issuefy.exception.network.LokiException;
@@ -16,6 +17,9 @@ import site.iris.issuefy.response.DashBoardResponse;
 @Slf4j
 @Service
 public class DashBoardService {
+	private static final int MAX_SCORE = 100;
+	private static final double VISIT_WEIGHT = 0.35;
+	private static final double REPOSITORY_WEIGHT = 0.65;
 	private final WebClient webClient;
 
 	public DashBoardService(@Qualifier("lokiWebClient") WebClient webClient) {
@@ -63,13 +67,19 @@ public class DashBoardService {
 	}
 
 	private String calculateRank(String visitCount, String addRepositoryCount) {
-		double score = Double.parseDouble(visitCount) * 0.3 + Double.parseDouble(addRepositoryCount) * 0.7;
+		int score = calculateScore(visitCount, addRepositoryCount);
+		return DashBoardRank.getRankLabel(score);
+	}
 
-		if (score < 5) {
-			return "C";
-		} else if (score > 5 && score < 10) {
-			return "B";
-		}
-		return "A";
+	private int calculateScore(String visitCount, String addRepositoryCount) {
+		double visits = Math.log(Double.parseDouble(visitCount) + 1) / Math.log(2);
+		double addedRepos = Math.log(Double.parseDouble(addRepositoryCount) + 1) / Math.log(2);
+
+		// 정규화 과정
+		double normalizedVisits = Math.min(visits / 10, 1);
+		double normalizedRepos = Math.min(addedRepos / 7, 1);
+
+		double rawScore = (normalizedVisits * VISIT_WEIGHT + normalizedRepos * REPOSITORY_WEIGHT) * MAX_SCORE;
+		return (int)Math.min(rawScore, MAX_SCORE);
 	}
 }
