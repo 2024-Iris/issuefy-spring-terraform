@@ -97,6 +97,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
 			Claims claims = tokenProvider.getClaims(token);
 			String githubId = (String)claims.get("githubId");
+
+			//TODO 아이디 해시값으로 처리
 			MDC.put("user", maskId(githubId));
 			request.setAttribute("githubId", githubId);
 
