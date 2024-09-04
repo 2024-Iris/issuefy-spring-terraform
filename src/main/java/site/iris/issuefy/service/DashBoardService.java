@@ -1,5 +1,7 @@
 package site.iris.issuefy.service;
 
+import java.time.LocalDate;
+
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -20,6 +22,7 @@ public class DashBoardService {
 	private static final int MAX_SCORE = 100;
 	private static final double VISIT_WEIGHT = 0.35;
 	private static final double REPOSITORY_WEIGHT = 0.65;
+	private static final int MINUS_DAYS = 6;
 	private final WebClient webClient;
 
 	public DashBoardService(@Qualifier("lokiWebClient") WebClient webClient) {
@@ -28,15 +31,22 @@ public class DashBoardService {
 
 	public DashBoardResponse getDashBoardFromLoki(String githubId) {
 		ErrorCode lokiError = ErrorCode.LOKI_EXCEPTION;
-		String visitCount = getNumberOfWeeklyVisit(githubId, lokiError).getVisitCount();
-		String addRepositoryCount = getNumberOfWeeklyRepositoryAdded(githubId, lokiError).getAddRepositoryCount();
+		LocalDate today = LocalDate.now();
+		LocalDate startWeek = today.minusDays(MINUS_DAYS);
+
+		String visitCount = getNumberOfWeeklyVisit(githubId, lokiError, startWeek, today).getVisitCount();
+		String addRepositoryCount = getNumberOfWeeklyRepositoryAdded(githubId, lokiError, startWeek,
+			today).getAddRepositoryCount();
 		String rank = calculateRank(visitCount, addRepositoryCount);
-		return DashBoardResponse.of(rank, visitCount, addRepositoryCount);
+
+		return DashBoardResponse.of(startWeek, today, rank, visitCount, addRepositoryCount);
 	}
 
-	private LokiQueryVisitDto getNumberOfWeeklyVisit(String githubId, ErrorCode lokiError) {
+	private LokiQueryVisitDto getNumberOfWeeklyVisit(String githubId, ErrorCode lokiError, LocalDate startWeek,
+		LocalDate endWeek) {
 		String maskGithubId = JwtAuthenticationFilter.maskId(githubId);
-		String rawLokiQuery = String.format(LokiQuery.NUMBER_OF_WEEKLY_VISIT.getQuery(), maskGithubId);
+		String rawLokiQuery = String.format(LokiQuery.NUMBER_OF_WEEKLY_VISIT.getQuery(), maskGithubId, startWeek,
+			endWeek);
 		try {
 			return webClient.get()
 				.uri(uriBuilder -> uriBuilder.path("/loki/api/v1/query")
@@ -50,9 +60,11 @@ public class DashBoardService {
 		}
 	}
 
-	private LokiQueryAddRepositoryDto getNumberOfWeeklyRepositoryAdded(String githubId, ErrorCode lokiError) {
+	private LokiQueryAddRepositoryDto getNumberOfWeeklyRepositoryAdded(String githubId, ErrorCode lokiError,
+		LocalDate startWeek, LocalDate endWeek) {
 		String maskGithubId = JwtAuthenticationFilter.maskId(githubId);
-		String rawLokiQuery = String.format(LokiQuery.NUMBER_OF_WEEKLY_REPOSITORY_ADDED.getQuery(), maskGithubId);
+		String rawLokiQuery = String.format(LokiQuery.NUMBER_OF_WEEKLY_REPOSITORY_ADDED.getQuery(), maskGithubId,
+			startWeek, endWeek);
 		try {
 			return webClient.get()
 				.uri(uriBuilder -> uriBuilder.path("/loki/api/v1/query")
