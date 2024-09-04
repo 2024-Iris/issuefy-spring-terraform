@@ -36,7 +36,7 @@ public class IssueController {
 	}
 
 	@GetMapping("/{org_name}/{repo_name}/issues/{issue_number}")
-	public ResponseEntity<?> getIssueDetails(@PathVariable("org_name") String orgName,
+	public ResponseEntity<IssueDetailAndCommentsResponse> getIssueDetails(@PathVariable("org_name") String orgName,
 		@PathVariable("repo_name") String repoName,
 		@PathVariable("issue_number") String issueNumber, @RequestAttribute String githubId) {
 		IssueDetailAndCommentsResponse issueDetailAndCommentResponse = issueService.getIssueDetailAndComments(orgName,
