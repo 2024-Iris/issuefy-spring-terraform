@@ -19,4 +19,4 @@ spring:
       port: 6379
 
 loki:
-  url : http://test:test
+  url: http://test:test
