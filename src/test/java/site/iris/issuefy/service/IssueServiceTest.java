@@ -139,6 +139,39 @@ class IssueServiceTest {
 	}
 
 	@Test
+	@DisplayName("GitHub에서 가져온 이슈가 로컬 이슈보다 최신일 때 업데이트한다.")
+	void updateExistingIssues_whenGithubIssueIsNewerAndDifferent_shouldUpdate() {
+		// Given
+		Org org = new Org("testOrg", 1L);
+		Repository mockedRepository = mock(Repository.class);
+		when(mockedRepository.getId()).thenReturn(1L);
+		when(mockedRepository.getOrg()).thenReturn(org);
+		when(mockedRepository.getName()).thenReturn("testRepo");
+		when(mockedRepository.getGhRepoId()).thenReturn(123L);
+		when(mockedRepository.getLatestUpdateAt()).thenReturn(LocalDateTime.now());
+
+		LocalDateTime oldDate = LocalDateTime.now().minusDays(2);
+		LocalDateTime newDate = LocalDateTime.now().minusDays(1);
+
+		Issue localIssue = Issue.of(mockedRepository, "Old Issue", false, "open", oldDate,
+			oldDate, null, 1L, new ArrayList<>());
+		when(issueRepository.findFirstByRepositoryIdOrderByUpdatedAtDesc(mockedRepository.getId()))
+			.thenReturn(Optional.of(localIssue));
+
+		IssueDto newerGithubIssue = IssueDto.of(2L, "Updated Issue", false, "open", newDate,
+			newDate, null, new ArrayList<>());
+
+		when(githubTokenService.findAccessToken(anyString())).thenReturn("testToken");
+		when(responseSpec.bodyToFlux(IssueDto.class)).thenReturn(Flux.just(newerGithubIssue));
+
+		// When
+		issueService.updateExistingIssues("testOrg", "testRepo", "testUser", mockedRepository);
+
+		// Then
+		verify(issueRepository, times(1)).saveAll(anyList());
+	}
+
+	@Test
 	@DisplayName("페이지네이션된 이슈 응답을 생성한다.")
 	void getPagedRepositoryIssuesResponse_shouldReturnPagedResponse() {
 		// Given
