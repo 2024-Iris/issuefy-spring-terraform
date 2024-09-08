@@ -3,6 +3,7 @@ package site.iris.issuefy.service;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -173,44 +174,41 @@ public class IssueService {
 	}
 
 	private boolean isGithubIssueNewer(IssueDto latestGithubIssue, Issue latestDbIssue) {
-		boolean isGithubIssueNewer = latestGithubIssue.getUpdatedAt().isAfter(latestDbIssue.getUpdatedAt());
-		boolean isSameIssue = latestGithubIssue.getGhIssueId().equals(latestDbIssue.getGhIssueId());
-
-		return isGithubIssueNewer && !isSameIssue;
+		return latestGithubIssue.getUpdatedAt().isAfter(latestDbIssue.getUpdatedAt());
 	}
 
 	@Transactional
 	public void synchronizeIssuesWithGithub(List<IssueDto> githubIssues, Repository repository) {
-		List<Issue> newIssues = new ArrayList<>();
-		List<Issue> updatedIssues = new ArrayList<>();
 		Set<Long> existingIssueIds = new HashSet<>(issueRepository.findGhIssueIdByRepositoryId(repository.getId()));
-		Set<IssueLabel> allIssueLabels = new HashSet<>();
+		Map<Boolean, List<IssueDto>> partitionedIssues = githubIssues.stream()
+			.collect(Collectors.partitioningBy(issueDto -> existingIssueIds.contains(issueDto.getGhIssueId())));
 
-		githubIssues.forEach(githubIssue -> {
-			if (existingIssueIds.contains(githubIssue.getGhIssueId())) {
-				updatedIssues.add(updateExistingIssue(githubIssue));
-				return;
-			}
-			newIssues.add(createNewIssueFromDto(githubIssue, repository));
-		});
+		List<Issue> newIssues = partitionedIssues.get(false)
+			.stream()
+			.map(issueDto -> createNewIssueFromDto(issueDto, repository))
+			.toList();
+
+		partitionedIssues.get(true).forEach(this::updateExistingIssue);
 
 		issueRepository.saveAll(newIssues);
-		allIssueLabels.addAll(collectUniqueIssueLabels(newIssues));
-		allIssueLabels.addAll(collectUniqueIssueLabels(updatedIssues));
-		issueLabelRepository.saveAll(allIssueLabels);
 	}
 
-	@Transactional
-	public Issue updateExistingIssue(IssueDto dto) {
+	public void updateExistingIssue(IssueDto dto) {
 		ErrorCode issueError = ErrorCode.NOT_EXIST_ISSUE;
 		Issue issue = issueRepository.findByGhIssueId(dto.getGhIssueId())
 			.orElseThrow(() -> new IssueNotFoundException(issueError.getMessage(), issueError.getStatus(),
 				String.valueOf(dto.getGhIssueId())));
 		IssueMapper.INSTANCE.updateIssueFromDto(dto, issue);
-		return issue;
+
+		issue.getIssueLabels().clear();
+
+		dto.getLabels().forEach(labelDto -> {
+			Label label = labelService.findOrCreateLabel(labelDto.getName(), labelDto.getColor());
+			issue.getIssueLabels().add(IssueLabel.of(issue, label));
+		});
 	}
 
-	private Issue createNewIssueFromDto(IssueDto dto, Repository repository) {
+	public Issue createNewIssueFromDto(IssueDto dto, Repository repository) {
 		List<IssueLabel> issueLabels = new ArrayList<>();
 
 		Issue issue = Issue.of(repository, dto.getTitle(), false, dto.getState(), dto.getCreatedAt(),
@@ -223,12 +221,6 @@ public class IssueService {
 		});
 
 		return issue;
-	}
-
-	private Set<IssueLabel> collectUniqueIssueLabels(List<Issue> issues) {
-		return issues.stream()
-			.flatMap(issue -> issue.getIssueLabels().stream())
-			.collect(Collectors.toSet());
 	}
 
 	public PagedRepositoryIssuesResponse getPagedRepositoryIssuesResponse(Repository repository, String sort,
@@ -247,7 +239,7 @@ public class IssueService {
 			issuePage.getTotalElements(), issuePage.getTotalPages(), repository.getName(), issueResponseList);
 	}
 
-	public StarRepositoryIssuesResponse getStaredRepositoryIssuesResponse(String githubId) {
+	public StarRepositoryIssuesResponse getStarredRepositoryIssuesResponse(String githubId) {
 		User user = userService.findGithubUser(githubId);
 		List<IssueWithStarDto> issues = issueRepository.findTop5StarredIssuesForUserWithLabels(user.getId())
 			.stream()
