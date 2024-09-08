@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import lombok.RequiredArgsConstructor;
+import site.iris.issuefy.response.IssueDetailAndCommentsResponse;
 import site.iris.issuefy.response.PagedRepositoryIssuesResponse;
 import site.iris.issuefy.response.StarRepositoryIssuesResponse;
 import site.iris.issuefy.service.IssueService;
@@ -34,13 +35,22 @@ public class IssueController {
 		return ResponseEntity.status(HttpStatus.OK).body(response);
 	}
 
-	@GetMapping("/issue_star")
+	@GetMapping("/{org_name}/{repo_name}/issues/{issue_number}")
+	public ResponseEntity<IssueDetailAndCommentsResponse> getIssueDetails(@PathVariable("org_name") String orgName,
+		@PathVariable("repo_name") String repoName,
+		@PathVariable("issue_number") String issueNumber, @RequestAttribute String githubId) {
+		IssueDetailAndCommentsResponse issueDetailAndCommentResponse = issueService.getIssueDetailAndComments(orgName,
+			repoName, issueNumber, githubId);
+		return ResponseEntity.status(HttpStatus.OK).body(issueDetailAndCommentResponse);
+	}
+
+	@GetMapping("/issue-star")
 	public ResponseEntity<StarRepositoryIssuesResponse> getIssueStar(@RequestAttribute String githubId) {
 		StarRepositoryIssuesResponse response = issueService.getStarredRepositoryIssuesResponse(githubId);
 		return ResponseEntity.status(HttpStatus.OK).body(response);
 	}
 
-	@PutMapping("/issue_star/{gh_issue_id}")
+	@PutMapping("/issue-star/{gh_issue_id}")
 	public ResponseEntity<Void> updateIssueStar(@RequestAttribute String githubId,
 		@PathVariable("gh_issue_id") Long issueId) {
 		issueService.toggleIssueStar(githubId, issueId);

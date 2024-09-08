@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import lombok.RequiredArgsConstructor;
 import site.iris.issuefy.entity.Jwt;
+import site.iris.issuefy.filter.JwtAuthenticationFilter;
 import site.iris.issuefy.model.dto.UserDto;
 import site.iris.issuefy.response.OauthResponse;
 import site.iris.issuefy.service.AuthenticationService;
@@ -33,7 +34,7 @@ public class AuthenticationController {
 		claims.put("githubId", userDto.getGithubId());
 		Jwt jwt = tokenProvider.createJwt(claims);
 
-		MDC.put("githubId", userDto.getGithubId());
+		MDC.put("user", JwtAuthenticationFilter.maskId(userDto.getGithubId()));
 		return ResponseEntity.ok()
 			.body(OauthResponse.of(userDto.getGithubId(), userDto.getEmail(), userDto.getGithubProfileImage(),
 				userDto.isAlertStatus(), jwt

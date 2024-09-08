@@ -10,7 +10,7 @@ import lombok.Data;
 @AllArgsConstructor
 public class IssueResponse {
 	private Long id;
-	private Long githubIssueId;
+	private Long githubIssueNumber;
 	private String state;
 	private String title;
 	private List<LabelResponse> labels;

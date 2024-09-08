@@ -12,7 +12,7 @@ import site.iris.issuefy.entity.Label;
 @Data
 @AllArgsConstructor
 public class IssueDto {
-	@JsonProperty("id")
+	@JsonProperty("number")
 	private Long ghIssueId;
 
 	private String title;

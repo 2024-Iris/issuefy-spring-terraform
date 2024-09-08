@@ -61,7 +61,7 @@ public class GlobalLoggerAspect {
 	public void logServiceException(JoinPoint joinPoint, Exception ex) {
 		Logger logger = LoggerFactory.getLogger(joinPoint.getTarget().getClass());
 		String methodName = joinPoint.getSignature().getName();
-		logger.error("Exception in method: {} - Error: {}", methodName, ex.getMessage(), ex);
+		logger.error("Exception in method: {} - Error: {}", methodName, ex.getMessage());
 	}
 
 	@Around("execution(* site.iris.issuefy.service..*.github*(..))")

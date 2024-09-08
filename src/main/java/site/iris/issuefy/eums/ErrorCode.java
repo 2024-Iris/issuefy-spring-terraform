@@ -27,6 +27,7 @@ public enum ErrorCode {
 	INVALID_TOKEN_TYPE(HttpStatus.UNAUTHORIZED, "Invalid token type"),
 	INVALID_REPOSITORY_URL(HttpStatus.BAD_REQUEST, "Invalid Repository URL"),
 	REPOSITORY_BODY_EMPTY(HttpStatus.INTERNAL_SERVER_ERROR, "Repository info body is empty"),
+	LOKI_EXCEPTION(HttpStatus.INTERNAL_SERVER_ERROR, "Loki Query error"),
 	INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error");
 
 	private final HttpStatus status;

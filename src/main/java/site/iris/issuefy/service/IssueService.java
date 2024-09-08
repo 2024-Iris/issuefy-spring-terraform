@@ -29,12 +29,14 @@ import site.iris.issuefy.eums.ErrorCode;
 import site.iris.issuefy.exception.github.GithubApiException;
 import site.iris.issuefy.exception.resource.IssueNotFoundException;
 import site.iris.issuefy.mapper.IssueMapper;
+import site.iris.issuefy.model.dto.CommentsDto;
+import site.iris.issuefy.model.dto.IssueDetailDto;
 import site.iris.issuefy.model.dto.IssueDto;
 import site.iris.issuefy.model.dto.IssueWithPagedDto;
 import site.iris.issuefy.model.dto.IssueWithStarDto;
-import site.iris.issuefy.repository.IssueLabelRepository;
 import site.iris.issuefy.repository.IssueRepository;
 import site.iris.issuefy.repository.IssueStarRepository;
+import site.iris.issuefy.response.IssueDetailAndCommentsResponse;
 import site.iris.issuefy.response.IssueResponse;
 import site.iris.issuefy.response.IssueStarResponse;
 import site.iris.issuefy.response.PagedRepositoryIssuesResponse;
@@ -45,24 +47,27 @@ import site.iris.issuefy.response.StarRepositoryIssuesResponse;
 public class IssueService {
 	private static final ErrorCode ISSUE_NOT_FOUND_ERROR = ErrorCode.NOT_EXIST_ISSUE;
 	private static final int ISSUE_STAR_SIZE = 5;
+	private static final String ACCEPT_HEADER = "accept";
+	private static final String ACCEPT_HEADER_VALUE = "application/vnd.github+json";
+	private static final String AUTHORIZATION_HEADER = "Authorization";
+	private static final String BEARER_PREFIX = "Bearer ";
+
 	private final WebClient webClient;
 	private final GithubTokenService githubTokenService;
 	private final IssueRepository issueRepository;
 	private final RepositoryService repositoryService;
 	private final LabelService labelService;
-	private final IssueLabelRepository issueLabelRepository;
 	private final UserService userService;
 	private final IssueStarRepository issueStarRepository;
 
 	public IssueService(@Qualifier("apiWebClient") WebClient webClient, GithubTokenService githubTokenService,
 		IssueRepository issueRepository, RepositoryService repositoryService, LabelService labelService,
-		IssueLabelRepository issueLabelRepository, UserService userService, IssueStarRepository issueStarRepository) {
+		UserService userService, IssueStarRepository issueStarRepository) {
 		this.webClient = webClient;
 		this.githubTokenService = githubTokenService;
 		this.issueRepository = issueRepository;
 		this.repositoryService = repositoryService;
 		this.labelService = labelService;
-		this.issueLabelRepository = issueLabelRepository;
 		this.userService = userService;
 		this.issueStarRepository = issueStarRepository;
 	}
@@ -93,15 +98,13 @@ public class IssueService {
 				ErrorCode.GITHUB_RESPONSE_BODY_EMPTY.getMessage()));
 
 		List<Label> allLabels = new ArrayList<>();
-		List<IssueLabel> issueLabels = new ArrayList<>();
 
 		List<Issue> issues = githubIssues.stream()
-			.map(dto -> createIssueEntityFromDto(repository, dto, allLabels, issueLabels))
+			.map(dto -> createIssueEntityFromDto(repository, dto, allLabels))
 			.toList();
 
 		issueRepository.saveAll(issues);
 		labelService.saveAllLabels(allLabels);
-		issueLabelRepository.saveAll(issueLabels);
 	}
 
 	private Optional<List<IssueDto>> fetchOpenGoodFirstIssuesFromGithub(String orgName, String repoName,
@@ -115,8 +118,8 @@ public class IssueService {
 					.queryParam("direction", "desc")
 					.queryParam("labels", "good first issue")
 					.build(orgName, repoName))
-				.header("accept", "application/vnd.github+json")
-				.header("Authorization", "Bearer " + accessToken)
+				.header(ACCEPT_HEADER, ACCEPT_HEADER_VALUE)
+				.header(AUTHORIZATION_HEADER, BEARER_PREFIX + accessToken)
 				.retrieve()
 				.bodyToFlux(IssueDto.class)
 				.collectList()
@@ -128,8 +131,8 @@ public class IssueService {
 		}
 	}
 
-	private Issue createIssueEntityFromDto(Repository repository, IssueDto issueDto, List<Label> allLabels,
-		List<IssueLabel> issueLabels) {
+	private Issue createIssueEntityFromDto(Repository repository, IssueDto issueDto, List<Label> allLabels) {
+		List<IssueLabel> issueLabels = new ArrayList<>();
 		Issue issue = Issue.of(repository, issueDto.getTitle(), issueDto.isRead(), issueDto.getState(),
 			issueDto.getCreatedAt(), issueDto.getUpdatedAt(), issueDto.getClosedAt(), issueDto.getGhIssueId(),
 			issueLabels);
@@ -230,8 +233,8 @@ public class IssueService {
 		Pageable pageable = PageRequest.of(page, pageSize, sorting);
 
 		User user = userService.findGithubUser(githubId);
-		Page<IssueWithPagedDto> issuePage = issueRepository.findIssuesWithPaged(repository.getId(),
-			user.getId(), pageable);
+		Page<IssueWithPagedDto> issuePage = issueRepository.findIssuesWithPaged(repository.getId(), user.getId(),
+			pageable);
 
 		List<IssueResponse> issueResponseList = issuePage.getContent().stream().map(this::createIssueResponse).toList();
 
@@ -270,6 +273,47 @@ public class IssueService {
 		issueStarRepository.save(IssueStar.of(user, issue));
 	}
 
+	public IssueDetailAndCommentsResponse getIssueDetailAndComments(String orgName, String repoName, String issueNumber,
+		String githubId) {
+		String accessToken = githubTokenService.findAccessToken(githubId);
+		IssueDetailDto issueDetailDto = getGithubIssueDetail(orgName, repoName, issueNumber, accessToken);
+		List<CommentsDto> commentsDtoList = getGithubIssueComments(orgName, repoName, issueNumber, accessToken);
+		return IssueDetailAndCommentsResponse.of(issueDetailDto, commentsDtoList);
+	}
+
+	private IssueDetailDto getGithubIssueDetail(String orgName, String repoName, String issueNumber,
+		String accessToken) {
+		try {
+			return webClient.get()
+				.uri(uriBuilder -> uriBuilder.path("/repos/{owner}/{repo}/issues/{issue_number}")
+					.build(orgName, repoName, issueNumber))
+				.header(ACCEPT_HEADER, ACCEPT_HEADER_VALUE)
+				.header(AUTHORIZATION_HEADER, BEARER_PREFIX + accessToken)
+				.retrieve()
+				.bodyToMono(IssueDetailDto.class)
+				.block();
+		} catch (WebClientResponseException e) {
+			throw new GithubApiException(e.getStatusCode(), e.getResponseBodyAsString());
+		}
+	}
+
+	private List<CommentsDto> getGithubIssueComments(String orgName, String repoName, String issueNumber,
+		String accessToken) {
+		try {
+			return webClient.get()
+				.uri(uriBuilder -> uriBuilder.path("/repos/{owner}/{repo}/issues/{issue_number}/comments")
+					.build(orgName, repoName, issueNumber))
+				.header(ACCEPT_HEADER, ACCEPT_HEADER_VALUE)
+				.header(AUTHORIZATION_HEADER, BEARER_PREFIX + accessToken)
+				.retrieve()
+				.bodyToFlux(CommentsDto.class)
+				.collectList()
+				.block();
+		} catch (WebClientResponseException e) {
+			throw new GithubApiException(e.getStatusCode(), e.getResponseBodyAsString());
+		}
+	}
+
 	private IssueResponse createIssueResponse(IssueWithPagedDto issueDto) {
 		List<Label> labels = labelService.getLabelsByIssueId(issueDto.getIssue().getId());
 		return IssueResponse.of(issueDto.getIssue().getId(), issueDto.getIssue().getGhIssueId(),
@@ -281,9 +325,9 @@ public class IssueService {
 	private IssueStarResponse createIssueStarResponse(IssueWithStarDto issueDto) {
 		List<Label> labels = labelService.getLabelsByIssueId(issueDto.getIssue().getId());
 		return IssueStarResponse.of(issueDto.getIssue().getId(), issueDto.getOrgName(), issueDto.getRepositoryName(),
-			issueDto.getIssue().getGhIssueId(),
-			issueDto.getIssue().getState(), issueDto.getIssue().getTitle(), labelService.convertLabelsResponse(labels),
-			issueDto.getIssue().isRead(), issueDto.getIssue().getCreatedAt(), issueDto.getIssue().getUpdatedAt(),
-			issueDto.getIssue().getClosedAt(), issueDto.isStarred());
+			issueDto.getIssue().getGhIssueId(), issueDto.getIssue().getState(), issueDto.getIssue().getTitle(),
+			labelService.convertLabelsResponse(labels), issueDto.getIssue().isRead(),
+			issueDto.getIssue().getCreatedAt(), issueDto.getIssue().getUpdatedAt(), issueDto.getIssue().getClosedAt(),
+			issueDto.isStarred());
 	}
 }
