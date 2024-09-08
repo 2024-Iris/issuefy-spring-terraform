@@ -36,7 +36,7 @@ public class IssueController {
 
 	@GetMapping("/issue_star")
 	public ResponseEntity<StarRepositoryIssuesResponse> getIssueStar(@RequestAttribute String githubId) {
-		StarRepositoryIssuesResponse response = issueService.getStaredRepositoryIssuesResponse(githubId);
+		StarRepositoryIssuesResponse response = issueService.getStarredRepositoryIssuesResponse(githubId);
 		return ResponseEntity.status(HttpStatus.OK).body(response);
 	}
 

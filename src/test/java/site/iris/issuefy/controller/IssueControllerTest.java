@@ -83,7 +83,7 @@ class IssueControllerTest {
 		StarRepositoryIssuesResponse response = new StarRepositoryIssuesResponse(new ArrayList<>());
 
 		// when
-		when(issueService.getStaredRepositoryIssuesResponse(githubId)).thenReturn(response);
+		when(issueService.getStarredRepositoryIssuesResponse(githubId)).thenReturn(response);
 		ResultActions result = mockMvc.perform(
 			get("/api/subscriptions/issue_star")
 				.requestAttr("githubId", githubId));
