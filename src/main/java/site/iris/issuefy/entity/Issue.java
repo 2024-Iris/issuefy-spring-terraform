@@ -15,11 +15,13 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 @Entity
 @NoArgsConstructor
 @Getter
 @Table(name = "issue")
+@ToString
 public class Issue {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)

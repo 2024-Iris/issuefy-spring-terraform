@@ -34,7 +34,6 @@ import site.iris.issuefy.model.dto.IssueDetailDto;
 import site.iris.issuefy.model.dto.IssueDto;
 import site.iris.issuefy.model.dto.IssueWithPagedDto;
 import site.iris.issuefy.model.dto.IssueWithStarDto;
-import site.iris.issuefy.repository.IssueLabelRepository;
 import site.iris.issuefy.repository.IssueRepository;
 import site.iris.issuefy.repository.IssueStarRepository;
 import site.iris.issuefy.response.IssueDetailAndCommentsResponse;
@@ -58,19 +57,17 @@ public class IssueService {
 	private final IssueRepository issueRepository;
 	private final RepositoryService repositoryService;
 	private final LabelService labelService;
-	private final IssueLabelRepository issueLabelRepository;
 	private final UserService userService;
 	private final IssueStarRepository issueStarRepository;
 
 	public IssueService(@Qualifier("apiWebClient") WebClient webClient, GithubTokenService githubTokenService,
 		IssueRepository issueRepository, RepositoryService repositoryService, LabelService labelService,
-		IssueLabelRepository issueLabelRepository, UserService userService, IssueStarRepository issueStarRepository) {
+		UserService userService, IssueStarRepository issueStarRepository) {
 		this.webClient = webClient;
 		this.githubTokenService = githubTokenService;
 		this.issueRepository = issueRepository;
 		this.repositoryService = repositoryService;
 		this.labelService = labelService;
-		this.issueLabelRepository = issueLabelRepository;
 		this.userService = userService;
 		this.issueStarRepository = issueStarRepository;
 	}
@@ -101,15 +98,13 @@ public class IssueService {
 				ErrorCode.GITHUB_RESPONSE_BODY_EMPTY.getMessage()));
 
 		List<Label> allLabels = new ArrayList<>();
-		List<IssueLabel> issueLabels = new ArrayList<>();
 
 		List<Issue> issues = githubIssues.stream()
-			.map(dto -> createIssueEntityFromDto(repository, dto, allLabels, issueLabels))
+			.map(dto -> createIssueEntityFromDto(repository, dto, allLabels))
 			.toList();
 
 		issueRepository.saveAll(issues);
 		labelService.saveAllLabels(allLabels);
-		issueLabelRepository.saveAll(issueLabels);
 	}
 
 	private Optional<List<IssueDto>> fetchOpenGoodFirstIssuesFromGithub(String orgName, String repoName,
@@ -136,8 +131,8 @@ public class IssueService {
 		}
 	}
 
-	private Issue createIssueEntityFromDto(Repository repository, IssueDto issueDto, List<Label> allLabels,
-		List<IssueLabel> issueLabels) {
+	private Issue createIssueEntityFromDto(Repository repository, IssueDto issueDto, List<Label> allLabels) {
+		List<IssueLabel> issueLabels = new ArrayList<>();
 		Issue issue = Issue.of(repository, issueDto.getTitle(), issueDto.isRead(), issueDto.getState(),
 			issueDto.getCreatedAt(), issueDto.getUpdatedAt(), issueDto.getClosedAt(), issueDto.getGhIssueId(),
 			issueLabels);
