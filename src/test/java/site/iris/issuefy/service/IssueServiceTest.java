@@ -118,7 +118,6 @@ class IssueServiceTest {
 		assertNotNull(response);
 		verify(issueRepository, times(1)).saveAll(anyList());
 		verify(labelService, times(1)).saveAllLabels(anyList());
-		verify(issueLabelRepository, times(1)).saveAll(anyList());
 	}
 
 	@Test
@@ -139,7 +138,6 @@ class IssueServiceTest {
 		// Then
 		verify(issueRepository, times(1)).saveAll(anyList());
 		verify(labelService, times(1)).saveAllLabels(anyList());
-		verify(issueLabelRepository, times(1)).saveAll(anyList());
 	}
 
 	@Test

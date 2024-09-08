@@ -44,13 +44,13 @@ public class IssueController {
 		return ResponseEntity.status(HttpStatus.OK).body(issueDetailAndCommentResponse);
 	}
 
-	@GetMapping("/issue_star")
+	@GetMapping("/issue-star")
 	public ResponseEntity<StarRepositoryIssuesResponse> getIssueStar(@RequestAttribute String githubId) {
 		StarRepositoryIssuesResponse response = issueService.getStarredRepositoryIssuesResponse(githubId);
 		return ResponseEntity.status(HttpStatus.OK).body(response);
 	}
 
-	@PutMapping("/issue_star/{gh_issue_id}")
+	@PutMapping("/issue-star/{gh_issue_id}")
 	public ResponseEntity<Void> updateIssueStar(@RequestAttribute String githubId,
 		@PathVariable("gh_issue_id") Long issueId) {
 		issueService.toggleIssueStar(githubId, issueId);

@@ -249,7 +249,9 @@ public class IssueService {
 			.limit(ISSUE_STAR_SIZE)
 			.toList();
 
-		List<IssueStarResponse> issueResponseList = issues.stream().map(this::createIssueStarResponse).toList();
+		List<IssueStarResponse> issueResponseList = issues.stream()
+			.map(this::createIssueStarResponse)
+			.toList();
 
 		return StarRepositoryIssuesResponse.of(issueResponseList);
 	}

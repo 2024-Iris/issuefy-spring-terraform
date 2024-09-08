@@ -18,7 +18,7 @@ public class CommentsDto {
 	private LocalDateTime createdAt;
 
 	@JsonProperty("updated_at")
-	private LocalDateTime updateAt;
+	private LocalDateTime updatedAt;
 
 	@JsonProperty("body")
 	private String body;
