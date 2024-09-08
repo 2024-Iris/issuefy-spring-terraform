@@ -1,8 +1,12 @@
 package site.iris.issuefy.service;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Page;
@@ -17,23 +21,30 @@ import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import site.iris.issuefy.entity.Issue;
 import site.iris.issuefy.entity.IssueLabel;
+import site.iris.issuefy.entity.IssueStar;
 import site.iris.issuefy.entity.Label;
 import site.iris.issuefy.entity.Repository;
 import site.iris.issuefy.entity.User;
 import site.iris.issuefy.eums.ErrorCode;
 import site.iris.issuefy.exception.github.GithubApiException;
 import site.iris.issuefy.exception.resource.IssueNotFoundException;
+import site.iris.issuefy.mapper.IssueMapper;
 import site.iris.issuefy.model.dto.IssueDto;
-import site.iris.issuefy.model.dto.IssueWithStarStatusDto;
+import site.iris.issuefy.model.dto.IssueWithPagedDto;
+import site.iris.issuefy.model.dto.IssueWithStarDto;
 import site.iris.issuefy.repository.IssueLabelRepository;
 import site.iris.issuefy.repository.IssueRepository;
+import site.iris.issuefy.repository.IssueStarRepository;
 import site.iris.issuefy.response.IssueResponse;
+import site.iris.issuefy.response.IssueStarResponse;
 import site.iris.issuefy.response.PagedRepositoryIssuesResponse;
+import site.iris.issuefy.response.StarRepositoryIssuesResponse;
 
 @Slf4j
 @Service
 public class IssueService {
 	private static final ErrorCode ISSUE_NOT_FOUND_ERROR = ErrorCode.NOT_EXIST_ISSUE;
+	private static final int ISSUE_STAR_SIZE = 5;
 	private final WebClient webClient;
 	private final GithubTokenService githubTokenService;
 	private final IssueRepository issueRepository;
@@ -41,10 +52,11 @@ public class IssueService {
 	private final LabelService labelService;
 	private final IssueLabelRepository issueLabelRepository;
 	private final UserService userService;
+	private final IssueStarRepository issueStarRepository;
 
 	public IssueService(@Qualifier("apiWebClient") WebClient webClient, GithubTokenService githubTokenService,
 		IssueRepository issueRepository, RepositoryService repositoryService, LabelService labelService,
-		IssueLabelRepository issueLabelRepository, UserService userService) {
+		IssueLabelRepository issueLabelRepository, UserService userService, IssueStarRepository issueStarRepository) {
 		this.webClient = webClient;
 		this.githubTokenService = githubTokenService;
 		this.issueRepository = issueRepository;
@@ -52,6 +64,7 @@ public class IssueService {
 		this.labelService = labelService;
 		this.issueLabelRepository = issueLabelRepository;
 		this.userService = userService;
+		this.issueStarRepository = issueStarRepository;
 	}
 
 	@Transactional
@@ -59,7 +72,7 @@ public class IssueService {
 		int pageSize, String sort, String order) {
 		Repository repository = repositoryService.findRepositoryByName(repoName);
 		synchronizeRepositoryIssues(repository, orgName, repoName, githubId);
-		return createPagedRepositoryIssuesResponse(repository, sort, order, githubId, page, pageSize);
+		return getPagedRepositoryIssuesResponse(repository, sort, order, githubId, page, pageSize);
 	}
 
 	@Transactional
@@ -86,7 +99,9 @@ public class IssueService {
 			.map(dto -> createIssueEntityFromDto(repository, dto, allLabels, issueLabels))
 			.toList();
 
-		saveIssuesToDatabase(issues, issueLabels, allLabels);
+		issueRepository.saveAll(issues);
+		labelService.saveAllLabels(allLabels);
+		issueLabelRepository.saveAll(issueLabels);
 	}
 
 	private Optional<List<IssueDto>> fetchOpenGoodFirstIssuesFromGithub(String orgName, String repoName,
@@ -130,12 +145,6 @@ public class IssueService {
 		return issue;
 	}
 
-	private void saveIssuesToDatabase(List<Issue> issues, List<IssueLabel> issueLabels, List<Label> allLabels) {
-		issueRepository.saveAll(issues);
-		labelService.saveAllLabels(allLabels);
-		issueLabelRepository.saveAll(issueLabels);
-	}
-
 	@Transactional
 	public void updateExistingIssues(String orgName, String repoName, String githubId, Repository repository) {
 		List<IssueDto> githubIssues = fetchOpenGoodFirstIssuesFromGithub(orgName, repoName, githubId).orElseThrow(
@@ -146,7 +155,7 @@ public class IssueService {
 		boolean needUpdateIssue = shouldUpdateIssues(githubIssues, mostRecentLocalIssue);
 
 		if (needUpdateIssue) {
-			updateLocalIssuesWithGithubData(githubIssues, repository);
+			synchronizeIssuesWithGithub(githubIssues, repository);
 		}
 	}
 
@@ -160,29 +169,46 @@ public class IssueService {
 	private boolean shouldUpdateIssues(List<IssueDto> githubIssues, Issue mostRecentLocalIssue) {
 		return githubIssues.stream()
 			.findFirst()
-			.map(firstDto -> isIssueUpdateRequired(firstDto, mostRecentLocalIssue))
+			.map(firstDto -> isGithubIssueNewer(firstDto, mostRecentLocalIssue))
 			.orElse(false);
 	}
 
-	private boolean isIssueUpdateRequired(IssueDto latestGithubIssue, Issue latestDbIssue) {
-		boolean isGithubIssueNewer = latestGithubIssue.getUpdatedAt().isAfter(latestDbIssue.getUpdatedAt());
-		boolean isSameIssue = latestGithubIssue.getGhIssueId().equals(latestDbIssue.getGhIssueId());
-
-		return isGithubIssueNewer && !isSameIssue;
+	private boolean isGithubIssueNewer(IssueDto latestGithubIssue, Issue latestDbIssue) {
+		return latestGithubIssue.getUpdatedAt().isAfter(latestDbIssue.getUpdatedAt());
 	}
 
 	@Transactional
-	public void updateLocalIssuesWithGithubData(List<IssueDto> githubIssues, Repository repository) {
-		List<Issue> updatedIssues = githubIssues.stream().map(dto -> createIssueFromDto(dto, repository)).toList();
-		issueRepository.saveAll(updatedIssues);
+	public void synchronizeIssuesWithGithub(List<IssueDto> githubIssues, Repository repository) {
+		Set<Long> existingIssueIds = new HashSet<>(issueRepository.findGhIssueIdByRepositoryId(repository.getId()));
+		Map<Boolean, List<IssueDto>> partitionedIssues = githubIssues.stream()
+			.collect(Collectors.partitioningBy(issueDto -> existingIssueIds.contains(issueDto.getGhIssueId())));
 
-		List<IssueLabel> allIssueLabels = updatedIssues.stream()
-			.flatMap(issue -> issue.getIssueLabels().stream())
+		List<Issue> newIssues = partitionedIssues.get(false)
+			.stream()
+			.map(issueDto -> createNewIssueFromDto(issueDto, repository))
 			.toList();
-		issueLabelRepository.saveAll(allIssueLabels);
+
+		partitionedIssues.get(true).forEach(this::updateExistingIssue);
+
+		issueRepository.saveAll(newIssues);
 	}
 
-	private Issue createIssueFromDto(IssueDto dto, Repository repository) {
+	public void updateExistingIssue(IssueDto dto) {
+		ErrorCode issueError = ErrorCode.NOT_EXIST_ISSUE;
+		Issue issue = issueRepository.findByGhIssueId(dto.getGhIssueId())
+			.orElseThrow(() -> new IssueNotFoundException(issueError.getMessage(), issueError.getStatus(),
+				String.valueOf(dto.getGhIssueId())));
+		IssueMapper.INSTANCE.updateIssueFromDto(dto, issue);
+
+		issue.getIssueLabels().clear();
+
+		dto.getLabels().forEach(labelDto -> {
+			Label label = labelService.findOrCreateLabel(labelDto.getName(), labelDto.getColor());
+			issue.getIssueLabels().add(IssueLabel.of(issue, label));
+		});
+	}
+
+	public Issue createNewIssueFromDto(IssueDto dto, Repository repository) {
 		List<IssueLabel> issueLabels = new ArrayList<>();
 
 		Issue issue = Issue.of(repository, dto.getTitle(), false, dto.getState(), dto.getCreatedAt(),
@@ -197,14 +223,14 @@ public class IssueService {
 		return issue;
 	}
 
-	public PagedRepositoryIssuesResponse createPagedRepositoryIssuesResponse(Repository repository, String sort,
+	public PagedRepositoryIssuesResponse getPagedRepositoryIssuesResponse(Repository repository, String sort,
 		String order, String githubId, int page, int pageSize) {
 		Sort.Direction direction = Sort.Direction.fromString(order);
 		Sort sorting = Sort.by(direction, sort);
 		Pageable pageable = PageRequest.of(page, pageSize, sorting);
 
 		User user = userService.findGithubUser(githubId);
-		Page<IssueWithStarStatusDto> issuePage = issueRepository.findIssuesWithStarStatus(repository.getId(),
+		Page<IssueWithPagedDto> issuePage = issueRepository.findIssuesWithPaged(repository.getId(),
 			user.getId(), pageable);
 
 		List<IssueResponse> issueResponseList = issuePage.getContent().stream().map(this::createIssueResponse).toList();
@@ -213,9 +239,49 @@ public class IssueService {
 			issuePage.getTotalElements(), issuePage.getTotalPages(), repository.getName(), issueResponseList);
 	}
 
-	private IssueResponse createIssueResponse(IssueWithStarStatusDto issueDto) {
+	public StarRepositoryIssuesResponse getStarredRepositoryIssuesResponse(String githubId) {
+		User user = userService.findGithubUser(githubId);
+		List<IssueWithStarDto> issues = issueRepository.findTop5StarredIssuesForUserWithLabels(user.getId())
+			.stream()
+			.limit(ISSUE_STAR_SIZE)
+			.toList();
+
+		List<IssueStarResponse> issueResponseList = issues.stream()
+			.map(this::createIssueStarResponse)
+			.toList();
+
+		return StarRepositoryIssuesResponse.of(issueResponseList);
+	}
+
+	@Transactional
+	public void toggleIssueStar(String githubId, Long issueId) {
+		User user = userService.findGithubUser(githubId);
+		ErrorCode errorCode = ErrorCode.NOT_EXIST_ISSUE;
+		Issue issue = issueRepository.findByGhIssueId(issueId)
+			.orElseThrow(() -> new IssueNotFoundException(errorCode.getMessage(), errorCode.getStatus(),
+				String.valueOf(issueId)));
+
+		Optional<IssueStar> issueStar = issueStarRepository.findByUserAndIssue(user, issue);
+
+		if (issueStar.isPresent()) {
+			issueStarRepository.delete(issueStar.get());
+			return;
+		}
+		issueStarRepository.save(IssueStar.of(user, issue));
+	}
+
+	private IssueResponse createIssueResponse(IssueWithPagedDto issueDto) {
 		List<Label> labels = labelService.getLabelsByIssueId(issueDto.getIssue().getId());
 		return IssueResponse.of(issueDto.getIssue().getId(), issueDto.getIssue().getGhIssueId(),
+			issueDto.getIssue().getState(), issueDto.getIssue().getTitle(), labelService.convertLabelsResponse(labels),
+			issueDto.getIssue().isRead(), issueDto.getIssue().getCreatedAt(), issueDto.getIssue().getUpdatedAt(),
+			issueDto.getIssue().getClosedAt(), issueDto.isStarred());
+	}
+
+	private IssueStarResponse createIssueStarResponse(IssueWithStarDto issueDto) {
+		List<Label> labels = labelService.getLabelsByIssueId(issueDto.getIssue().getId());
+		return IssueStarResponse.of(issueDto.getIssue().getId(), issueDto.getOrgName(), issueDto.getRepositoryName(),
+			issueDto.getIssue().getGhIssueId(),
 			issueDto.getIssue().getState(), issueDto.getIssue().getTitle(), labelService.convertLabelsResponse(labels),
 			issueDto.getIssue().isRead(), issueDto.getIssue().getCreatedAt(), issueDto.getIssue().getUpdatedAt(),
 			issueDto.getIssue().getClosedAt(), issueDto.isStarred());

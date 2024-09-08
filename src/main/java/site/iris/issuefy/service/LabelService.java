@@ -5,10 +5,12 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
+import site.iris.issuefy.entity.IssueLabel;
 import site.iris.issuefy.entity.Label;
 import site.iris.issuefy.eums.ErrorCode;
 import site.iris.issuefy.exception.resource.LabelNotFoundException;
 import site.iris.issuefy.mapper.LabelMapper;
+import site.iris.issuefy.repository.IssueLabelRepository;
 import site.iris.issuefy.repository.LabelRepository;
 import site.iris.issuefy.response.LabelResponse;
 
@@ -16,6 +18,7 @@ import site.iris.issuefy.response.LabelResponse;
 @RequiredArgsConstructor
 public class LabelService {
 	private final LabelRepository labelRepository;
+	private final IssueLabelRepository issueLabelRepository;
 
 	public Label findOrCreateLabel(String name, String color) {
 		return labelRepository.findByNameAndColor(name, color).orElseGet(() -> {
@@ -26,9 +29,9 @@ public class LabelService {
 
 	public List<Label> getLabelsByIssueId(Long issueId) {
 		ErrorCode errorCode = ErrorCode.NOT_EXIST_LABEL;
-		return labelRepository.findByIssue_id(issueId)
+		return issueLabelRepository.findByIssueId(issueId)
 			.orElseThrow(() -> new LabelNotFoundException(errorCode.getMessage(), errorCode.getStatus(),
-				String.valueOf(issueId)));
+				String.valueOf(issueId))).stream().map(IssueLabel::getLabel).toList();
 	}
 
 	public List<LabelResponse> convertLabelsResponse(List<Label> labelResult) {

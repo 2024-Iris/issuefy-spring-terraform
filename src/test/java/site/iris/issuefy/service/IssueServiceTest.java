@@ -24,14 +24,18 @@ import org.springframework.web.reactive.function.client.WebClient;
 
 import reactor.core.publisher.Flux;
 import site.iris.issuefy.entity.Issue;
+import site.iris.issuefy.entity.IssueStar;
 import site.iris.issuefy.entity.Org;
 import site.iris.issuefy.entity.Repository;
 import site.iris.issuefy.entity.User;
 import site.iris.issuefy.model.dto.IssueDto;
-import site.iris.issuefy.model.dto.IssueWithStarStatusDto;
+import site.iris.issuefy.model.dto.IssueWithPagedDto;
+import site.iris.issuefy.model.dto.IssueWithStarDto;
 import site.iris.issuefy.repository.IssueLabelRepository;
 import site.iris.issuefy.repository.IssueRepository;
+import site.iris.issuefy.repository.IssueStarRepository;
 import site.iris.issuefy.response.PagedRepositoryIssuesResponse;
+import site.iris.issuefy.response.StarRepositoryIssuesResponse;
 
 class IssueServiceTest {
 
@@ -49,6 +53,8 @@ class IssueServiceTest {
 	private IssueLabelRepository issueLabelRepository;
 	@Mock
 	private UserService userService;
+	@Mock
+	private IssueStarRepository issueStarRepository;
 
 	@InjectMocks
 	private IssueService issueService;
@@ -71,7 +77,7 @@ class IssueServiceTest {
 	}
 
 	@Test
-	@DisplayName("getRepositoryIssues: 리포지토리 이슈를 가져오고 동기화한다")
+	@DisplayName("리포지토리 이슈를 가져오고 동기화한다.")
 	void getRepositoryIssues_shouldSynchronizeAndReturnIssues() {
 		// Given
 		String orgName = "testOrg";
@@ -91,13 +97,13 @@ class IssueServiceTest {
 
 		Issue mockIssue = Issue.of(repository, "Test Issue", false, "open", LocalDateTime.now().minusDays(1),
 			LocalDateTime.now(), null, 1L, new ArrayList<>());
-		IssueWithStarStatusDto mockIssueWithStatus = new IssueWithStarStatusDto(mockIssue, false);
-		Page<IssueWithStarStatusDto> mockPage = new PageImpl<>(
+		IssueWithPagedDto mockIssueWithStatus = new IssueWithPagedDto(mockIssue, false);
+		Page<IssueWithPagedDto> mockPage = new PageImpl<>(
 			List.of(mockIssueWithStatus),
 			PageRequest.of(0, 10),
 			1
 		);
-		when(issueRepository.findIssuesWithStarStatus(eq(repository.getId()), eq(user.getId()), any(Pageable.class)))
+		when(issueRepository.findIssuesWithPaged(eq(repository.getId()), eq(user.getId()), any(Pageable.class)))
 			.thenReturn(mockPage);
 
 		// When
@@ -112,7 +118,7 @@ class IssueServiceTest {
 	}
 
 	@Test
-	@DisplayName("synchronizeRepositoryIssues: 새 이슈를 추가한다")
+	@DisplayName("새 이슈를 추가한다.")
 	void synchronizeRepositoryIssues_whenNoExistingIssues_shouldAddNewIssues() {
 		// Given
 		Repository repository = new Repository(null, "testRepo", 123L, LocalDateTime.now());
@@ -133,7 +139,7 @@ class IssueServiceTest {
 	}
 
 	@Test
-	@DisplayName("updateExistingIssues: GitHub에서 가져온 이슈가 로컬 이슈보다 최신이고 다른 이슈일 때 업데이트한다")
+	@DisplayName("GitHub에서 가져온 이슈가 로컬 이슈보다 최신일 때 업데이트한다.")
 	void updateExistingIssues_whenGithubIssueIsNewerAndDifferent_shouldUpdate() {
 		// Given
 		Org org = new Org("testOrg", 1L);
@@ -163,68 +169,31 @@ class IssueServiceTest {
 
 		// Then
 		verify(issueRepository, times(1)).saveAll(anyList());
-		verify(issueLabelRepository, times(1)).saveAll(anyList());
 	}
 
 	@Test
-	@DisplayName("updateExistingIssues: GitHub에서 가져온 이슈가 로컬 이슈보다 최신이지만 같은 이슈일 때 업데이트하지 않는다")
-	void updateExistingIssues_whenGithubIssueIsNewerButSame_shouldNotUpdate() {
-		// Given
-		Org org = new Org("testOrg", 1L);
-
-		// Repository mock 설정
-		Repository mockedRepository = mock(Repository.class);
-		when(mockedRepository.getId()).thenReturn(1L);
-		when(mockedRepository.getOrg()).thenReturn(org);
-		when(mockedRepository.getName()).thenReturn("testRepo");
-		when(mockedRepository.getGhRepoId()).thenReturn(123L);
-		when(mockedRepository.getLatestUpdateAt()).thenReturn(LocalDateTime.now());
-
-		LocalDateTime oldDate = LocalDateTime.now().minusDays(2);
-		LocalDateTime newDate = LocalDateTime.now().minusDays(1);
-
-		Issue localIssue = Issue.of(mockedRepository, "Old Issue", false, "open", oldDate,
-			oldDate, null, 1L, new ArrayList<>());
-		when(issueRepository.findFirstByRepositoryIdOrderByUpdatedAtDesc(mockedRepository.getId()))
-			.thenReturn(Optional.of(localIssue));
-
-		IssueDto newerGithubIssue = IssueDto.of(1L, "Updated Issue", false, "open", newDate,
-			newDate, null, new ArrayList<>());
-
-		when(githubTokenService.findAccessToken(anyString())).thenReturn("testToken");
-		when(responseSpec.bodyToFlux(IssueDto.class)).thenReturn(Flux.just(newerGithubIssue));
-
-		// When
-		issueService.updateExistingIssues("testOrg", "testRepo", "testUser", mockedRepository);
-
-		// Then
-		verify(issueRepository, never()).saveAll(anyList());
-		verify(issueLabelRepository, never()).saveAll(anyList());
-	}
-
-	@Test
-	@DisplayName("createPagedRepositoryIssuesResponse: 페이지네이션된 이슈 응답을 생성한다")
-	void createPagedRepositoryIssuesResponse_shouldReturnPagedResponse() {
+	@DisplayName("페이지네이션된 이슈 응답을 생성한다.")
+	void getPagedRepositoryIssuesResponse_shouldReturnPagedResponse() {
 		// Given
 		Repository repository = new Repository(null, "testRepo", 123L, LocalDateTime.now());
 		User user = new User("testUser", "test@email.com");
 		Issue issue = Issue.of(repository, "Test Issue", false, "open", LocalDateTime.now().minusDays(1),
 			LocalDateTime.now(), null, 100L, new ArrayList<>());
 
-		IssueWithStarStatusDto issueWithStatus = new IssueWithStarStatusDto(issue, false);
-		Page<IssueWithStarStatusDto> mockPage = new PageImpl<>(
+		IssueWithPagedDto issueWithStatus = new IssueWithPagedDto(issue, false);
+		Page<IssueWithPagedDto> mockPage = new PageImpl<>(
 			List.of(issueWithStatus),
 			PageRequest.of(0, 10, Sort.by(Sort.Direction.DESC, "created")),
 			1
 		);
 
 		when(userService.findGithubUser("testUser")).thenReturn(user);
-		when(issueRepository.findIssuesWithStarStatus(eq(repository.getId()), eq(user.getId()), any(Pageable.class)))
+		when(issueRepository.findIssuesWithPaged(eq(repository.getId()), eq(user.getId()), any(Pageable.class)))
 			.thenReturn(mockPage);
 		when(labelService.getLabelsByIssueId(issue.getId())).thenReturn(new ArrayList<>());
 
 		// When
-		PagedRepositoryIssuesResponse response = issueService.createPagedRepositoryIssuesResponse(
+		PagedRepositoryIssuesResponse response = issueService.getPagedRepositoryIssuesResponse(
 			repository, "created", "desc", "testUser", 0, 10);
 
 		// Then
@@ -234,5 +203,67 @@ class IssueServiceTest {
 		assertEquals(1, response.getTotalPages());
 		assertEquals("testRepo", response.getRepositoryName());
 		assertEquals(1, response.getIssues().size());
+	}
+
+	@Test
+	@DisplayName("사용자가 스타를 준 상위 5개 이슈를 반환한다.")
+	void getStaredRepositoryIssuesResponse_shouldReturnTop5StarredIssues() {
+		// Given
+		String githubId = "testUser";
+		User user = new User(githubId, "test@email.com");
+		Repository repository = new Repository(null, "testRepo", 123L, LocalDateTime.now());
+		Issue issue = Issue.of(repository, "Test Issue", false, "open", LocalDateTime.now().minusDays(1),
+			LocalDateTime.now(), null, 100L, new ArrayList<>());
+
+		List<IssueWithStarDto> starredIssues = List.of(
+			new IssueWithStarDto(issue, true, "testRepo", "testOrg")
+		);
+
+		when(userService.findGithubUser(githubId)).thenReturn(user);
+		when(issueRepository.findTop5StarredIssuesForUserWithLabels(user.getId())).thenReturn(starredIssues);
+		when(labelService.getLabelsByIssueId(issue.getId())).thenReturn(new ArrayList<>());
+
+		// When
+		StarRepositoryIssuesResponse response = issueService.getStarredRepositoryIssuesResponse(githubId);
+
+		// Then
+		assertNotNull(response);
+		assertEquals(1, response.getIssues().size());
+		assertTrue(response.getIssues().get(0).isStarred());
+		assertEquals("testOrg", response.getIssues().get(0).getRepositoryName());
+	}
+
+	@Test
+	@DisplayName("이슈 스타를 토글한다.")
+	void toggleIssueStar_shouldToggleIssueStar() {
+		// Given
+		String githubId = "testUser";
+		Long issueId = 100L;
+		User user = new User(githubId, "test@email.com");
+		Repository repository = new Repository(null, "testRepo", 123L, LocalDateTime.now());
+		Issue issue = Issue.of(repository, "Test Issue", false, "open", LocalDateTime.now().minusDays(1),
+			LocalDateTime.now(), null, issueId, new ArrayList<>());
+
+		when(userService.findGithubUser(githubId)).thenReturn(user);
+		when(issueRepository.findByGhIssueId(issueId)).thenReturn(Optional.of(issue));
+
+		// Case 1: Star does not exist
+		when(issueStarRepository.findByUserAndIssue(user, issue)).thenReturn(Optional.empty());
+
+		// When
+		issueService.toggleIssueStar(githubId, issueId);
+
+		// Then
+		verify(issueStarRepository).save(any());
+
+		// Case 2: Star exists
+		IssueStar issueStar = IssueStar.of(user, issue);
+		when(issueStarRepository.findByUserAndIssue(user, issue)).thenReturn(Optional.of(issueStar));
+
+		// When
+		issueService.toggleIssueStar(githubId, issueId);
+
+		// Then
+		verify(issueStarRepository).delete(issueStar);
 	}
 }

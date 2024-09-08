@@ -3,6 +3,7 @@ package site.iris.issuefy.entity;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -49,7 +50,7 @@ public class Issue {
 	@Column
 	private long ghIssueId;
 
-	@OneToMany(mappedBy = "issue")
+	@OneToMany(mappedBy = "issue", cascade = CascadeType.ALL, orphanRemoval = true)
 	private List<IssueLabel> issueLabels;
 
 	private Issue(Repository repository, String title, boolean isRead, String state, LocalDateTime createdAt,
