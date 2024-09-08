@@ -24,7 +24,6 @@ public class RepositoryService {
 	@Transactional
 	public Repository saveRepository(ResponseEntity<GithubRepositoryDto> repositoryInfo, Org org) {
 		GithubRepositoryDto repoDto = repositoryInfo.getBody();
-		log.info("Saving new repository: {}", repoDto);
 		if (repoDto == null || repositoryInfo.getBody() == null) {
 			throw new EmptyBodyException(ErrorCode.REPOSITORY_BODY_EMPTY.getMessage(),
 				ErrorCode.REPOSITORY_BODY_EMPTY.getStatus());
@@ -32,7 +31,6 @@ public class RepositoryService {
 
 		return repositoryRepository.findByGhRepoId(repoDto.getId())
 			.orElseGet(() -> {
-				log.info("Saving new repository: {}", repoDto);
 				Repository newRepository = new Repository(org, repoDto.getName(), repoDto.getId(),
 					repoDto.getUpdated_at());
 				return repositoryRepository.save(newRepository);

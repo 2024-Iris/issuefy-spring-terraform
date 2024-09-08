@@ -32,6 +32,7 @@ import site.iris.issuefy.model.dto.UpdateRepositoryDto;
 import site.iris.issuefy.repository.NotificationRepository;
 import site.iris.issuefy.repository.SubscriptionRepository;
 import site.iris.issuefy.repository.UserNotificationRepository;
+import site.iris.issuefy.util.ContainerIdUtil;
 
 class NotificationServiceTest {
 
@@ -56,14 +57,15 @@ class NotificationServiceTest {
 	@BeforeEach
 	void setUp() {
 		MockitoAnnotations.openMocks(this);
+		ContainerIdUtil.containerId = "test-container-id";
 	}
 
 	@Test
 	@DisplayName("리포지토리 업데이트를 처리하고 알림을 생성한다.")
 	void handleUpdateRepositoryDto() {
 		UpdateRepositoryDto dto = new UpdateRepositoryDto(Arrays.asList("1", "2"));
-		User user = new User(1L, "githubuser1", "test@email.com", false);
-		Repository repository = new Repository(1L, new Org(), "testRepo", 1L, LocalDateTime.now());
+		User user = new User(1L, "githubUser1", "test@email.com", false);
+		Repository repository = new Repository(1L, new Org(1L, "testOrg", 1L), "testRepo", 1L, LocalDateTime.now());
 		Subscription subscription = new Subscription(user, repository);
 
 		when(subscriptionRepository.findByRepositoryId(anyLong())).thenReturn(Optional.of(List.of(subscription)));
@@ -101,8 +103,8 @@ class NotificationServiceTest {
 		Notification notification = new Notification(1L, repository, "testRepo", LocalDateTime.now());
 		UserNotification userNotification = new UserNotification(1L, user, notification, false);
 
-		when(userNotificationRepository.findUserNotificationsByUserGithubId("testId"))
-			.thenReturn(List.of(userNotification));
+		when(userNotificationRepository.findUserNotificationsByUserGithubId("testId")).thenReturn(
+			List.of(userNotification));
 
 		List<NotificationDto> result = notificationService.findNotifications("testId");
 
@@ -134,8 +136,8 @@ class NotificationServiceTest {
 
 		when(objectMapper.readTree(message)).thenReturn(jsonNode);
 		when(sseService.isConnected("testUser")).thenReturn(true);
-		when(objectMapper.treeToValue(any(JsonNode.class), eq(UnreadNotificationDto.class)))
-			.thenReturn(new UnreadNotificationDto(5));
+		when(objectMapper.treeToValue(any(JsonNode.class), eq(UnreadNotificationDto.class))).thenReturn(
+			new UnreadNotificationDto(5));
 
 		notificationService.handleRedisMessage(message);
 

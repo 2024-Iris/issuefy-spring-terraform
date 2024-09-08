@@ -12,6 +12,7 @@ import org.springframework.web.reactive.function.client.WebClientException;
 
 import lombok.extern.slf4j.Slf4j;
 import site.iris.issuefy.exception.github.GithubApiException;
+import site.iris.issuefy.exception.network.LokiException;
 import site.iris.issuefy.exception.network.NetworkException;
 import site.iris.issuefy.exception.resource.ResourceNotFoundException;
 import site.iris.issuefy.exception.validation.ValidationException;
@@ -57,6 +58,11 @@ public class GlobalExceptionHandler {
 
 	@ExceptionHandler(NetworkException.class)
 	public ResponseEntity<ErrorResponse> handleValidationException(NetworkException e) {
+		return ResponseEntity.status(e.getStatus()).body(new ErrorResponse(e.getMessage()));
+	}
+
+	@ExceptionHandler(LokiException.class)
+	public ResponseEntity<ErrorResponse> handleLokiException(LokiException e) {
 		return ResponseEntity.status(e.getStatus()).body(new ErrorResponse(e.getMessage()));
 	}
 
