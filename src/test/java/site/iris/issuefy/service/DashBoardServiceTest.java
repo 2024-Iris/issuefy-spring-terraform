@@ -82,7 +82,7 @@ class DashBoardServiceTest {
     }
 
     @Test
-    void getDashBoardFromLoki_ShouldHandleEmptyResponses() throws Exception {
+    void getDashBoardFromLoki_ShouldHandleEmptyResponses() {
         // Given
         mockWebServer.enqueue(new MockResponse()
                 .setBody("{}")
