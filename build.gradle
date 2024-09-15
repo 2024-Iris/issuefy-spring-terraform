@@ -66,6 +66,7 @@ dependencies {
     testImplementation 'org.testcontainers:testcontainers:1.19.8'
     testImplementation 'org.testcontainers:junit-jupiter:1.19.8'
     testImplementation "org.testcontainers:mysql:1.19.8"
+    testImplementation group: 'io.projectreactor', name: 'reactor-test', version: '3.6.9'
     testCompileOnly 'org.projectlombok:lombok'
     testAnnotationProcessor 'org.projectlombok:lombok'
 
