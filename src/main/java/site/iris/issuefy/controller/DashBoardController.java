@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import lombok.RequiredArgsConstructor;
+import reactor.core.publisher.Mono;
 import site.iris.issuefy.response.DashBoardResponse;
 import site.iris.issuefy.service.DashBoardService;
 
@@ -17,8 +18,9 @@ public class DashBoardController {
 	private final DashBoardService dashBoardService;
 
 	@GetMapping
-	public ResponseEntity<DashBoardResponse> dashboard(@RequestAttribute String githubId) {
-		DashBoardResponse dashBoardResponse = dashBoardService.getDashBoardFromLoki(githubId);
-		return ResponseEntity.ok().body(dashBoardResponse);
+	public Mono<ResponseEntity<DashBoardResponse>> dashboard(@RequestAttribute String githubId) {
+		return dashBoardService.getDashBoardFromLoki(githubId)
+			.map(dashBoardResponse -> ResponseEntity.ok().body(dashBoardResponse))
+			.defaultIfEmpty(ResponseEntity.notFound().build());
 	}
 }
