@@ -50,8 +50,8 @@ public class DashBoardService {
 	}
 
 	private Mono<LokiQueryVisitDto> getNumberOfWeeklyVisit(String githubId, LocalDate startWeek, LocalDate endWeek) {
-		String maskGithubId = JwtAuthenticationFilter.maskId(githubId);
-		String rawLokiQuery = String.format(LokiQuery.NUMBER_OF_WEEKLY_VISIT.getQuery(), maskGithubId, startWeek,
+		String maskedGithubId = JwtAuthenticationFilter.maskId(githubId);
+		String rawLokiQuery = String.format(LokiQuery.NUMBER_OF_WEEKLY_VISIT.getQuery(), maskedGithubId, startWeek,
 			endWeek);
 		return webClient.get()
 			.uri(uriBuilder -> uriBuilder.path("/loki/api/v1/query")
@@ -65,8 +65,8 @@ public class DashBoardService {
 
 	private Mono<LokiQueryAddRepositoryDto> getNumberOfWeeklyRepositoryAdded(String githubId, LocalDate startWeek,
 		LocalDate endWeek) {
-		String maskGithubId = JwtAuthenticationFilter.maskId(githubId);
-		String rawLokiQuery = String.format(LokiQuery.NUMBER_OF_WEEKLY_REPOSITORY_ADDED.getQuery(), maskGithubId,
+		String maskedGithubId = JwtAuthenticationFilter.maskId(githubId);
+		String rawLokiQuery = String.format(LokiQuery.NUMBER_OF_WEEKLY_REPOSITORY_ADDED.getQuery(), maskedGithubId,
 			startWeek, endWeek);
 		return webClient.get()
 			.uri(uriBuilder -> uriBuilder.path("/loki/api/v1/query")
@@ -88,8 +88,8 @@ public class DashBoardService {
 		double addedRepos = Math.log(Double.parseDouble(addRepositoryCount) + 1) / Math.log(2);
 
 		// 정규화 과정
-		double normalizedVisits = Math.min(visits / 10, 1);
-		double normalizedRepos = Math.min(addedRepos / 7, 1);
+		double normalizedVisits = Math.min(visits / 30, 1);
+		double normalizedRepos = Math.min(addedRepos / 25, 1);
 
 		double rawScore = (normalizedVisits * VISIT_WEIGHT + normalizedRepos * REPOSITORY_WEIGHT) * MAX_SCORE;
 		return (int)Math.min(rawScore, MAX_SCORE);
