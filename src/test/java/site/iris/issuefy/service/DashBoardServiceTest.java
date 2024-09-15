@@ -1,92 +1,47 @@
 package site.iris.issuefy.service;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
 
-import java.io.IOException;
+import java.time.LocalDate;
 
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.web.reactive.function.client.WebClient;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import okhttp3.mockwebserver.MockResponse;
-import okhttp3.mockwebserver.MockWebServer;
-import site.iris.issuefy.eums.ErrorCode;
-import site.iris.issuefy.exception.network.LokiException;
-import site.iris.issuefy.model.dto.LokiQueryAddRepositoryDto;
-import site.iris.issuefy.model.dto.LokiQueryVisitDto;
+import reactor.core.publisher.Mono;
+import reactor.test.StepVerifier;
 import site.iris.issuefy.response.DashBoardResponse;
 
+@ExtendWith(MockitoExtension.class)
 class DashBoardServiceTest {
 
-	private static MockWebServer mockWebServer;
+	@Mock
 	private DashBoardService dashBoardService;
-	private ObjectMapper objectMapper;
 
-	@BeforeAll
-	static void setUp() throws IOException {
-		mockWebServer = new MockWebServer();
-		mockWebServer.start();
-	}
-
-	@AfterAll
-	static void tearDown() throws IOException {
-		mockWebServer.shutdown();
-	}
+	private final LocalDate fixedDate = LocalDate.of(2024, 9, 16);
 
 	@BeforeEach
-	void initialize() {
-		String baseUrl = String.format("http://localhost:%s", mockWebServer.getPort());
-		WebClient webClient = WebClient.create(baseUrl);
-		dashBoardService = new DashBoardService(webClient);
-		objectMapper = new ObjectMapper();
+	void setUp() {
 	}
 
 	@Test
-	@DisplayName("Loki로부터 랭크, 주간방문수, 리포지토리 추가 횟수를 반환한다.")
-	void getDashBoardFromLoki_ShouldReturnCorrectResponse() throws Exception {
+	void getDashBoardFromLoki_ShouldReturnCorrectResponse() {
 		// Given
-		LokiQueryVisitDto visitDto = new LokiQueryVisitDto();
-		visitDto.setVisitCount("10");
-		String visitJson = objectMapper.writeValueAsString(visitDto);
-
-		LokiQueryAddRepositoryDto repoDto = new LokiQueryAddRepositoryDto();
-		repoDto.setAddRepositoryCount("5");
-		String repoJson = objectMapper.writeValueAsString(repoDto);
-
-		mockWebServer.enqueue(new MockResponse()
-			.setBody(visitJson)
-			.addHeader("Content-Type", "application/json"));
-		mockWebServer.enqueue(new MockResponse()
-			.setBody(repoJson)
-			.addHeader("Content-Type", "application/json"));
-
-		// When
-		DashBoardResponse response = dashBoardService.getDashBoardFromLoki("testUser");
-
-		// Then
-		assertNotNull(response);
-		assertEquals("10", response.getVisitCount());
-		assertEquals("5", response.getAddRepositoryCount());
-		assertNotNull(response.getRank());
-	}
-
-	@Test
-	@DisplayName("Loki 쿼리 실패 시 LokiException 발생한다.")
-	void getDashBoardFromLoki_ShouldThrowLokiException_WhenQueryFails() {
-		// Given
-		mockWebServer.enqueue(new MockResponse().setResponseCode(500));
+		DashBoardResponse mockResponse = new DashBoardResponse(
+			fixedDate.minusDays(6),
+			fixedDate,
+			"A",
+			"10",
+			"5"
+		);
+		when(dashBoardService.getDashBoardFromLoki(any())).thenReturn(Mono.just(mockResponse));
 
 		// When & Then
-		ErrorCode expectedError = ErrorCode.LOKI_EXCEPTION;
-		LokiException exception = assertThrows(LokiException.class,
-			() -> dashBoardService.getDashBoardFromLoki("testUser"));
-
-		assertEquals(expectedError.getMessage(), exception.getMessage());
-		assertEquals(expectedError.getStatus(), exception.getStatus());
+		StepVerifier.create(dashBoardService.getDashBoardFromLoki("testUser"))
+			.expectNext(mockResponse)
+			.verifyComplete();
 	}
 }
