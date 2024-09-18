@@ -8,6 +8,7 @@ import java.time.LocalDate;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.web.reactive.function.client.WebClient;
 
@@ -47,6 +48,7 @@ class DashBoardServiceTest {
     }
 
     @Test
+    @DisplayName("Loki에서 대시보드 정보를 정상적으로 가져오는지 테스트한다.")
     void getDashBoardFromLoki_ShouldReturnCorrectResponse() throws Exception {
         // Given
         LokiQueryVisitDto visitDto = new LokiQueryVisitDto();
@@ -82,6 +84,7 @@ class DashBoardServiceTest {
     }
 
     @Test
+    @DisplayName("Loki에서 빈 응답을 받았을 때 올바르게 처리하는지 테스트한다.")
     void getDashBoardFromLoki_ShouldHandleEmptyResponses() {
         // Given
         mockWebServer.enqueue(new MockResponse()
@@ -109,6 +112,7 @@ class DashBoardServiceTest {
     }
 
     @Test
+    @DisplayName("Loki에서 오류 응답을 받았을 때 올바르게 처리하는지 테스트한다.")
     void getDashBoardFromLoki_ShouldHandleErrorResponses() {
         // Given
         mockWebServer.enqueue(new MockResponse().setResponseCode(500));

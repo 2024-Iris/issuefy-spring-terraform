@@ -2,6 +2,8 @@ package site.iris.issuefy.controller;
 
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
+import static org.springframework.restdocs.payload.PayloadDocumentation.*;
+import static org.springframework.restdocs.webtestclient.WebTestClientRestDocumentation.*;
 
 import java.time.LocalDate;
 
@@ -52,6 +54,15 @@ class DashBoardControllerTest {
 			.exchange()
 			.expectStatus().isOk()
 			.expectBody()
+			.consumeWith(document("dashboard",
+				responseFields(
+					fieldWithPath("startDate").description("대시보드 시작 날짜"),
+					fieldWithPath("endDate").description("대시보드 종료 날짜"),
+					fieldWithPath("rank").description("사용자 랭크"),
+					fieldWithPath("visitCount").description("주간 방문 수"),
+					fieldWithPath("addRepositoryCount").description("리포지토리 추가 횟수")
+				)
+			))
 			.jsonPath("$.startDate").isEqualTo(startDate.toString())
 			.jsonPath("$.endDate").isEqualTo(endDate.toString())
 			.jsonPath("$.rank").isEqualTo("A")
