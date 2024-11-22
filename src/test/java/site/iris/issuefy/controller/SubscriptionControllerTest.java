@@ -2,6 +2,7 @@ package site.iris.issuefy.controller;
 
 import static org.mockito.Mockito.*;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.*;
+import static org.springframework.restdocs.operation.preprocess.Preprocessors.*;
 import static org.springframework.restdocs.payload.PayloadDocumentation.*;
 import static org.springframework.restdocs.request.RequestDocumentation.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -10,6 +11,7 @@ import static site.iris.issuefy.ApiDocumentUtils.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -32,7 +34,7 @@ import site.iris.issuefy.service.GithubTokenService;
 import site.iris.issuefy.service.SubscriptionService;
 
 @WebMvcTest(SubscriptionController.class)
-@AutoConfigureRestDocs
+@AutoConfigureRestDocs(uriScheme = "https", uriHost = "issuefy.site", uriPort = -1)
 class SubscriptionControllerTest {
 
 	@Autowired
@@ -87,10 +89,15 @@ class SubscriptionControllerTest {
 		// then
 		result.andExpect(status().isCreated())
 			.andDo(document("issuefy/subscriptions/post",
-				getDocumentRequest(),
+				preprocessRequest(prettyPrint(),
+					replacePattern(
+						Pattern.compile("\"repositoryUrl\"\\s*:\\s*\"[^\"]*\""),
+						"\"repositoryUrl\" : \"https://github.com/org/repository\""
+					)),
 				getDocumentResponse(),
 				requestFields(
-					fieldWithPath("repositoryUrl").type(JsonFieldType.STRING).description("GitHub 리포지토리 URL")
+					fieldWithPath("repositoryUrl").type(JsonFieldType.STRING)
+						.description("GitHub 리포지토리 URL")
 				)
 			));
 	}
@@ -108,6 +115,8 @@ class SubscriptionControllerTest {
 				.requestAttr("githubId", githubId))
 			.andExpect(status().isNoContent())
 			.andDo(document("issuefy/subscriptions/delete",
+				getDocumentRequest(),
+				getDocumentResponse(),
 				pathParameters(
 					parameterWithName("gh_repo_id").description("GitHub 리포지토리 ID")
 				)

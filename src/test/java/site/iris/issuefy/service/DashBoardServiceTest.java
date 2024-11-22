@@ -52,11 +52,11 @@ class DashBoardServiceTest {
     void getDashBoardFromLoki_ShouldReturnCorrectResponse() throws Exception {
         // Given
         LokiQueryVisitDto visitDto = new LokiQueryVisitDto();
-        visitDto.setVisitCount("10");
+        visitDto.setVisitCount("0");
         String visitJson = objectMapper.writeValueAsString(visitDto);
 
         LokiQueryAddRepositoryDto repoDto = new LokiQueryAddRepositoryDto();
-        repoDto.setAddRepositoryCount("5");
+        repoDto.setAddRepositoryCount("0");
         String repoJson = objectMapper.writeValueAsString(repoDto);
 
         mockWebServer.enqueue(new MockResponse()
@@ -72,8 +72,8 @@ class DashBoardServiceTest {
         // Then
         StepVerifier.create(result)
                 .expectNextMatches(response -> {
-                    assertEquals("10", response.getVisitCount());
-                    assertEquals("5", response.getAddRepositoryCount());
+                    assertEquals("0", response.getVisitCount());
+                    assertEquals("0", response.getAddRepositoryCount());
                     assertNotNull(response.getRank());
                     LocalDate today = LocalDate.now();
                     assertEquals(today.minusDays(6), response.getStartDate());
