@@ -29,7 +29,7 @@ import site.iris.issuefy.response.StarRepositoryIssuesResponse;
 import site.iris.issuefy.service.IssueService;
 
 @WebMvcTest(IssueController.class)
-@AutoConfigureRestDocs
+@AutoConfigureRestDocs(uriScheme = "https", uriHost = "issuefy.site", uriPort = -1)
 class IssueControllerTest {
 
 	@Autowired
@@ -42,6 +42,7 @@ class IssueControllerTest {
 	@Test
 	void getIssuesByRepoName() throws Exception {
 		// given
+		String token = "Bearer testToken";
 		String orgName = "iris";
 		String repoName = "issuefy";
 		String githubId = "dokkisan";
@@ -74,6 +75,7 @@ class IssueControllerTest {
 		ResultActions result = mockMvc.perform(
 			get("/api/subscriptions/{org_name}/{repo_name}/issues", orgName, repoName)
 				.requestAttr("githubId", githubId)
+				.header("Authorization", token)
 				.param("page", String.valueOf(page))
 				.param("size", String.valueOf(pageSize))
 				.param("sort", sort)
@@ -122,6 +124,7 @@ class IssueControllerTest {
 	@Test
 	void getIssueStar() throws Exception {
 		// given
+		String token = "Bearer testToken";
 		String githubId = "dokkisan";
 		StarRepositoryIssuesResponse response = new StarRepositoryIssuesResponse(new ArrayList<>());
 
@@ -129,7 +132,8 @@ class IssueControllerTest {
 		when(issueService.getStarredRepositoryIssuesResponse(githubId)).thenReturn(response);
 		ResultActions result = mockMvc.perform(
 			get("/api/subscriptions/issue-star")
-				.requestAttr("githubId", githubId));
+				.requestAttr("githubId", githubId)
+				.header("Authorization", token));
 
 		// then
 		result.andExpect(status().isOk())
@@ -143,6 +147,7 @@ class IssueControllerTest {
 	@Test
 	void updateIssueStar() throws Exception {
 		// given
+		String token = "Bearer testToken";
 		String githubId = "dokkisan";
 		Long issueId = 123L;
 
@@ -150,7 +155,8 @@ class IssueControllerTest {
 		doNothing().when(issueService).toggleIssueStar(githubId, issueId);
 		ResultActions result = mockMvc.perform(
 			put("/api/subscriptions/issue-star/{gh_issue_id}", issueId)
-				.requestAttr("githubId", githubId));
+				.requestAttr("githubId", githubId)
+				.header("Authorization", token));
 
 		// then
 		result.andExpect(status().isNoContent())

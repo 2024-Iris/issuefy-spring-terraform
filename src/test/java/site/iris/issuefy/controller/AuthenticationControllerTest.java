@@ -29,7 +29,7 @@ import site.iris.issuefy.service.TokenProvider;
 import site.iris.issuefy.service.UserService;
 
 @WebMvcTest(AuthenticationController.class)
-@AutoConfigureRestDocs
+@AutoConfigureRestDocs(uriScheme = "https", uriHost = "issuefy.site", uriPort = -1)
 class AuthenticationControllerTest {
 
 	@Autowired
@@ -93,7 +93,8 @@ class AuthenticationControllerTest {
 	void logout() throws Exception {
 		// given
 		String githubId = "testUser";
-		String token = "Bearer test-jwt-token";
+		String token = "Bearer testToken";
+		String tokenWithoutBearer = "testToken";
 		when(tokenProvider.isValidToken(anyString())).thenReturn(true);
 
 		// when
@@ -110,6 +111,6 @@ class AuthenticationControllerTest {
 					headerWithName("Authorization").description("JWT 토큰")
 				)));
 
-		verify(tokenProvider).invalidateToken("test-jwt-token");
+		verify(tokenProvider).invalidateToken(tokenWithoutBearer);
 	}
 }

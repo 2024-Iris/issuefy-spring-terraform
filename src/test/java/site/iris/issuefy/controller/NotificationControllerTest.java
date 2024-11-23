@@ -32,7 +32,7 @@ import site.iris.issuefy.service.NotificationService;
 
 @ExtendWith(RestDocumentationExtension.class)
 @WebMvcTest(NotificationController.class)
-@AutoConfigureRestDocs
+@AutoConfigureRestDocs(uriScheme = "https", uriHost = "issuefy.site", uriPort = -1)
 class NotificationControllerTest {
 
 	@Autowired
@@ -47,6 +47,7 @@ class NotificationControllerTest {
 	@Test
 	@DisplayName("사용자의 알림 목록을 조회하여 반환한다.")
 	void getNotifications() throws Exception {
+		String token = "Bearer testToken";
 		String githubId = "testUser";
 		List<NotificationDto> notificationDtos = Arrays.asList(
 			NotificationDto.of(1L, "testOrg1", "testRepo1", LocalDateTime.now(), false),
@@ -56,7 +57,8 @@ class NotificationControllerTest {
 		given(notificationService.findNotifications(githubId)).willReturn(notificationDtos);
 
 		mockMvc.perform(get("/api/notifications")
-				.requestAttr("githubId", githubId))
+				.requestAttr("githubId", githubId)
+				.header("Authorization", token))
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$", hasSize(2)))
 			.andDo(document("issuefy/notifications/get",
@@ -75,12 +77,14 @@ class NotificationControllerTest {
 	@Test
 	@DisplayName("각 알림을 읽음으로 업데이트 한다.")
 	void updateNotification() throws Exception {
+		String token = "Bearer testToken";
 		List<Long> ids = Arrays.asList(1L, 2L);
 		NotificationReadDto notificationReadDto = new NotificationReadDto(ids);
 
 		mockMvc.perform(patch("/api/notifications")
 				.contentType(MediaType.APPLICATION_JSON)
-				.content(objectMapper.writeValueAsString(notificationReadDto)))
+				.content(objectMapper.writeValueAsString(notificationReadDto))
+				.header("Authorization", token))
 			.andExpect(status().isOk())
 			.andDo(document("issuefy/notifications/update",
 				requestFields(

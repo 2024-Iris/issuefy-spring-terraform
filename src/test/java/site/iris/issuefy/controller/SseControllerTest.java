@@ -8,6 +8,7 @@ import static org.springframework.restdocs.payload.PayloadDocumentation.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.request;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static site.iris.issuefy.ApiDocumentUtils.*;
 
 import java.util.Arrays;
 
@@ -29,7 +30,7 @@ import site.iris.issuefy.service.NotificationService;
 import site.iris.issuefy.service.SseService;
 
 @WebMvcTest(SseController.class)
-@AutoConfigureRestDocs
+@AutoConfigureRestDocs(uriScheme = "https", uriHost = "issuefy.site", uriPort = -1)
 class SseControllerTest {
 
 	@Autowired
@@ -47,6 +48,7 @@ class SseControllerTest {
 	@Test
 	@DisplayName("SSE 커넥션을 생성하고 연결한다.")
 	void connect() throws Exception {
+		String token = "Bearer testToken";
 		String githubId = "testUser";
 		UnreadNotificationDto unreadNotificationDto = new UnreadNotificationDto(5);
 
@@ -55,10 +57,14 @@ class SseControllerTest {
 
 		mockMvc.perform(get("/api/connect")
 				.requestAttr("githubId", githubId)
+				.header("Authorization", token)
 				.accept(MediaType.TEXT_EVENT_STREAM_VALUE))
 			.andExpect(status().isOk())
 			.andExpect(request().asyncStarted())
-			.andDo(document("issuefy/sse/connect"));
+			.andDo(document("issuefy/sse/connect",
+				getDocumentRequest(),
+				getDocumentResponse()
+			));
 
 		verify(sseService).connect(githubId);
 		verify(notificationService).getNotification(githubId);
