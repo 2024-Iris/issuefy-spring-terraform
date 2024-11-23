@@ -53,6 +53,10 @@ include::{snippets}/issuefy/oauth/logout/http-response.adoc[]
 
 include::{snippets}/issuefy/subscriptions/get/http-request.adoc[]
 
+===== 쿼리 매개변수
+
+include::{snippets}/issuefy/subscriptions/get/query-parameters.adoc[]
+
 ==== HTTP 응답
 
 include::{snippets}/issuefy/subscriptions/get/http-response.adoc[]
@@ -74,6 +78,7 @@ include::{snippets}/issuefy/subscriptions/post/http-response.adoc[]
 === 2.3 리포지토리 구독 취소
 
 ==== HTTP 요청
+
 include::{snippets}/issuefy/subscriptions/delete/http-request.adoc[]
 
 ===== 경로 매개변수
@@ -115,7 +120,7 @@ include::{snippets}/issuefy/issues/get/path-parameters.adoc[]
 include::{snippets}/issuefy/issues/get/query-parameters.adoc[]
 
 ==== HTTP 응답
-// TODO: 이슈 응답 수정
+
 include::{snippets}/issuefy/issues/get/http-response.adoc[]
 
 ===== 응답 본문
@@ -124,7 +129,7 @@ include::{snippets}/issuefy/issues/get/response-body.adoc[]
 
 == 4. Server-Sent Events (SSE)
 
-=== 4.1 SSE 연결
+=== 4.1 SSE 연결 및 수신
 
 ==== HTTP 요청
 
@@ -132,21 +137,18 @@ include::{snippets}/issuefy/sse/connect/http-request.adoc[]
 
 ==== HTTP 응답
 
-include::{snippets}/issuefy/sse/connect/http-response.adoc[]
+[source,text]
+----
+event:initial
+data:"connected successfully."
+id:123456
 
-=== 4.2 SSE 수신
+event:info
+data:{"unreadCount":0}
 
-==== HTTP 요청
-
-include::{snippets}/issuefy/sse/receive/http-request.adoc[]
-
-===== 요청 필드
-
-include::{snippets}/issuefy/sse/receive/request-fields.adoc[]
-
-==== HTTP 응답
-
-include::{snippets}/issuefy/sse/receive/http-response.adoc[]
+event:info
+data:{"unreadCount":1}
+----
 
 == 5. 알림
 
@@ -221,3 +223,29 @@ include::{snippets}/issuefy/user/update-email/request-fields.adoc[]
 ==== HTTP 응답
 
 include::{snippets}/issuefy/user/update-email/http-response.adoc[]
+
+== 7. 대시보드
+
+=== 7.1 대시보드 정보 조회
+
+==== HTTP 요청
+
+include::{snippets}/dashboard/http-request.adoc[]
+
+==== HTTP 응답
+
+include::{snippets}/dashboard/http-response.adoc[]
+
+===== 응답 필드
+
+include::{snippets}/dashboard/response-fields.adoc[]
+
+== 8. 서버 상태 확인
+
+=== HTTP 요청
+
+include::{snippets}/health-check/http-request.adoc[]
+
+=== HTTP 응답
+
+include::{snippets}/health-check/http-response.adoc[]

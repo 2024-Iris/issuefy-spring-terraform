@@ -638,10 +638,43 @@ Vary: Access-Control-Request-Headers</code></pre>
 <h4 id="_http_요청_3"><a class="link" href="#_http_요청_3">HTTP 요청</a></h4>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight nowrap"><code class="language-http hljs" data-lang="http">GET /api/subscriptions HTTP/1.1
+<pre class="highlightjs highlight nowrap"><code class="language-http hljs" data-lang="http">GET /api/subscriptions?page=0&amp;sort=latestUpdateAt&amp;order=desc&amp;starred=false HTTP/1.1
 Authorization: Bearer testToken
 Host: issuefy.site</code></pre>
 </div>
+</div>
+<div class="sect4">
+<h5 id="_쿼리_매개변수"><a class="link" href="#_쿼리_매개변수">쿼리 매개변수</a></h5>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Parameter</th>
+<th class="tableblock halign-left valign-top">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>page</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">페이지 번호</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>sort</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">정렬 기준</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>order</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">정렬 순서 (asc/desc)</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>starred</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">즐겨찾기 여부</p></td>
+</tr>
+</tbody>
+</table>
 </div>
 </div>
 <div class="sect3">
@@ -651,7 +684,24 @@ Host: issuefy.site</code></pre>
 <pre class="highlightjs highlight nowrap"><code class="language-http hljs" data-lang="http">HTTP/1.1 200 OK
 Vary: Origin
 Vary: Access-Control-Request-Method
-Vary: Access-Control-Request-Headers</code></pre>
+Vary: Access-Control-Request-Headers
+Content-Type: application/json
+Content-Length: 349
+
+{
+  "currentPage" : 0,
+  "pageSize" : 15,
+  "totalElements" : 29,
+  "totalPages" : 2,
+  "subscriptionListDtos" : [ {
+    "orgId" : 6764390,
+    "orgName" : "elastic",
+    "githubRepositoryId" : 507775,
+    "repositoryName" : "elasticsearch",
+    "repositoryLatestUpdateAt" : "2024-10-23T21:26:34",
+    "repositoryStarred" : true
+  } ]
+}</code></pre>
 </div>
 </div>
 </div>
@@ -812,7 +862,8 @@ Vary: Access-Control-Request-Headers</code></pre>
 <h4 id="_http_요청_7"><a class="link" href="#_http_요청_7">HTTP 요청</a></h4>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight nowrap"><code class="language-http hljs" data-lang="http">GET /api/subscriptions/iris/issuefy/issues?page=0&amp;size=10&amp;sort=createdAt&amp;order=desc HTTP/1.1
+<pre class="highlightjs highlight nowrap"><code class="language-http hljs" data-lang="http">GET /api/subscriptions/iris/issuefy/issues?page=0&amp;size=15&amp;sort=createdAt&amp;order=desc HTTP/1.1
+Accept: application/json
 Host: issuefy.site</code></pre>
 </div>
 </div>
@@ -842,6 +893,39 @@ Host: issuefy.site</code></pre>
 </tbody>
 </table>
 </div>
+<div class="sect4">
+<h5 id="_쿼리_매개변수_2"><a class="link" href="#_쿼리_매개변수_2">쿼리 매개변수</a></h5>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Parameter</th>
+<th class="tableblock halign-left valign-top">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>page</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">페이지 번호</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>size</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">페이지 크기</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>sort</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">정렬 기준</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>order</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">정렬 순서</p></td>
+</tr>
+</tbody>
+</table>
+</div>
 </div>
 <div class="sect3">
 <h4 id="_http_응답_7"><a class="link" href="#_http_응답_7">HTTP 응답</a></h4>
@@ -850,14 +934,60 @@ Host: issuefy.site</code></pre>
 <pre class="highlightjs highlight nowrap"><code class="language-http hljs" data-lang="http">HTTP/1.1 200 OK
 Vary: Origin
 Vary: Access-Control-Request-Method
-Vary: Access-Control-Request-Headers</code></pre>
+Vary: Access-Control-Request-Headers
+Content-Type: application/json
+Content-Length: 492
+
+{
+  "currentPage" : 0,
+  "pageSize" : 15,
+  "totalElements" : 100,
+  "totalPages" : 10,
+  "repositoryName" : "issuefy",
+  "issues" : [ {
+    "id" : 1,
+    "githubIssueNumber" : 123,
+    "state" : "OPEN",
+    "title" : "Sample Issue",
+    "labels" : [ {
+      "name" : null,
+      "color" : null
+    } ],
+    "read" : true,
+    "createdAt" : "2024-11-23T22:30:43.353437",
+    "updatedAt" : "2024-11-23T22:30:43.353437",
+    "closedAt" : null,
+    "starred" : false
+  } ]
+}</code></pre>
 </div>
 </div>
 <div class="sect4">
 <h5 id="_응답_본문"><a class="link" href="#_응답_본문">응답 본문</a></h5>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight nowrap"><code class="language-none hljs"></code></pre>
+<pre class="highlightjs highlight nowrap"><code class="language-json hljs" data-lang="json">{
+  "currentPage" : 0,
+  "pageSize" : 15,
+  "totalElements" : 100,
+  "totalPages" : 10,
+  "repositoryName" : "issuefy",
+  "issues" : [ {
+    "id" : 1,
+    "githubIssueNumber" : 123,
+    "state" : "OPEN",
+    "title" : "Sample Issue",
+    "labels" : [ {
+      "name" : null,
+      "color" : null
+    } ],
+    "read" : true,
+    "createdAt" : "2024-11-23T22:30:43.353437",
+    "updatedAt" : "2024-11-23T22:30:43.353437",
+    "closedAt" : null,
+    "starred" : false
+  } ]
+}</code></pre>
 </div>
 </div>
 </div>
@@ -876,7 +1006,7 @@ Vary: Access-Control-Request-Headers</code></pre>
 <div class="content">
 <pre class="highlightjs highlight nowrap"><code class="language-http hljs" data-lang="http">GET /api/connect HTTP/1.1
 Accept: text/event-stream
-Host: localhost:8080</code></pre>
+Host: issuefy.site</code></pre>
 </div>
 </div>
 </div>
@@ -901,7 +1031,7 @@ Vary: Access-Control-Request-Headers</code></pre>
 <pre class="highlightjs highlight nowrap"><code class="language-http hljs" data-lang="http">POST /api/receive HTTP/1.1
 Content-Type: application/json;charset=UTF-8
 Content-Length: 34
-Host: localhost:8080
+Host: issuefy.site
 
 {"updatedRepositoryIds":["1","2"]}</code></pre>
 </div>
@@ -955,7 +1085,7 @@ Vary: Access-Control-Request-Headers</code></pre>
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight nowrap"><code class="language-http hljs" data-lang="http">GET /api/notifications HTTP/1.1
-Host: localhost:8080</code></pre>
+Host: issuefy.site</code></pre>
 </div>
 </div>
 </div>
@@ -974,13 +1104,13 @@ Content-Length: 352
   "userNotificationId" : 1,
   "orgName" : "testOrg1",
   "repositoryName" : "testRepo1",
-  "notificationCreatedAt" : "2024-11-22T23:09:31.1130112",
+  "notificationCreatedAt" : "2024-11-23T22:30:43.9301388",
   "read" : false
 }, {
   "userNotificationId" : 2,
   "orgName" : "testOrg2",
   "repositoryName" : "testRepo2",
-  "notificationCreatedAt" : "2024-11-22T23:09:31.1130112",
+  "notificationCreatedAt" : "2024-11-23T22:30:43.9311381",
   "read" : false
 } ]</code></pre>
 </div>
@@ -1040,7 +1170,7 @@ Content-Length: 352
 <pre class="highlightjs highlight nowrap"><code class="language-http hljs" data-lang="http">PATCH /api/notifications HTTP/1.1
 Content-Type: application/json;charset=UTF-8
 Content-Length: 29
-Host: localhost:8080
+Host: issuefy.site
 
 {"userNotificationIds":[1,2]}</code></pre>
 </div>
@@ -1095,7 +1225,7 @@ Vary: Access-Control-Request-Headers</code></pre>
 <div class="content">
 <pre class="highlightjs highlight nowrap"><code class="language-http hljs" data-lang="http">GET /api/user/info HTTP/1.1
 Accept: application/json
-Host: localhost:8080</code></pre>
+Host: issuefy.site</code></pre>
 </div>
 </div>
 </div>
@@ -1163,7 +1293,7 @@ Content-Length: 111
 <pre class="highlightjs highlight nowrap"><code class="language-http hljs" data-lang="http">PATCH /api/user/alert HTTP/1.1
 Content-Type: application/json;charset=UTF-8
 Content-Length: 20
-Host: localhost:8080
+Host: issuefy.site
 
 {"alertStatus":true}</code></pre>
 </div>
@@ -1214,7 +1344,7 @@ Vary: Access-Control-Request-Headers</code></pre>
 <pre class="highlightjs highlight nowrap"><code class="language-http hljs" data-lang="http">PATCH /api/user/email HTTP/1.1
 Content-Type: application/json;charset=UTF-8
 Content-Length: 30
-Host: localhost:8080
+Host: issuefy.site
 
 {"email":"newemail@gmail.com"}</code></pre>
 </div>
@@ -1262,7 +1392,7 @@ Vary: Access-Control-Request-Headers</code></pre>
 <div id="footer">
 <div id="footer-text">
 Version 1.0.0<br>
-Last updated 2024-11-22 22:52:30 +0900
+Last updated 2024-11-23 22:28:31 +0900
 </div>
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.3/highlight.min.js"></script>
