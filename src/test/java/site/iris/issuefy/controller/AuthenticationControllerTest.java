@@ -7,6 +7,7 @@ import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.*;
 import static org.springframework.restdocs.payload.PayloadDocumentation.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static site.iris.issuefy.ApiDocumentUtils.*;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -28,7 +29,7 @@ import site.iris.issuefy.service.TokenProvider;
 import site.iris.issuefy.service.UserService;
 
 @WebMvcTest(AuthenticationController.class)
-@AutoConfigureRestDocs
+@AutoConfigureRestDocs(uriScheme = "https", uriHost = "issuefy.site", uriPort = -1)
 class AuthenticationControllerTest {
 
 	@Autowired
@@ -75,6 +76,8 @@ class AuthenticationControllerTest {
 			.andExpect(jsonPath("$.jwt.accessToken", is(accessToken)))
 			.andExpect(jsonPath("$.jwt.refreshToken", is(refreshToken)))
 			.andDo(document("issuefy/oauth/login",
+				getDocumentRequest(),
+				getDocumentResponse(),
 				responseFields(
 					fieldWithPath("userName").description("사용자 로그인 이름"),
 					fieldWithPath("userEmail").description("사용자 이메일 주소"),
@@ -90,7 +93,8 @@ class AuthenticationControllerTest {
 	void logout() throws Exception {
 		// given
 		String githubId = "testUser";
-		String token = "Bearer test-jwt-token";
+		String token = "Bearer testToken";
+		String tokenWithoutBearer = "testToken";
 		when(tokenProvider.isValidToken(anyString())).thenReturn(true);
 
 		// when
@@ -101,10 +105,12 @@ class AuthenticationControllerTest {
 		// then
 		result.andExpect(status().isOk())
 			.andDo(document("issuefy/oauth/logout",
+				getDocumentRequest(),
+				getDocumentResponse(),
 				requestHeaders(
 					headerWithName("Authorization").description("JWT 토큰")
 				)));
 
-		verify(tokenProvider).invalidateToken("test-jwt-token");
+		verify(tokenProvider).invalidateToken(tokenWithoutBearer);
 	}
 }

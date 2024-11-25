@@ -20,7 +20,7 @@ import site.iris.issuefy.model.dto.UserDto;
 import site.iris.issuefy.service.UserService;
 
 @WebMvcTest(UserController.class)
-@AutoConfigureRestDocs
+@AutoConfigureRestDocs(uriScheme = "https", uriHost = "issuefy.site", uriPort = -1)
 class UserControllerTest {
 
 	@Autowired
@@ -33,6 +33,7 @@ class UserControllerTest {
 	@Test
 	void getUserInfo() throws Exception {
 		// given
+		String token = "Bearer testToken";
 		String githubId = "testUser";
 		UserDto userDto = UserDto.of(githubId, "https://example.com/avatar.jpg", "test@gmail.com", false);
 		when(userService.getUserInfo(githubId)).thenReturn(userDto);
@@ -40,6 +41,7 @@ class UserControllerTest {
 		// when
 		ResultActions result = mockMvc.perform(get("/api/user/info")
 			.requestAttr("githubId", githubId)
+			.header("Authorization", token)
 			.accept(MediaType.APPLICATION_JSON));
 
 		// then
@@ -63,6 +65,7 @@ class UserControllerTest {
 	@Test
 	void updateEmail() throws Exception {
 		// given
+		String token = "Bearer testToken";
 		String githubId = "testUser";
 		String newEmail = "newemail@gmail.com";
 		String requestBody = "{\"email\":\"" + newEmail + "\"}";
@@ -70,6 +73,7 @@ class UserControllerTest {
 		// when
 		ResultActions result = mockMvc.perform(patch("/api/user/email")
 			.requestAttr("githubId", githubId)
+			.header("Authorization", token)
 			.contentType(MediaType.APPLICATION_JSON)
 			.content(requestBody));
 
@@ -87,6 +91,7 @@ class UserControllerTest {
 	@Test
 	void updateAlert() throws Exception {
 		// given
+		String token = "Bearer testToken";
 		String githubId = "testUser";
 		boolean newAlertStatus = true;
 		String requestBody = "{\"alertStatus\":" + newAlertStatus + "}";
@@ -94,6 +99,7 @@ class UserControllerTest {
 		// when
 		ResultActions result = mockMvc.perform(patch("/api/user/alert")
 			.requestAttr("githubId", githubId)
+			.header("Authorization", token)
 			.contentType(MediaType.APPLICATION_JSON)
 			.content(requestBody));
 
@@ -110,12 +116,14 @@ class UserControllerTest {
 	@DisplayName("사용자의 탈퇴가 정상적으로 이루어진다.")
 	@Test
 	void testWithdraw() throws Exception {
+		String token = "Bearer testToken";
 		String githubId = "testUser";
 
 		doNothing().when(userService).withdraw(githubId);
 
 		mockMvc.perform(delete("/api/user/withdraw")
-				.requestAttr("githubId", githubId))
+				.requestAttr("githubId", githubId)
+				.header("Authorization", token))
 			.andExpect(status().isOk());
 
 		verify(userService).withdraw(githubId);
