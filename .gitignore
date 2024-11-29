@@ -39,3 +39,8 @@ out/
 /config.yml
 /src/main/resources/logback.xml
 docker-compose.yml
+
+### terraform ###
+.terraform/
+*.tfstate
+*.tfstate.*
