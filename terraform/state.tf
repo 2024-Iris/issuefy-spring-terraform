@@ -1,16 +1,3 @@
-terraform {
-  required_providers {
-    aws = {
-      source  = "hashicorp/aws"
-      version = "5.54.1"
-    }
-  }
-}
-
-provider "aws" {
-  region = "ap-northeast-2"
-}
-
 resource "aws_s3_bucket" "issuefy-bucket" {
   bucket        = "issuefy-prod-terraform-state-ap-northeast-2"
   force_destroy = false
