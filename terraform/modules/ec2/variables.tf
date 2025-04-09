@@ -3,22 +3,8 @@ variable "instance_definitions" {
   type = map(object({
     ami           = string
     instance_type = string
+    iam_instance_profile = optional(string)
   }))
-  default = {
-    prod = {
-      ami           = "ami-0163ca257044503d6"
-      instance_type = "t3a.small"
-    }
-    monitoring = {
-      ami           = "ami-0163ca257044503d6"
-      instance_type = "t2.micro"
-
-    }
-    nat = {
-      ami           = "ami-0fa9216d5e4fcd66d"
-      instance_type = "t3.nano"
-    }
-  }
 }
 
 variable "instance_subnet_map" {

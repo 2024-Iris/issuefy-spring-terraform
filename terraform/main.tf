@@ -8,10 +8,11 @@ module "vpc" {
 }
 
 module "ec2" {
-  source              = "./modules/ec2"
-  instance_subnet_map = local.instance_subnet_map
-  ec2_sg_id           = module.ec2-sg.ec2_sg_id
-  name_prefix         = var.name_prefix
+  source               = "./modules/ec2"
+  instance_subnet_map  = local.instance_subnet_map
+  ec2_sg_id            = module.ec2-sg.ec2_sg_id
+  name_prefix          = var.name_prefix
+  instance_definitions = local.enriched_instance_definitions
 }
 
 module "ec2-sg" {
@@ -42,7 +43,7 @@ module "rds" {
   username                = data.aws_ssm_parameter.rds_user_name.value
   password                = data.aws_ssm_parameter.rds_password.value
   private_subnet_ids      = module.vpc.private_subnet_ids
-  vpc_security_group_ids  = [module.ec2-sg.rds_sg_id]
+  vpc_security_group_ids = [module.ec2-sg.rds_sg_id]
   multi_az                = false
   backup_retention_period = 0
   tags = {
@@ -62,3 +63,44 @@ module "ecr" {
   image_tag_mutability = each.value.image_tag_mutability
   tags                 = each.value.tags
 }
+
+module "iam" {
+  source     = "./modules/iam"
+  group_name = "issuefy_power"
+  user_name  = "roy_power"
+
+  policy_arns = [
+    "arn:aws:iam::aws:policy/AdministratorAccess",
+    "arn:aws:iam::aws:policy/AmazonElasticContainerRegistryPublicPowerUser",
+    "arn:aws:iam::aws:policy/AmazonS3FullAccess",
+    "arn:aws:iam::aws:policy/ElasticLoadBalancingReadOnly"
+  ]
+
+  enable_console_access  = true
+  enable_mfa_enforcement = true
+
+  tags = {
+    Department = "issuefy"
+    Role       = "power"
+  }
+}
+
+module "iam_roles" {
+  source   = "./modules/iamrole"
+  for_each = local.iam_roles
+
+  name                 = each.key
+  assume_role_services = each.value.assume_role_services
+  policy_arns          = each.value.policy_arns
+  tags                 = each.value.tags
+}
+
+resource "aws_iam_instance_profile" "profiles" {
+  for_each = local.iam_roles
+
+  name = each.key
+  role = module.iam_roles[each.key].role_name
+}
+
+
+

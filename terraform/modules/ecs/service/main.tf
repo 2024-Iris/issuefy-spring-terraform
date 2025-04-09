@@ -1,5 +1,5 @@
 resource "aws_ecs_service" "services" {
-  for_each        = var.ecs_services
+  for_each = var.ecs_services
 
   name            = each.key
   cluster         = var.cluster_id

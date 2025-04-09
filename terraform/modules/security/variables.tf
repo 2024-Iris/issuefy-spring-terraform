@@ -10,18 +10,18 @@ variable "vpc_id" {
 
 variable "allowed_ssh_cidrs" {
   description = "CIDR blocks allowed for SSH access"
-  type        = list(string)
-  default     = ["0.0.0.0/0"]
+  type = list(string)
+  default = ["0.0.0.0/0"]
 }
 
 variable "allowed_http_cidrs" {
   description = "CIDR blocks allowed for HTTP access"
-  type        = list(string)
-  default     = ["0.0.0.0/0"]
+  type = list(string)
+  default = ["0.0.0.0/0"]
 }
 
 variable "tags" {
   description = "Tags to apply to the security group"
-  type        = map(string)
-  default     = {}
+  type = map(string)
+  default = {}
 }
