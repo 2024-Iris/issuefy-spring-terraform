@@ -10,12 +10,12 @@ module "vpc" {
 module "ec2" {
   source               = "./modules/ec2"
   instance_subnet_map  = local.instance_subnet_map
-  ec2_sg_id            = module.ec2-sg.ec2_sg_id
+  ec2_sg_id            = module.security_group.ec2_sg_id
   name_prefix          = var.name_prefix
   instance_definitions = local.enriched_instance_definitions
 }
 
-module "ec2-sg" {
+module "security_group" {
   source      = "./modules/security"
   name_prefix = var.name_prefix
   vpc_id      = module.vpc.vpc_id
@@ -43,7 +43,7 @@ module "rds" {
   username                = data.aws_ssm_parameter.rds_user_name.value
   password                = data.aws_ssm_parameter.rds_password.value
   private_subnet_ids      = module.vpc.private_subnet_ids
-  vpc_security_group_ids = [module.ec2-sg.rds_sg_id]
+  vpc_security_group_ids = [module.security_group.rds_sg_id]
   multi_az                = false
   backup_retention_period = 0
   tags = {
@@ -102,5 +102,44 @@ resource "aws_iam_instance_profile" "profiles" {
   role = module.iam_roles[each.key].role_name
 }
 
+module "alb" {
+  source             = "./modules/alb"
+  alb_security_group = module.security_group.alb_sg_id
+  name_prefix        = var.name_prefix
+  subnets            = module.vpc.public_subnet_ids
+}
 
+module "alb_listener" {
+  source  = "./modules/alb/listener"
+  alb_arn = module.alb.alb_arn
+  listeners = local.listeners
+}
+
+module "alb_target_group" {
+  source        = "./modules/alb/targetgroup"
+  target_groups = local.target_groups
+  vpc_id        = module.vpc.vpc_id
+}
+
+module "cloud_map" {
+  source = "./modules/cloudmap"
+  vpc_id = module.vpc.vpc_id
+}
+
+module "ecs_cluster" {
+  source       = "./modules/ecs/cluster"
+  namespace_id = module.cloud_map.namespace_id
+  cluster_name = "${var.name_prefix}-cluster"
+}
+
+module "ecs_service" {
+  source       = "./modules/ecs/service"
+  cluster_id   = module.ecs_cluster.cluster_id
+  ecs_services = local.ecs_services
+}
+
+module "ecs_task" {
+  source               = "./modules/ecs/task"
+  ecs_task_definitions = local.ecs_task_definitions
+}
 

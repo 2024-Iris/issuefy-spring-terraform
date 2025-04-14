@@ -1,5 +1,5 @@
 ecr_repositories = {
-  was = {
+  issuefy-was = {
     scan_on_push         = false
     image_tag_mutability = "MUTABLE"
     tags = {
@@ -7,7 +7,7 @@ ecr_repositories = {
     }
   }
 
-  prometheus = {
+  issuefy-prometheus = {
     scan_on_push         = false
     image_tag_mutability = "MUTABLE"
     tags = {
@@ -15,7 +15,7 @@ ecr_repositories = {
     }
   }
 
-  web = {
+  issuefy-web = {
     scan_on_push         = false
     image_tag_mutability = "MUTABLE"
     tags = {

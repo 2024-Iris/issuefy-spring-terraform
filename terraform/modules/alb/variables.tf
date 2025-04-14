@@ -1,13 +1,26 @@
-variable "alb_name" {}
-
-variable "alb_target_group_name" {}
-
-variable "loadbalancer_type" {
-  default = "application"
+variable "name_prefix" {
+  type = string
+  description = "Prefix for ALB and related resources"
 }
 
-variable "alb_security_group" {}
+variable "subnets" {
+  type = list(string)
+  description = "List of public subnet IDs for the ALB"
+}
 
-variable "subnets" {}
+variable "alb_security_group" {
+  type = string
+  description = "Security group ID for the ALB"
+}
 
-variable "name_prefix" {}
+variable "loadbalancer_type" {
+  type    = string
+  default = "application"
+  description = "Type of ALB (application | network)"
+}
+
+variable "internal" {
+  type    = bool
+  default = false
+  description = "Whether the ALB is internal or internet-facing"
+}
