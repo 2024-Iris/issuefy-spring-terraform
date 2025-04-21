@@ -43,10 +43,5 @@ data "aws_iam_policy_document" "deny_without_mfa" {
       variable = "aws:MultiFactorAuthPresent"
       values = ["false"]
     }
-
-    principals {
-      type = "AWS"
-      identifiers = ["*"]
-    }
   }
 }

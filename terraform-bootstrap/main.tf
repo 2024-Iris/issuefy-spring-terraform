@@ -1,4 +1,17 @@
-resource "aws_s3_bucket" "issuefy-bucket" {
+terraform {
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = "5.54.1"
+    }
+  }
+}
+
+provider "aws" {
+  region = "ap-northeast-2"
+}
+
+resource "aws_s3_bucket" "issuefy_bucket" {
   bucket        = "issuefy-prod-terraform-state-ap-northeast-2"
   force_destroy = false
 
@@ -11,15 +24,16 @@ resource "aws_s3_bucket" "issuefy-bucket" {
   }
 }
 
-resource "aws_s3_bucket_versioning" "issuefy-bucket" {
-  bucket = aws_s3_bucket.issuefy-bucket.id
+resource "aws_s3_bucket_versioning" "issuefy_bucket_versioning" {
+  bucket = aws_s3_bucket.issuefy_bucket.id
+
   versioning_configuration {
     status = "Enabled"
   }
 }
 
-resource "aws_s3_bucket_lifecycle_configuration" "issuefy-bucket" {
-  bucket = aws_s3_bucket.issuefy-bucket.id
+resource "aws_s3_bucket_lifecycle_configuration" "issuefy_bucket_lifecycle" {
+  bucket = aws_s3_bucket.issuefy_bucket.id
 
   rule {
     id     = "state-file-lifecycle"
@@ -35,7 +49,7 @@ resource "aws_s3_bucket_lifecycle_configuration" "issuefy-bucket" {
   }
 }
 
-resource "aws_dynamodb_table" "terraform-lock" {
+resource "aws_dynamodb_table" "terraform_lock" {
   name         = "issuefy-terraform-lock"
   billing_mode = "PAY_PER_REQUEST"
   hash_key     = "LockID"

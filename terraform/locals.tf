@@ -87,11 +87,12 @@ locals {
       target_group_arn = module.alb_target_group.target_group_arns["web"]
     }
 
-    https = {
-      port             = 443
-      protocol         = "HTTPS"
-      target_group_arn = module.alb_target_group.target_group_arns["web"]
-    }
+    # except HTTPS listener
+    # https = {
+    #   port             = 443
+    #   protocol         = "HTTPS"
+    #   target_group_arn = module.alb_target_group.target_group_arns["web"]
+    # }
   }
 }
 

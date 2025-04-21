@@ -3,7 +3,6 @@ variable "ecs_services" {
     name            = string
     task_definition = string
     desired_count   = number
-    iam_role_arn    = string
   }))
 }
 

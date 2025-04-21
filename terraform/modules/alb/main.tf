@@ -5,7 +5,7 @@ resource "aws_alb" "issuefy_alb" {
   security_groups    = [var.alb_security_group]
   subnets            = var.subnets
 
-  enable_deletion_protection = true
+  enable_deletion_protection = false
 
   tags = {
     Environment = "issuefy-alb"
