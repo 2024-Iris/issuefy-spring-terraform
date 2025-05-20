@@ -53,7 +53,7 @@ locals {
     for name, def in var.instance_definitions :
     name => merge(def, {
       key_name             = def.key_name,
-      user_data            = name == "prod" ? local.user_data_prod : try(def.user_data, null),
+      user_data = def.user_data,
       iam_instance_profile = (
         def.iam_instance_profile != null
         ? (
@@ -310,8 +310,4 @@ locals {
       volumes = []
     }
   }
-}
-
-locals {
-  user_data_prod = templatefile("${path.module}/user_data.sh", {})
 }

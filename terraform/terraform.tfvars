@@ -30,6 +30,10 @@ instance_definitions = {
     instance_type        = "t3a.small"
     iam_instance_profile = "ec2-to-ecs"
     key_name             = "issuefy-key"
+    user_data            = <<-EOF
+#!/bin/bash
+echo ECS_CLUSTER=issuefy-cluster >> /etc/ecs/ecs.config
+EOF
   }
 
   monitoring = {
@@ -37,6 +41,13 @@ instance_definitions = {
     instance_type        = "t2.micro"
     iam_instance_profile = "ec2-monitoring"
     key_name             = "issuefy-key"
+    user_data            = <<-EOF
+#!/bin/bash
+dnf update -y
+dnf install -y docker
+systemctl enable docker
+systemctl start docker
+EOF
   }
 
   nat = {

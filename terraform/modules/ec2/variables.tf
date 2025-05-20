@@ -27,7 +27,3 @@ variable "ec2_sg_id" {
   description = "Security Group ID for EC2 instances"
   type        = string
 }
-
-variable "user_data_map" {
-  type = map(string)
-}
