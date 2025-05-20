@@ -52,6 +52,8 @@ locals {
   enriched_instance_definitions = {
     for name, def in var.instance_definitions :
     name => merge(def, {
+      key_name             = def.key_name,
+      user_data            = name == "prod" ? local.user_data_prod : try(def.user_data, null),
       iam_instance_profile = (
         def.iam_instance_profile != null
         ? (
@@ -174,7 +176,7 @@ locals {
     "issuefy-was" = {
       name            = "issuefy-was"
       task_definition = module.ecs_task.task_definition_arns["issuefy-was"]
-      desired_count   = 2
+      desired_count   = 1
       iam_role_arn    = module.iam_roles["ecsTaskExecutionRole"].role_arn
       load_balancer = {
         target_group_arn = module.alb_target_group.target_group_arns["was"]
@@ -308,4 +310,8 @@ locals {
       volumes = []
     }
   }
+}
+
+locals {
+  user_data_prod = templatefile("${path.module}/user_data.sh", {})
 }

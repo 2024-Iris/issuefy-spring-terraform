@@ -26,14 +26,14 @@ ecr_repositories = {
 
 instance_definitions = {
   prod = {
-    ami                  = "ami-0163ca257044503d6"
+    ami                  = "ami-012ea6058806ff688"
     instance_type        = "t3a.small"
     iam_instance_profile = "ec2-to-ecs"
     key_name             = "issuefy-key"
   }
 
   monitoring = {
-    ami                  = "ami-0163ca257044503d6"
+    ami                  = "ami-05377cf8cfef186c2"
     instance_type        = "t2.micro"
     iam_instance_profile = "ec2-monitoring"
     key_name             = "issuefy-key"

@@ -4,6 +4,8 @@ variable "instance_definitions" {
     ami           = string
     instance_type = string
     iam_instance_profile = optional(string)
+    key_name      = string
+    user_data = optional(string)
   }))
 }
 
@@ -24,4 +26,8 @@ variable "name_prefix" {
 variable "ec2_sg_id" {
   description = "Security Group ID for EC2 instances"
   type        = string
+}
+
+variable "user_data_map" {
+  type = map(string)
 }

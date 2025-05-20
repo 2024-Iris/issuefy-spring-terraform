@@ -13,6 +13,11 @@ module "ec2" {
   ec2_sg_id            = module.security_group.ec2_sg_id
   name_prefix          = var.name_prefix
   instance_definitions = local.enriched_instance_definitions
+  user_data_map = {
+    prod       = local.user_data_prod
+    monitoring = null
+    nat        = null
+  }
 }
 
 module "security_group" {
