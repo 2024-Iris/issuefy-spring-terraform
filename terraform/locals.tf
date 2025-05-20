@@ -53,13 +53,18 @@ locals {
     for name, def in var.instance_definitions :
     name => merge(def, {
       iam_instance_profile = (
-        can(def.iam_instance_profile) ?
-        try(local.instance_profiles[def.iam_instance_profile], null) :
-        null
+        def.iam_instance_profile != null
+        ? (
+        contains(keys(local.instance_profiles), def.iam_instance_profile)
+        ? local.instance_profiles[def.iam_instance_profile]
+        : null
+      )
+        : null
       )
     })
   }
 }
+
 
 locals {
   listeners = {

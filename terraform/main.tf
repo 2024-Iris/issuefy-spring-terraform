@@ -95,13 +95,6 @@ module "iam_roles" {
   tags                 = each.value.tags
 }
 
-resource "aws_iam_instance_profile" "profiles" {
-  for_each = local.iam_roles
-
-  name = each.key
-  role = module.iam_roles[each.key].role_name
-}
-
 module "alb" {
   source             = "./modules/alb"
   alb_security_group = module.security_group.alb_sg_id
@@ -110,8 +103,8 @@ module "alb" {
 }
 
 module "alb_listener" {
-  source  = "./modules/alb/listener"
-  alb_arn = module.alb.alb_arn
+  source    = "./modules/alb/listener"
+  alb_arn   = module.alb.alb_arn
   listeners = local.listeners
 }
 

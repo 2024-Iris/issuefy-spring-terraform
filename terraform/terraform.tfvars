@@ -28,13 +28,13 @@ instance_definitions = {
   prod = {
     ami                  = "ami-0163ca257044503d6"
     instance_type        = "t3a.small"
-    iam_instance_profile = "issuefy-ec2-to-ecs"
+    iam_instance_profile = "ec2-to-ecs"
   }
 
   monitoring = {
     ami                  = "ami-0163ca257044503d6"
     instance_type        = "t2.micro"
-    iam_instance_profile = "issuefy-ec2-monitoring"
+    iam_instance_profile = "ec2-monitoring"
   }
 
   nat = {
