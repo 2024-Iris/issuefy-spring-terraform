@@ -110,4 +110,8 @@ resource "aws_security_group" "alb" {
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
+
+  tags = merge(var.tags, {
+    Name = "${var.name_prefix}-alb-sg"
+  })
 }
