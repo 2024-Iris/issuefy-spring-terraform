@@ -4,14 +4,6 @@ variable "name_prefix" {
   default     = "issuefy"
 }
 
-variable "ecr_repositories" {
-  type = map(object({
-    scan_on_push         = bool
-    image_tag_mutability = string
-    tags = map(string)
-  }))
-}
-
 variable "instance_definitions" {
   type = map(object({
     ami           = string

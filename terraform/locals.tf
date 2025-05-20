@@ -166,8 +166,9 @@ locals {
 }
 locals {
   ecr_repo_urls = {
-    for name, repo in module.ecr :
-    name => repo.repository_url
+    issuefy-was        = data.aws_ecr_repository.issuefy_was.repository_url
+    issuefy-web        = data.aws_ecr_repository.issuefy_web.repository_url
+    issuefy-prometheus = data.aws_ecr_repository.issuefy_prometheus.repository_url
   }
 }
 

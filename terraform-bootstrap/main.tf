@@ -67,3 +67,14 @@ resource "aws_dynamodb_table" "terraform_lock" {
     Service     = "infrastructure"
   }
 }
+
+module "ecr" {
+  source = "../terraform/modules/ecr"
+
+  for_each = var.ecr_repositories
+
+  repository_name      = each.key
+  scan_on_push         = each.value.scan_on_push
+  image_tag_mutability = each.value.image_tag_mutability
+  tags                 = each.value.tags
+}

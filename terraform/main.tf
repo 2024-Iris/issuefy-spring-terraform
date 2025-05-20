@@ -52,18 +52,6 @@ module "rds" {
   }
 }
 
-
-module "ecr" {
-  source = "./modules/ecr"
-
-  for_each = var.ecr_repositories
-
-  repository_name      = each.key
-  scan_on_push         = each.value.scan_on_push
-  image_tag_mutability = each.value.image_tag_mutability
-  tags                 = each.value.tags
-}
-
 module "iam" {
   source     = "./modules/iam"
   group_name = "issuefy_power"
@@ -136,3 +124,14 @@ module "ecs_task" {
   ecs_task_definitions = local.ecs_task_definitions
 }
 
+data "aws_ecr_repository" "issuefy_was" {
+  name = "issuefy-was"
+}
+
+data "aws_ecr_repository" "issuefy_prometheus" {
+  name = "issuefy-prometheus"
+}
+
+data "aws_ecr_repository" "issuefy_web" {
+  name = "issuefy-web"
+}
