@@ -1,0 +1,51 @@
+name: Terraform Plan on PR
+
+on:
+  pull_request:
+    branches:
+      - terraform-test
+
+jobs:
+  terraform-plan:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ap-northeast-2
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: 1.6.6
+
+      - name: Terraform Init
+        run: terraform init
+        working-directory: terraform
+
+      - name: Terraform Plan
+        id: plan
+        run: |
+          terraform plan -no-color > plan.txt
+          {
+            echo "plan_output<<EOF"
+            cat plan.txt
+            echo "EOF"
+          } >> $GITHUB_OUTPUT
+
+      - name: Comment PR with Plan Output
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          issue-number: ${{ github.event.pull_request.number }}
+          body: |
+            ## 📄 Terraform Plan Result
+            ```terraform
+            ${{ steps.plan.outputs.plan_output }}
+            ```
