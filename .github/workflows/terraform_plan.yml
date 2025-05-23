@@ -25,10 +25,11 @@ jobs:
         id: plan
         run: |
           terraform plan -no-color > plan.txt
-          PLAN_OUTPUT=$(cat plan.txt | sed 's/^/    /')
-          echo "PLAN<<EOF" >> $GITHUB_ENV
-          echo "$PLAN_OUTPUT" >> $GITHUB_ENV
-          echo "EOF" >> $GITHUB_ENV
+          {
+            echo "plan_output<<EOF"
+            cat plan.txt
+            echo "EOF"
+          } >> $GITHUB_OUTPUT
 
       - name: Comment PR with Plan Output
         uses: peter-evans/create-or-update-comment@v4
@@ -37,4 +38,6 @@ jobs:
           issue-number: ${{ github.event.pull_request.number }}
           body: |
             ## 📄 Terraform Plan Result
-            ${{ env.PLAN }}
+            ```terraform
+            ${{ steps.plan.outputs.plan_output }}
+            ```
