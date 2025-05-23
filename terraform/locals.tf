@@ -53,7 +53,7 @@ locals {
     for name, def in var.instance_definitions :
     name => merge(def, {
       key_name             = def.key_name,
-      user_data = def.user_data,
+      user_data            = def.user_data,
       iam_instance_profile = (
         def.iam_instance_profile != null
         ? (
