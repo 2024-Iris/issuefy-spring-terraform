@@ -1,5 +1,5 @@
 variable "name_prefix" {
-  type = string
+  type        = string
   description = "Prefix for ALB and related resources"
 }
 
@@ -9,18 +9,18 @@ variable "subnets" {
 }
 
 variable "alb_security_group" {
-  type = string
+  type        = string
   description = "Security group ID for the ALB"
 }
 
 variable "loadbalancer_type" {
-  type    = string
-  default = "application"
+  type        = string
+  default     = "application"
   description = "Type of ALB (application | network)"
 }
 
 variable "internal" {
-  type    = bool
-  default = false
+  type        = bool
+  default     = false
   description = "Whether the ALB is internal or internet-facing"
 }

@@ -9,7 +9,7 @@ variable "instance_definitions" {
     ami           = string
     instance_type = string
     iam_instance_profile = optional(string)
-    key_name = string
+    key_name      = string
     user_data = optional(string)
   }))
 }
