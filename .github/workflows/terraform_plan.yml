@@ -1,0 +1,40 @@
+name: Terraform Plan on PR
+
+on:
+  pull_request:
+    branches:
+      - test
+
+jobs:
+  terraform-plan:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: 1.6.6
+
+      - name: Terraform Init
+        run: terraform init
+
+      - name: Terraform Plan
+        id: plan
+        run: |
+          terraform plan -no-color > plan.txt
+          PLAN_OUTPUT=$(cat plan.txt | sed 's/^/    /')
+          echo "PLAN<<EOF" >> $GITHUB_ENV
+          echo "$PLAN_OUTPUT" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+
+      - name: Comment PR with Plan Output
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          issue-number: ${{ github.event.pull_request.number }}
+          body: |
+            ## 📄 Terraform Plan Result
+            ${{ env.PLAN }}
